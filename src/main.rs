@@ -1,3 +1,4 @@
+mod audio;
 mod render;
 mod runtime;
 mod scenario;
@@ -6,6 +7,7 @@ use std::collections::HashMap;
 
 use macroquad::prelude::*;
 
+use audio::AudioManager;
 use render::{
     draw_backlog, draw_background, draw_character, draw_choices, draw_continue_indicator,
     draw_text_box, BacklogConfig, BacklogState, ChoiceButtonConfig, TextBoxConfig,
@@ -112,6 +114,8 @@ async fn main() {
     let mut backlog_state = BacklogState::default();
     let mut show_backlog = false;
     let mut texture_cache: HashMap<String, Texture2D> = HashMap::new();
+    let mut audio_manager = AudioManager::new();
+    let mut last_index: Option<usize> = None;
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
@@ -140,6 +144,23 @@ async fn main() {
                     game_state.rollback();
                 }
             }
+        }
+
+        // Update audio when command changes
+        let current_index = game_state.current_index();
+        if last_index != Some(current_index) {
+            // Update BGM
+            audio_manager
+                .update_bgm(game_state.current_bgm())
+                .await;
+
+            // Play SE
+            audio_manager.play_se(game_state.current_se()).await;
+
+            // Play voice
+            audio_manager.play_voice(game_state.current_voice()).await;
+
+            last_index = Some(current_index);
         }
 
         match game_state.display_state() {

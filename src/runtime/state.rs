@@ -312,4 +312,33 @@ impl GameState {
     pub fn history(&self) -> &VecDeque<HistoryEntry> {
         &self.history
     }
+
+    /// Get current BGM command (None = keep, Some("") = stop, Some(path) = play).
+    pub fn current_bgm(&self) -> Option<&String> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.bgm.as_ref())
+    }
+
+    /// Get current SE command.
+    pub fn current_se(&self) -> Option<&String> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.se.as_ref())
+    }
+
+    /// Get current voice command.
+    pub fn current_voice(&self) -> Option<&String> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.voice.as_ref())
+    }
+
+    /// Get current script index.
+    pub fn current_index(&self) -> usize {
+        self.current_index
+    }
 }

@@ -36,6 +36,12 @@ pub struct Command {
     pub character: Option<String>,
     /// Character sprite position.
     pub char_pos: Option<CharPosition>,
+    /// BGM file path (None = keep previous, Some("") = stop).
+    pub bgm: Option<String>,
+    /// Sound effect file path (plays once).
+    pub se: Option<String>,
+    /// Voice file path (plays once).
+    pub voice: Option<String>,
 }
 
 /// A complete scenario loaded from YAML.
