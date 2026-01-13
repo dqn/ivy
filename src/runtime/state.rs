@@ -24,6 +24,8 @@ pub struct SaveData {
     pub scenario_path: String,
     pub current_index: usize,
     pub visual: VisualState,
+    #[serde(default)]
+    pub timestamp: i64,
 }
 
 impl SaveData {
@@ -43,6 +45,27 @@ impl SaveData {
         let content = fs::read_to_string(path)?;
         let save: SaveData = serde_json::from_str(&content)?;
         Ok(save)
+    }
+
+    /// Get the path for a specific save slot.
+    pub fn slot_path(slot: u8) -> String {
+        format!("saves/slot_{}.json", slot)
+    }
+
+    /// Check if a save slot exists.
+    pub fn slot_exists(slot: u8) -> bool {
+        Path::new(&Self::slot_path(slot)).exists()
+    }
+
+    /// List all existing save slots with their timestamps.
+    pub fn list_slots() -> Vec<(u8, i64)> {
+        (1..=10)
+            .filter_map(|slot| {
+                Self::load(Self::slot_path(slot))
+                    .ok()
+                    .map(|save| (slot, save.timestamp))
+            })
+            .collect()
     }
 }
 
@@ -93,10 +116,17 @@ impl GameState {
 
     /// Create a save data snapshot.
     pub fn to_save_data(&self, scenario_path: &str) -> SaveData {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_secs() as i64)
+            .unwrap_or(0);
+
         SaveData {
             scenario_path: scenario_path.to_string(),
             current_index: self.current_index,
             visual: self.current_visual(),
+            timestamp,
         }
     }
 

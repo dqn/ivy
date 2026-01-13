@@ -17,7 +17,7 @@ use runtime::{DisplayState, GameState, SaveData, VisualState};
 use scenario::load_scenario;
 
 const SCENARIO_PATH: &str = "assets/sample.yaml";
-const SAVE_PATH: &str = "saves/save.json";
+const QUICK_SAVE_PATH: &str = "saves/save.json";
 
 fn window_conf() -> Conf {
     Conf {
@@ -64,18 +64,29 @@ async fn draw_visual(visual: &VisualState, cache: &mut HashMap<String, Texture2D
     }
 }
 
-/// Save game state.
-fn save_game(game_state: &GameState) {
+/// Save game state to a specific path.
+fn save_game_to(game_state: &GameState, path: &str) {
     let save_data = game_state.to_save_data(SCENARIO_PATH);
-    match save_data.save(SAVE_PATH) {
-        Ok(()) => eprintln!("Game saved to {}", SAVE_PATH),
+    match save_data.save(path) {
+        Ok(()) => eprintln!("Game saved to {}", path),
         Err(e) => eprintln!("Failed to save game: {}", e),
     }
 }
 
-/// Load game state.
-fn load_game() -> Option<GameState> {
-    let save_data = match SaveData::load(SAVE_PATH) {
+/// Save game state to quick save slot.
+fn save_game(game_state: &GameState) {
+    save_game_to(game_state, QUICK_SAVE_PATH);
+}
+
+/// Save game state to numbered slot (1-10).
+fn save_to_slot(game_state: &GameState, slot: u8) {
+    let path = SaveData::slot_path(slot);
+    save_game_to(game_state, &path);
+}
+
+/// Load game state from a specific path.
+fn load_game_from(path: &str) -> Option<GameState> {
+    let save_data = match SaveData::load(path) {
         Ok(data) => data,
         Err(e) => {
             eprintln!("Failed to load save: {}", e);
@@ -91,8 +102,19 @@ fn load_game() -> Option<GameState> {
         }
     };
 
-    eprintln!("Game loaded from {}", SAVE_PATH);
+    eprintln!("Game loaded from {}", path);
     Some(GameState::from_save_data(&save_data, scenario))
+}
+
+/// Load game state from quick save slot.
+fn load_game() -> Option<GameState> {
+    load_game_from(QUICK_SAVE_PATH)
+}
+
+/// Load game state from numbered slot (1-10).
+fn load_from_slot(slot: u8) -> Option<GameState> {
+    let path = SaveData::slot_path(slot);
+    load_game_from(&path)
 }
 
 #[macroquad::main(window_conf)]
@@ -125,12 +147,45 @@ async fn main() {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
 
         // Handle save/load
+        // F5 = quick save, F9 = quick load
+        // Shift+1-0 = save to slot, 1-0 = load from slot
         if is_key_pressed(KeyCode::F5) {
             save_game(&game_state);
         }
         if is_key_pressed(KeyCode::F9) {
             if let Some(loaded_state) = load_game() {
                 game_state = loaded_state;
+                last_index = None; // Force audio/transition update
+            }
+        }
+
+        // Slot save/load (1-9, 0=10)
+        let shift_held = is_key_down(KeyCode::LeftShift) || is_key_down(KeyCode::RightShift);
+        let slot_keys = [
+            (KeyCode::Key1, 1),
+            (KeyCode::Key2, 2),
+            (KeyCode::Key3, 3),
+            (KeyCode::Key4, 4),
+            (KeyCode::Key5, 5),
+            (KeyCode::Key6, 6),
+            (KeyCode::Key7, 7),
+            (KeyCode::Key8, 8),
+            (KeyCode::Key9, 9),
+            (KeyCode::Key0, 10),
+        ];
+
+        for (key, slot) in slot_keys {
+            if is_key_pressed(key) {
+                if shift_held {
+                    save_to_slot(&game_state, slot);
+                } else if SaveData::slot_exists(slot) {
+                    if let Some(loaded_state) = load_from_slot(slot) {
+                        game_state = loaded_state;
+                        last_index = None; // Force audio/transition update
+                    }
+                } else {
+                    eprintln!("Slot {} is empty", slot);
+                }
             }
         }
 
