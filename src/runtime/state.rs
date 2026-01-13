@@ -68,11 +68,13 @@ pub struct GameState {
 impl GameState {
     /// Create a new game state from a scenario.
     pub fn new(scenario: Scenario) -> Self {
-        Self {
+        let mut state = Self {
             scenario,
             current_index: 0,
             visual: VisualState::default(),
-        }
+        };
+        state.skip_labels();
+        state
     }
 
     /// Create a save data snapshot.
@@ -80,18 +82,20 @@ impl GameState {
         SaveData {
             scenario_path: scenario_path.to_string(),
             current_index: self.current_index,
-            visual: self.visual.clone(),
+            visual: self.current_visual(),
         }
     }
 
     /// Restore from save data.
     pub fn from_save_data(save: &SaveData, scenario: Scenario) -> Self {
         let current_index = save.current_index.min(scenario.script.len());
-        Self {
+        let mut state = Self {
             scenario,
             current_index,
             visual: save.visual.clone(),
-        }
+        };
+        state.skip_labels();
+        state
     }
 
     /// Get the current display state.
