@@ -233,6 +233,7 @@ async fn main() {
     let mut last_index: Option<usize> = None;
     let mut auto_mode = false;
     let mut auto_timer = 0.0;
+    let mut skip_mode = false;
     let mut transition_state = TransitionState::default();
     let mut shake_state = ShakeState::default();
     let mut typewriter_state = TypewriterState::default();
@@ -269,6 +270,7 @@ async fn main() {
                             game_mode = GameMode::InGame;
                             last_index = None;
                             auto_mode = false;
+                            skip_mode = false;
                             show_backlog = false;
                         }
                         TitleMenuItem::Continue => {
@@ -278,6 +280,7 @@ async fn main() {
                                 game_mode = GameMode::InGame;
                                 last_index = None;
                                 auto_mode = false;
+                                skip_mode = false;
                                 show_backlog = false;
                             } else {
                                 // Try slots 1-3
@@ -287,6 +290,7 @@ async fn main() {
                                         game_mode = GameMode::InGame;
                                         last_index = None;
                                         auto_mode = false;
+                                        skip_mode = false;
                                         show_backlog = false;
                                         break;
                                     }
@@ -436,6 +440,16 @@ async fn main() {
             }
         }
 
+        // Toggle skip mode with S key
+        if is_key_pressed(KeyCode::S) {
+            skip_mode = !skip_mode;
+            if skip_mode {
+                eprintln!("Skip mode ON");
+            } else {
+                eprintln!("Skip mode OFF");
+            }
+        }
+
         // Handle rollback (Up arrow or mouse wheel up) - only when backlog is not shown
         if !show_backlog {
             let wheel = mouse_wheel();
@@ -570,9 +584,10 @@ async fn main() {
                     let history: Vec<_> = state.history().iter().cloned().collect();
                     draw_backlog(&backlog_config, &mut backlog_state, &history);
                 } else {
-                    // Skip mode: Ctrl key held down
-                    let skip_mode =
-                        is_key_down(KeyCode::LeftControl) || is_key_down(KeyCode::RightControl);
+                    // Skip mode: S key toggle or Ctrl key held down
+                    let skip_active = skip_mode
+                        || is_key_down(KeyCode::LeftControl)
+                        || is_key_down(KeyCode::RightControl);
 
                     // Auto mode timer (only counts when text is complete)
                     let mut auto_advance = false;
@@ -592,7 +607,7 @@ async fn main() {
                     let input_pressed = is_mouse_button_pressed(MouseButton::Left)
                         || is_key_pressed(KeyCode::Enter);
 
-                    if skip_mode || auto_advance {
+                    if skip_active || auto_advance {
                         // Skip mode and auto mode bypass typewriter
                         typewriter_state.complete();
                         state.advance();
@@ -609,9 +624,14 @@ async fn main() {
                     }
                 }
 
-                // Draw auto mode indicator
+                // Draw mode indicators
+                let mut indicator_y = 20.0;
+                if skip_mode {
+                    draw_text("SKIP", 750.0, indicator_y, 20.0, Color::new(1.0, 0.5, 0.5, 1.0));
+                    indicator_y += 22.0;
+                }
                 if auto_mode {
-                    draw_text("AUTO", 750.0, 20.0, 20.0, YELLOW);
+                    draw_text("AUTO", 750.0, indicator_y, 20.0, YELLOW);
                 }
             }
             DisplayState::Choices {
@@ -622,6 +642,12 @@ async fn main() {
                 timeout,
                 default_choice,
             } => {
+                // Auto-stop skip mode at choices
+                if skip_mode {
+                    skip_mode = false;
+                    eprintln!("Skip mode OFF (reached choices)");
+                }
+
                 // Draw visuals first with shake offset
                 draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
 
@@ -710,17 +736,28 @@ async fn main() {
                 wait_timer += get_frame_time();
 
                 // Check if wait is complete or skipped
-                let skip_mode =
-                    is_key_down(KeyCode::LeftControl) || is_key_down(KeyCode::RightControl);
+                let skip_active = skip_mode
+                    || is_key_down(KeyCode::LeftControl)
+                    || is_key_down(KeyCode::RightControl);
 
                 if wait_timer >= duration
-                    || skip_mode
+                    || skip_active
                     || is_mouse_button_pressed(MouseButton::Left)
                     || is_key_pressed(KeyCode::Enter)
                 {
                     in_wait = false;
                     wait_timer = 0.0;
                     state.advance();
+                }
+
+                // Draw mode indicators
+                let mut indicator_y = 20.0;
+                if skip_mode {
+                    draw_text("SKIP", 750.0, indicator_y, 20.0, Color::new(1.0, 0.5, 0.5, 1.0));
+                    indicator_y += 22.0;
+                }
+                if auto_mode {
+                    draw_text("AUTO", 750.0, indicator_y, 20.0, YELLOW);
                 }
             }
             DisplayState::Input { input, visual } => {

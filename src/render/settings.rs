@@ -23,6 +23,13 @@ pub struct GameSettings {
     /// Text speed in characters per second (0 = instant).
     #[serde(default = "default_text_speed")]
     pub text_speed: f32,
+    /// Skip unread text (true = skip all, false = skip read only).
+    #[serde(default = "default_skip_unread")]
+    pub skip_unread: bool,
+}
+
+fn default_skip_unread() -> bool {
+    true // Default to skip all text
 }
 
 fn default_volume() -> f32 {
@@ -45,6 +52,7 @@ impl Default for GameSettings {
             voice_volume: 1.0,
             auto_speed: 1.0,
             text_speed: 30.0,
+            skip_unread: true,
         }
     }
 }
@@ -106,6 +114,56 @@ pub struct SettingsResult {
 enum SliderFormat {
     Percent,
     Value(&'static str),
+}
+
+/// Draw a checkbox and return the new value if toggled.
+fn draw_checkbox(
+    x: f32,
+    y: f32,
+    value: bool,
+    label: &str,
+    font: Option<&Font>,
+    font_size: f32,
+) -> bool {
+    let box_size = 20.0;
+    let box_y = y + 5.0;
+
+    // Draw label
+    let text_params = if let Some(f) = font {
+        TextParams {
+            font: Some(f),
+            font_size: font_size as u16,
+            color: WHITE,
+            ..Default::default()
+        }
+    } else {
+        TextParams {
+            font_size: font_size as u16,
+            color: WHITE,
+            ..Default::default()
+        }
+    };
+
+    draw_text_ex(label, x, y, text_params);
+
+    // Draw checkbox box
+    let box_x = x + 200.0;
+    draw_rectangle_lines(box_x, box_y, box_size, box_size, 2.0, WHITE);
+
+    // Draw checkmark if checked
+    if value {
+        draw_rectangle(box_x + 4.0, box_y + 4.0, box_size - 8.0, box_size - 8.0, Color::new(0.3, 0.8, 0.3, 1.0));
+    }
+
+    // Handle mouse click
+    let mouse_pos = mouse_position();
+    let checkbox_rect = Rect::new(box_x, box_y, box_size, box_size);
+
+    if is_mouse_button_pressed(MouseButton::Left) && checkbox_rect.contains(Vec2::new(mouse_pos.0, mouse_pos.1)) {
+        return !value;
+    }
+
+    value
 }
 
 /// Draw a slider and return the new value if changed.
@@ -323,6 +381,17 @@ pub fn draw_settings_screen(
     if (settings.text_speed - old_text_speed).abs() > 0.001 {
         settings.text_speed = (settings.text_speed / 5.0).round() * 5.0;
     }
+
+    // Skip Unread checkbox
+    y += config.slider_spacing;
+    settings.skip_unread = draw_checkbox(
+        slider_x,
+        y,
+        settings.skip_unread,
+        "Skip Unread Text",
+        font,
+        config.label_font_size,
+    );
 
     // Back button
     let button_width = 150.0;
