@@ -5,6 +5,7 @@ use macroquad::prelude::*;
 pub enum TitleMenuItem {
     NewGame,
     Continue,
+    Gallery,
     Settings,
     Quit,
 }
@@ -44,6 +45,7 @@ pub fn draw_title_screen(
     config: &TitleConfig,
     title: &str,
     has_save: bool,
+    has_gallery: bool,
     font: Option<&Font>,
 ) -> TitleResult {
     let screen_width = screen_width();
@@ -77,6 +79,7 @@ pub fn draw_title_screen(
     let menu_items: Vec<(TitleMenuItem, &str, bool)> = vec![
         (TitleMenuItem::NewGame, "New Game", true),
         (TitleMenuItem::Continue, "Continue", has_save),
+        (TitleMenuItem::Gallery, "Gallery", has_gallery),
         (TitleMenuItem::Settings, "Settings", true),
         (TitleMenuItem::Quit, "Quit", true),
     ];
