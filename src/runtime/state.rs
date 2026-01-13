@@ -538,4 +538,12 @@ impl GameState {
             .get(self.current_index)
             .and_then(|cmd| cmd.particles.as_ref().map(|p| (p, cmd.particle_intensity)))
     }
+
+    /// Get current cinematic command (None = keep, Some(bool) = set on/off).
+    pub fn current_cinematic(&self) -> Option<(bool, f32)> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.cinematic.map(|c| (c, cmd.cinematic_duration)))
+    }
 }

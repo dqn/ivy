@@ -205,6 +205,15 @@ pub struct Command {
     /// Particle intensity (0.0 to 1.0).
     #[serde(default = "default_particle_intensity")]
     pub particle_intensity: f32,
+    /// Cinematic mode (letterbox bars). true = on, false = off.
+    pub cinematic: Option<bool>,
+    /// Cinematic transition duration in seconds.
+    #[serde(default = "default_cinematic_duration")]
+    pub cinematic_duration: f32,
+}
+
+fn default_cinematic_duration() -> f32 {
+    0.5
 }
 
 fn default_particle_intensity() -> f32 {

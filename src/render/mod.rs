@@ -1,5 +1,6 @@
 pub mod backlog;
 pub mod character;
+pub mod cinematic;
 pub mod gallery;
 pub mod image;
 pub mod input;
@@ -14,6 +15,7 @@ pub mod ui;
 
 pub use backlog::{draw_backlog, BacklogConfig, BacklogState};
 pub use character::{draw_character_animated, CharAnimationState};
+pub use cinematic::CinematicState;
 pub use gallery::{draw_fullscreen_image, draw_gallery, GalleryConfig, GalleryResult, GalleryState};
 pub use image::{
     draw_background, draw_background_with_offset, draw_character, draw_character_with_offset,

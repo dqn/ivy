@@ -46,6 +46,8 @@ script:
         default: true
 
   - label: explore
+    cinematic: true
+    cinematic_duration: 0.8
     character: "assets/char_happy.png"
     shake:
       type: "both"
@@ -55,6 +57,9 @@ script:
       name: "found_treasure"
       value: true
     text: "You found a hidden treasure chest!"
+
+  - cinematic: false
+    text: "The dramatic moment passes..."
     jump: ending
 
   - label: town

@@ -13,10 +13,10 @@ use render::{
     draw_backlog, draw_background_with_offset, draw_character_animated, draw_choices_with_timer,
     draw_continue_indicator_with_font, draw_gallery, draw_input, draw_settings_screen,
     draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen,
-    interpolate_variables, BacklogConfig, BacklogState, CharAnimationState, ChoiceButtonConfig,
-    GalleryConfig, GalleryState, GameSettings, InputConfig, InputState, ParticleState,
-    ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem,
-    TransitionState, TypewriterState,
+    interpolate_variables, BacklogConfig, BacklogState, CharAnimationState, CinematicState,
+    ChoiceButtonConfig, GalleryConfig, GalleryState, GameSettings, InputConfig, InputState,
+    ParticleState, ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig,
+    TitleMenuItem, TransitionState, TypewriterState,
 };
 use runtime::{DisplayState, GameState, SaveData, Unlocks, VisualState};
 use scenario::load_scenario;
@@ -242,6 +242,7 @@ async fn main() {
     let mut in_wait: bool = false;
     let mut char_anim_state = CharAnimationState::default();
     let mut particle_state = ParticleState::default();
+    let mut cinematic_state = CinematicState::default();
     let mut choice_timer: Option<f32> = None;
     let mut choice_total_time: Option<f32> = None;
 
@@ -522,6 +523,11 @@ async fn main() {
                     let particle_type = ParticleType::from_str(particles);
                     particle_state.set(particle_type, intensity);
                 }
+            }
+
+            // Update cinematic bars if specified
+            if let Some((enabled, duration)) = state.current_cinematic() {
+                cinematic_state.set(enabled, duration);
             }
 
             // Reset auto timer on command change
@@ -813,6 +819,10 @@ async fn main() {
 
         // Update and draw particles
         particle_state.update_and_draw();
+
+        // Update and draw cinematic bars
+        cinematic_state.update();
+        cinematic_state.draw();
 
         // Draw transition overlay
         transition_state.draw();
