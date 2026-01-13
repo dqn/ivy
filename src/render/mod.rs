@@ -1,5 +1,6 @@
 pub mod achievement;
 pub mod backlog;
+pub mod chapter_select;
 pub mod character;
 pub mod cinematic;
 pub mod debug;
@@ -17,6 +18,7 @@ pub mod ui;
 
 pub use achievement::{draw_achievement, AchievementConfig};
 pub use backlog::{draw_backlog, BacklogConfig, BacklogState};
+pub use chapter_select::{draw_chapter_select, ChapterSelectConfig, ChapterSelectState};
 pub use debug::{draw_debug, DebugConfig, DebugState};
 pub use character::{draw_character_animated, CharAnimationState};
 pub use cinematic::CinematicState;

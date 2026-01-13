@@ -374,7 +374,12 @@ impl GameState {
         }
     }
 
-    /// Jump to a labeled command.
+    /// Jump to a labeled command (public wrapper).
+    pub fn jump_to_label(&mut self, label: &str) {
+        self.jump_to(label);
+    }
+
+    /// Jump to a labeled command (internal).
     fn jump_to(&mut self, label: &str) {
         for (i, cmd) in self.scenario.script.iter().enumerate() {
             if cmd.label.as_deref() == Some(label) {

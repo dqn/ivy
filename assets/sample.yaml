@@ -1,7 +1,23 @@
 title: Sample Story
 
+# Chapter definitions (optional)
+chapters:
+  - id: "ch1"
+    title: "Chapter 1: Introduction"
+    start_label: "start"
+    description: "The beginning of the story"
+  - id: "ch2"
+    title: "Chapter 2: The Forest"
+    start_label: "forest"
+    description: "Explore the mysterious forest"
+  - id: "ch3"
+    title: "Chapter 3: The Town"
+    start_label: "town"
+    description: "Visit the bustling town"
+
 script:
-  - text: "Welcome to ivy - a simple visual novel engine."
+  - label: start
+    text: "Welcome to ivy - a simple visual novel engine."
 
   - input:
       var: "player_name"

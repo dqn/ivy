@@ -5,6 +5,7 @@ use macroquad::prelude::*;
 pub enum TitleMenuItem {
     NewGame,
     Continue,
+    Chapters,
     Gallery,
     Settings,
     Quit,
@@ -45,6 +46,7 @@ pub fn draw_title_screen(
     config: &TitleConfig,
     title: &str,
     has_save: bool,
+    has_chapters: bool,
     has_gallery: bool,
     font: Option<&Font>,
 ) -> TitleResult {
@@ -79,6 +81,7 @@ pub fn draw_title_screen(
     let menu_items: Vec<(TitleMenuItem, &str, bool)> = vec![
         (TitleMenuItem::NewGame, "New Game", true),
         (TitleMenuItem::Continue, "Continue", has_save),
+        (TitleMenuItem::Chapters, "Chapters", has_chapters),
         (TitleMenuItem::Gallery, "Gallery", has_gallery),
         (TitleMenuItem::Settings, "Settings", true),
         (TitleMenuItem::Quit, "Quit", true),

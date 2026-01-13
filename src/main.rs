@@ -10,27 +10,29 @@ use macroquad::prelude::*;
 
 use audio::AudioManager;
 use render::{
-    draw_achievement, draw_backlog, draw_background_with_offset, draw_character_animated,
-    draw_choices_with_timer, draw_continue_indicator_with_font, draw_debug, draw_gallery,
-    draw_input, draw_settings_screen, draw_speaker_name, draw_text_box_typewriter,
-    draw_text_box_with_font, draw_title_screen, interpolate_variables, AchievementConfig,
-    BacklogConfig, BacklogState, CharAnimationState, CinematicState, ChoiceButtonConfig,
-    DebugConfig, DebugState, GalleryConfig, GalleryState, GameSettings, InputConfig, InputState,
-    ParticleState, ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig,
-    TitleMenuItem, TransitionState, TypewriterState,
+    draw_achievement, draw_backlog, draw_background_with_offset, draw_chapter_select,
+    draw_character_animated, draw_choices_with_timer, draw_continue_indicator_with_font,
+    draw_debug, draw_gallery, draw_input, draw_settings_screen, draw_speaker_name,
+    draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen, interpolate_variables,
+    AchievementConfig, BacklogConfig, BacklogState, CharAnimationState, ChapterSelectConfig,
+    ChapterSelectState, CinematicState, ChoiceButtonConfig, DebugConfig, DebugState, GalleryConfig,
+    GalleryState, GameSettings, InputConfig, InputState, ParticleState, ParticleType,
+    SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
+    TypewriterState,
 };
 use runtime::{
-    AchievementNotifier, Achievements, Action, DisplayState, GameState, SaveData, Unlocks,
-    VisualState,
+    AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
+    SaveData, Unlocks, VisualState,
 };
 use scenario::load_scenario;
 
-/// Game mode: title screen, settings, gallery, or in-game.
+/// Game mode: title screen, settings, gallery, chapters, or in-game.
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum GameMode {
     Title,
     Settings,
     Gallery,
+    Chapters,
     InGame,
 }
 
@@ -193,6 +195,16 @@ async fn main() {
     };
 
     let scenario_title = scenario.title.clone();
+    let scenario_chapters: Vec<Chapter> = scenario
+        .chapters
+        .iter()
+        .map(|c| Chapter {
+            id: c.id.clone(),
+            title: c.title.clone(),
+            start_label: c.start_label.clone(),
+            description: c.description.clone(),
+        })
+        .collect();
     eprintln!("Loaded scenario: {}", scenario_title);
 
     // Load custom font for Japanese text support
@@ -228,10 +240,14 @@ async fn main() {
     let gallery_config = GalleryConfig::default();
     let achievement_config = AchievementConfig::default();
     let debug_config = DebugConfig::default();
+    let chapter_select_config = ChapterSelectConfig::default();
     let mut backlog_state = BacklogState::default();
     let mut debug_state = DebugState::default();
     let mut input_state = InputState::default();
     let mut gallery_state = GalleryState::default();
+    let mut chapter_select_state = ChapterSelectState::default();
+    let mut chapter_manager = ChapterManager::new();
+    chapter_manager.set_chapters(scenario_chapters);
     let mut unlocks = Unlocks::load();
     let mut achievements = Achievements::load();
     let mut achievement_notifier = AchievementNotifier::default();
@@ -269,7 +285,10 @@ async fn main() {
                 // Check if gallery has any unlocked images
                 let has_gallery = unlocks.image_count() > 0;
 
-                let result = draw_title_screen(&title_config, &scenario_title, has_save, has_gallery, font_ref);
+                // Check if chapters are defined
+                let has_chapters = chapter_manager.has_chapters();
+
+                let result = draw_title_screen(&title_config, &scenario_title, has_save, has_chapters, has_gallery, font_ref);
 
                 if let Some(item) = result.selected {
                     match item {
@@ -306,6 +325,10 @@ async fn main() {
                                     }
                                 }
                             }
+                        }
+                        TitleMenuItem::Chapters => {
+                            game_mode = GameMode::Chapters;
+                            chapter_select_state = ChapterSelectState::default();
                         }
                         TitleMenuItem::Gallery => {
                             game_mode = GameMode::Gallery;
@@ -367,6 +390,37 @@ async fn main() {
                             texture.set_filter(FilterMode::Linear);
                             texture_cache.insert(path.clone(), texture);
                         }
+                    }
+                }
+
+                next_frame().await;
+                continue;
+            }
+            GameMode::Chapters => {
+                let result = draw_chapter_select(
+                    &chapter_select_config,
+                    &mut chapter_select_state,
+                    &chapter_manager,
+                    font_ref,
+                );
+
+                if result.back_pressed {
+                    game_mode = GameMode::Title;
+                }
+
+                if let Some(chapter_id) = result.selected {
+                    // Start game from the chapter's start label
+                    if let Some(chapter) = chapter_manager.get_chapter(&chapter_id) {
+                        let new_scenario = load_scenario(SCENARIO_PATH).unwrap();
+                        let mut new_state = GameState::new(new_scenario);
+                        // Jump to the chapter's start label
+                        new_state.jump_to_label(&chapter.start_label);
+                        game_state = Some(new_state);
+                        game_mode = GameMode::InGame;
+                        last_index = None;
+                        auto_mode = false;
+                        skip_mode = false;
+                        show_backlog = false;
                     }
                 }
 

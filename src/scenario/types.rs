@@ -234,11 +234,28 @@ fn default_particle_intensity() -> f32 {
     0.5
 }
 
+/// Chapter definition in scenario YAML.
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChapterDef {
+    /// Unique chapter ID.
+    pub id: String,
+    /// Chapter title displayed in menu.
+    pub title: String,
+    /// Label to jump to when starting this chapter.
+    pub start_label: String,
+    /// Optional description.
+    #[serde(default)]
+    pub description: String,
+}
+
 /// A complete scenario loaded from YAML.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Scenario {
     /// Title of this scenario.
     pub title: String,
+    /// Optional chapter definitions.
+    #[serde(default)]
+    pub chapters: Vec<ChapterDef>,
     /// List of commands that make up the script.
     pub script: Vec<Command>,
 }
