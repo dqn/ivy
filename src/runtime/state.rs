@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::platform;
 use crate::runtime::Variables;
-use crate::scenario::{CharPosition, Choice, Scenario};
+use crate::scenario::{CharPosition, Choice, Input, Scenario};
 
 /// Maximum number of history entries for rollback.
 const MAX_HISTORY_SIZE: usize = 50;
@@ -110,6 +110,11 @@ pub enum DisplayState {
         duration: f32,
         visual: VisualState,
     },
+    /// Waiting for player text input.
+    Input {
+        input: Input,
+        visual: VisualState,
+    },
     /// Scenario has ended.
     End,
 }
@@ -209,6 +214,14 @@ impl GameState {
         // Wait command without text
         if let Some(duration) = command.wait {
             return DisplayState::Wait { duration, visual };
+        }
+
+        // Input command
+        if let Some(input) = &command.input {
+            return DisplayState::Input {
+                input: input.clone(),
+                visual,
+            };
         }
 
         // Command has no displayable content (should be unreachable after skip_labels).
@@ -380,7 +393,10 @@ impl GameState {
             // Check for displayable content (scope the borrow)
             let has_displayable = {
                 let command = &self.scenario.script[self.current_index];
-                command.text.is_some() || command.choices.is_some() || command.wait.is_some()
+                command.text.is_some()
+                    || command.choices.is_some()
+                    || command.wait.is_some()
+                    || command.input.is_some()
             };
 
             if has_displayable {
@@ -478,6 +494,11 @@ impl GameState {
         &self.variables
     }
 
+    /// Set a variable value.
+    pub fn set_variable(&mut self, name: impl Into<String>, value: crate::runtime::Value) {
+        self.variables.set(name, value);
+    }
+
     /// Get current transition command.
     pub fn current_transition(&self) -> Option<&crate::scenario::types::Transition> {
         self.scenario
@@ -508,5 +529,13 @@ impl GameState {
             .script
             .get(self.current_index)
             .and_then(|cmd| cmd.char_exit.as_ref())
+    }
+
+    /// Get current particles command (None = keep, Some("") = stop, Some(type) = start).
+    pub fn current_particles(&self) -> Option<(&String, f32)> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.particles.as_ref().map(|p| (p, cmd.particle_intensity)))
     }
 }

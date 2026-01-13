@@ -1,10 +1,59 @@
 use macroquad::prelude::*;
 
+use crate::runtime::Variables;
+
 /// A segment of text with color information.
 #[derive(Debug, Clone)]
 struct TextSegment {
     text: String,
     color: Option<Color>,
+}
+
+/// Interpolate variables in text.
+/// Replaces {var:name} with the variable value.
+pub fn interpolate_variables(text: &str, variables: &Variables) -> String {
+    let mut result = String::new();
+    let mut chars = text.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == '{' {
+            // Check for var tag
+            let mut tag = String::new();
+            while let Some(&next_ch) = chars.peek() {
+                if next_ch == '}' {
+                    chars.next();
+                    break;
+                }
+                tag.push(chars.next().unwrap());
+            }
+
+            // Check if it's a variable reference
+            if tag.starts_with("var:") {
+                let var_name = &tag[4..];
+                if let Some(value) = variables.get(var_name) {
+                    match value {
+                        crate::runtime::Value::String(s) => result.push_str(s),
+                        crate::runtime::Value::Int(i) => result.push_str(&i.to_string()),
+                        crate::runtime::Value::Bool(b) => result.push_str(&b.to_string()),
+                    }
+                } else {
+                    // Variable not found, keep original tag
+                    result.push('{');
+                    result.push_str(&tag);
+                    result.push('}');
+                }
+            } else {
+                // Not a var tag, keep as-is
+                result.push('{');
+                result.push_str(&tag);
+                result.push('}');
+            }
+        } else {
+            result.push(ch);
+        }
+    }
+
+    result
 }
 
 /// Parse color name or hex code to Color.

@@ -41,6 +41,19 @@ pub struct SetVar {
     pub value: crate::runtime::Value,
 }
 
+/// Text input command for player input.
+#[derive(Debug, Clone, Deserialize)]
+pub struct Input {
+    /// Variable name to store the input.
+    pub var: String,
+    /// Prompt text to display.
+    #[serde(default)]
+    pub prompt: Option<String>,
+    /// Default value.
+    #[serde(default)]
+    pub default: Option<String>,
+}
+
 /// Conditional jump command.
 #[derive(Debug, Clone, Deserialize)]
 pub struct IfCondition {
@@ -185,6 +198,17 @@ pub struct Command {
     pub wait: Option<f32>,
     /// Timeout for choices in seconds (auto-selects default choice).
     pub timeout: Option<f32>,
+    /// Text input for player.
+    pub input: Option<Input>,
+    /// Particle effect type (snow, rain, sakura, sparkle, leaves, or empty to stop).
+    pub particles: Option<String>,
+    /// Particle intensity (0.0 to 1.0).
+    #[serde(default = "default_particle_intensity")]
+    pub particle_intensity: f32,
+}
+
+fn default_particle_intensity() -> f32 {
+    0.5
 }
 
 /// A complete scenario loaded from YAML.
