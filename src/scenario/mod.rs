@@ -2,4 +2,4 @@ pub mod parser;
 pub mod types;
 
 pub use parser::load_scenario;
-pub use types::{CharPosition, Choice, Scenario, Transition, TransitionType};
+pub use types::{CharPosition, Choice, Scenario, SetVar, Transition, TransitionType};

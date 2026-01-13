@@ -34,6 +34,13 @@ fn default_duration() -> f32 {
     0.5
 }
 
+/// Variable assignment command.
+#[derive(Debug, Clone, Deserialize)]
+pub struct SetVar {
+    pub name: String,
+    pub value: crate::runtime::Value,
+}
+
 /// A single choice option that branches the story.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Choice {
@@ -68,6 +75,8 @@ pub struct Command {
     pub voice: Option<String>,
     /// Transition effect.
     pub transition: Option<Transition>,
+    /// Set a variable.
+    pub set: Option<SetVar>,
 }
 
 /// A complete scenario loaded from YAML.

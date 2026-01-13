@@ -5,6 +5,7 @@ use std::path::Path;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
+use crate::runtime::Variables;
 use crate::scenario::{CharPosition, Choice, Scenario};
 
 /// Maximum number of history entries for rollback.
@@ -26,6 +27,8 @@ pub struct SaveData {
     pub visual: VisualState,
     #[serde(default)]
     pub timestamp: i64,
+    #[serde(default)]
+    pub variables: Variables,
 }
 
 impl SaveData {
@@ -99,6 +102,7 @@ pub struct GameState {
     current_index: usize,
     visual: VisualState,
     history: VecDeque<HistoryEntry>,
+    variables: Variables,
 }
 
 impl GameState {
@@ -109,6 +113,7 @@ impl GameState {
             current_index: 0,
             visual: VisualState::default(),
             history: VecDeque::new(),
+            variables: Variables::new(),
         };
         state.skip_labels();
         state
@@ -127,6 +132,7 @@ impl GameState {
             current_index: self.current_index,
             visual: self.current_visual(),
             timestamp,
+            variables: self.variables.clone(),
         }
     }
 
@@ -138,6 +144,7 @@ impl GameState {
             current_index,
             visual: save.visual.clone(),
             history: VecDeque::new(),
+            variables: save.variables.clone(),
         };
         state.skip_labels();
         state
@@ -207,6 +214,18 @@ impl GameState {
         }
 
         visual
+    }
+
+    /// Process set command for current index.
+    fn process_set(&mut self) {
+        if let Some(set) = self
+            .scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.set.as_ref())
+        {
+            self.variables.set(set.name.clone(), set.value.clone());
+        }
     }
 
     /// Push current state to history for rollback.
@@ -294,18 +313,25 @@ impl GameState {
     /// Skip commands that only have labels (no content).
     fn skip_labels(&mut self) {
         while self.current_index < self.scenario.script.len() {
-            let command = &self.scenario.script[self.current_index];
+            // Check for displayable content (scope the borrow)
+            let has_displayable = {
+                let command = &self.scenario.script[self.current_index];
+                command.text.is_some() || command.choices.is_some()
+            };
 
-            // If command has displayable content, stop
-            if command.text.is_some() || command.choices.is_some() {
+            if has_displayable {
+                self.process_set();
                 break;
             }
 
             // Update visual state for skipped commands
             self.visual = self.current_visual();
 
-            // Clone jump target before mutating self
-            let jump_target = command.jump.clone();
+            // Process set command
+            self.process_set();
+
+            // Clone jump target (scope the borrow)
+            let jump_target = self.scenario.script[self.current_index].jump.clone();
 
             // If command has jump, follow it
             if let Some(jump_label) = jump_target {
@@ -370,6 +396,11 @@ impl GameState {
     /// Get current script index.
     pub fn current_index(&self) -> usize {
         self.current_index
+    }
+
+    /// Get variables for reading.
+    pub fn variables(&self) -> &Variables {
+        &self.variables
     }
 
     /// Get current transition command.

@@ -29,11 +29,17 @@ script:
 
   - label: explore
     character: "assets/char_happy.png"
+    set:
+      name: "found_treasure"
+      value: true
     text: "You found a hidden treasure chest!"
     jump: ending
 
   - label: town
     background: "assets/bg_town.png"
+    set:
+      name: "visited_town"
+      value: 1
     text: "You arrived at a bustling town."
 
   - character: "assets/char_merchant.png"
