@@ -1,3 +1,3 @@
 pub mod state;
 
-pub use state::{DisplayState, GameState, SaveData, VisualState};
+pub use state::{DisplayState, GameState, HistoryEntry, SaveData, VisualState};

@@ -307,4 +307,9 @@ impl GameState {
             false
         }
     }
+
+    /// Get history entries for backlog display.
+    pub fn history(&self) -> &VecDeque<HistoryEntry> {
+        &self.history
+    }
 }

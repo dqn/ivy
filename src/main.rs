@@ -7,8 +7,8 @@ use std::collections::HashMap;
 use macroquad::prelude::*;
 
 use render::{
-    draw_background, draw_character, draw_choices, draw_continue_indicator, draw_text_box,
-    ChoiceButtonConfig, TextBoxConfig,
+    draw_backlog, draw_background, draw_character, draw_choices, draw_continue_indicator,
+    draw_text_box, BacklogConfig, BacklogState, ChoiceButtonConfig, TextBoxConfig,
 };
 use runtime::{DisplayState, GameState, SaveData, VisualState};
 use scenario::load_scenario;
@@ -108,6 +108,9 @@ async fn main() {
     let mut game_state = GameState::new(scenario);
     let text_config = TextBoxConfig::default();
     let choice_config = ChoiceButtonConfig::default();
+    let backlog_config = BacklogConfig::default();
+    let mut backlog_state = BacklogState::default();
+    let mut show_backlog = false;
     let mut texture_cache: HashMap<String, Texture2D> = HashMap::new();
 
     loop {
@@ -123,11 +126,19 @@ async fn main() {
             }
         }
 
-        // Handle rollback (Up arrow or mouse wheel up)
-        let wheel = mouse_wheel();
-        if is_key_pressed(KeyCode::Up) || wheel.1 > 0.0 {
-            if game_state.can_rollback() {
-                game_state.rollback();
+        // Toggle backlog with L key
+        if is_key_pressed(KeyCode::L) {
+            show_backlog = !show_backlog;
+            backlog_state = BacklogState::default();
+        }
+
+        // Handle rollback (Up arrow or mouse wheel up) - only when backlog is not shown
+        if !show_backlog {
+            let wheel = mouse_wheel();
+            if is_key_pressed(KeyCode::Up) || wheel.1 > 0.0 {
+                if game_state.can_rollback() {
+                    game_state.rollback();
+                }
             }
         }
 
@@ -140,9 +151,15 @@ async fn main() {
                 draw_text_box(&text_config, &text);
                 draw_continue_indicator(&text_config);
 
-                // Advance on click or Enter key
-                if is_mouse_button_pressed(MouseButton::Left) || is_key_pressed(KeyCode::Enter) {
-                    game_state.advance();
+                // Draw backlog overlay if enabled
+                if show_backlog {
+                    let history: Vec<_> = game_state.history().iter().cloned().collect();
+                    draw_backlog(&backlog_config, &mut backlog_state, &history);
+                } else {
+                    // Advance on click or Enter key (only when backlog not shown)
+                    if is_mouse_button_pressed(MouseButton::Left) || is_key_pressed(KeyCode::Enter) {
+                        game_state.advance();
+                    }
                 }
             }
             DisplayState::Choices {
@@ -156,13 +173,25 @@ async fn main() {
                 // Draw text box and choices on top
                 draw_text_box(&text_config, &text);
 
-                let result = draw_choices(&choice_config, &choices);
-                if let Some(index) = result.selected {
-                    game_state.select_choice(index);
+                // Draw backlog overlay if enabled
+                if show_backlog {
+                    let history: Vec<_> = game_state.history().iter().cloned().collect();
+                    draw_backlog(&backlog_config, &mut backlog_state, &history);
+                } else {
+                    let result = draw_choices(&choice_config, &choices);
+                    if let Some(index) = result.selected {
+                        game_state.select_choice(index);
+                    }
                 }
             }
             DisplayState::End => {
                 draw_text_box(&text_config, "[ End ]");
+
+                // Draw backlog overlay if enabled
+                if show_backlog {
+                    let history: Vec<_> = game_state.history().iter().cloned().collect();
+                    draw_backlog(&backlog_config, &mut backlog_state, &history);
+                }
 
                 // Exit on Escape
                 if is_key_pressed(KeyCode::Escape) {
