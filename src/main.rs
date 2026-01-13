@@ -123,6 +123,14 @@ async fn main() {
             }
         }
 
+        // Handle rollback (Up arrow or mouse wheel up)
+        let wheel = mouse_wheel();
+        if is_key_pressed(KeyCode::Up) || wheel.1 > 0.0 {
+            if game_state.can_rollback() {
+                game_state.rollback();
+            }
+        }
+
         match game_state.display_state() {
             DisplayState::Text { text, visual } => {
                 // Draw visuals first (background, then character)

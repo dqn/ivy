@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::fs;
 use std::path::Path;
 
@@ -5,6 +6,9 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use crate::scenario::{CharPosition, Choice, Scenario};
+
+/// Maximum number of history entries for rollback.
+const MAX_HISTORY_SIZE: usize = 50;
 
 /// Visual state (background and character sprite).
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -42,6 +46,14 @@ impl SaveData {
     }
 }
 
+/// History entry for rollback functionality.
+#[derive(Debug, Clone)]
+pub struct HistoryEntry {
+    pub index: usize,
+    pub visual: VisualState,
+    pub text: String,
+}
+
 /// Current display state of the game.
 #[derive(Debug, Clone)]
 pub enum DisplayState {
@@ -63,6 +75,7 @@ pub struct GameState {
     scenario: Scenario,
     current_index: usize,
     visual: VisualState,
+    history: VecDeque<HistoryEntry>,
 }
 
 impl GameState {
@@ -72,6 +85,7 @@ impl GameState {
             scenario,
             current_index: 0,
             visual: VisualState::default(),
+            history: VecDeque::new(),
         };
         state.skip_labels();
         state
@@ -93,6 +107,7 @@ impl GameState {
             scenario,
             current_index,
             visual: save.visual.clone(),
+            history: VecDeque::new(),
         };
         state.skip_labels();
         state
@@ -164,11 +179,34 @@ impl GameState {
         visual
     }
 
+    /// Push current state to history for rollback.
+    fn push_history(&mut self) {
+        let text = self.scenario.script.get(self.current_index)
+            .and_then(|cmd| cmd.text.clone())
+            .unwrap_or_default();
+
+        let entry = HistoryEntry {
+            index: self.current_index,
+            visual: self.visual.clone(),
+            text,
+        };
+
+        self.history.push_back(entry);
+
+        // Limit history size
+        if self.history.len() > MAX_HISTORY_SIZE {
+            self.history.pop_front();
+        }
+    }
+
     /// Advance to the next command (for text display).
     pub fn advance(&mut self) {
         if self.current_index >= self.scenario.script.len() {
             return;
         }
+
+        // Save current state for rollback
+        self.push_history();
 
         // Update visual state before advancing
         self.visual = self.current_visual();
@@ -191,6 +229,9 @@ impl GameState {
         if self.current_index >= self.scenario.script.len() {
             return;
         }
+
+        // Save current state for rollback
+        self.push_history();
 
         // Update visual state before jumping
         self.visual = self.current_visual();
@@ -249,5 +290,21 @@ impl GameState {
     /// Check if the game has ended.
     pub fn is_ended(&self) -> bool {
         self.current_index >= self.scenario.script.len()
+    }
+
+    /// Check if rollback is available.
+    pub fn can_rollback(&self) -> bool {
+        !self.history.is_empty()
+    }
+
+    /// Roll back to the previous state.
+    pub fn rollback(&mut self) -> bool {
+        if let Some(entry) = self.history.pop_back() {
+            self.current_index = entry.index;
+            self.visual = entry.visual;
+            true
+        } else {
+            false
+        }
     }
 }
