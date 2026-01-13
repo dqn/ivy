@@ -52,6 +52,20 @@ pub struct IfCondition {
     pub jump: String,
 }
 
+/// Character display configuration for multiple characters.
+#[derive(Debug, Clone, Deserialize)]
+pub struct CharacterDisplay {
+    /// Character image path.
+    pub image: String,
+    /// Position on screen.
+    #[serde(default)]
+    pub pos: CharPosition,
+    /// Enter animation (optional).
+    pub enter: Option<CharAnimation>,
+    /// Exit animation (optional).
+    pub exit: Option<CharAnimation>,
+}
+
 /// Character animation type.
 #[derive(Debug, Clone, Copy, Default, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -147,6 +161,8 @@ pub struct Command {
     pub char_enter: Option<CharAnimation>,
     /// Character exit animation.
     pub char_exit: Option<CharAnimation>,
+    /// Multiple characters to display.
+    pub characters: Option<Vec<CharacterDisplay>>,
     /// BGM file path (None = keep previous, Some("") = stop).
     pub bgm: Option<String>,
     /// Sound effect file path (plays once).

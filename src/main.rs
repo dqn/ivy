@@ -103,8 +103,18 @@ async fn draw_visual(
         }
     }
 
-    // Draw character with animation
-    if let Some(char_path) = &visual.character {
+    // Draw multiple characters (if specified)
+    if !visual.characters.is_empty() {
+        for char_state in &visual.characters {
+            if let Some(texture) = get_texture(&char_state.path, cache).await {
+                // Note: For multiple characters, we use a default animation state
+                // Full animation support for multiple characters would require per-character state
+                let default_anim = CharAnimationState::default();
+                draw_character_animated(&texture, char_state.position, offset, &default_anim);
+            }
+        }
+    } else if let Some(char_path) = &visual.character {
+        // Draw single character with animation
         if let Some(texture) = get_texture(char_path, cache).await {
             draw_character_animated(&texture, visual.char_pos, offset, char_anim);
         }

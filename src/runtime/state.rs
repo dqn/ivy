@@ -10,12 +10,22 @@ use crate::scenario::{CharPosition, Choice, Scenario};
 /// Maximum number of history entries for rollback.
 const MAX_HISTORY_SIZE: usize = 50;
 
+/// Single character state for multi-character support.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CharacterState {
+    pub path: String,
+    pub position: CharPosition,
+}
+
 /// Visual state (background and character sprite).
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct VisualState {
     pub background: Option<String>,
     pub character: Option<String>,
     pub char_pos: CharPosition,
+    /// Multiple characters (used when `characters` field is set in command).
+    #[serde(default)]
+    pub characters: Vec<CharacterState>,
 }
 
 /// Save data format.
@@ -212,18 +222,33 @@ impl GameState {
             };
         }
 
-        // Apply character override (empty string = clear)
-        if let Some(ch) = &command.character {
-            visual.character = if ch.is_empty() {
-                None
-            } else {
-                Some(ch.clone())
-            };
-        }
+        // Apply multiple characters override
+        if let Some(chars) = &command.characters {
+            visual.characters = chars
+                .iter()
+                .map(|c| CharacterState {
+                    path: c.image.clone(),
+                    position: c.pos,
+                })
+                .collect();
+            // Clear single character when using multiple
+            visual.character = None;
+        } else {
+            // Apply single character override (empty string = clear)
+            if let Some(ch) = &command.character {
+                visual.character = if ch.is_empty() {
+                    None
+                } else {
+                    Some(ch.clone())
+                };
+                // Clear multiple characters when using single
+                visual.characters.clear();
+            }
 
-        // Apply position override
-        if let Some(pos) = command.char_pos {
-            visual.char_pos = pos;
+            // Apply position override
+            if let Some(pos) = command.char_pos {
+                visual.char_pos = pos;
+            }
         }
 
         visual

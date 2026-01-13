@@ -73,3 +73,13 @@ script:
 
   - label: treasure_ending
     text: "Congratulations! You found the {color:gold}hidden treasure{/color}!"
+
+  # Multiple characters demo
+  - label: multi_char_demo
+    background: "assets/bg_forest.png"
+    characters:
+      - image: "assets/char_explorer.png"
+        pos: "left"
+      - image: "assets/char_merchant.png"
+        pos: "right"
+    text: "Two characters appear on screen!"
