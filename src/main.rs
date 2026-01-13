@@ -9,15 +9,16 @@ use macroquad::prelude::*;
 
 use audio::AudioManager;
 use render::{
-    draw_backlog, draw_background, draw_character, draw_choices, draw_continue_indicator,
-    draw_text_box, BacklogConfig, BacklogState, ChoiceButtonConfig, TextBoxConfig,
-    TransitionState,
+    draw_backlog, draw_background, draw_character, draw_choices,
+    draw_continue_indicator_with_font, draw_text_box_with_font, BacklogConfig, BacklogState,
+    ChoiceButtonConfig, TextBoxConfig, TransitionState,
 };
 use runtime::{DisplayState, GameState, SaveData, VisualState};
 use scenario::load_scenario;
 
 const SCENARIO_PATH: &str = "assets/sample.yaml";
 const QUICK_SAVE_PATH: &str = "saves/save.json";
+const FONT_PATH: &str = "assets/fonts/NotoSansJP-Regular.ttf";
 
 fn window_conf() -> Conf {
     Conf {
@@ -129,6 +130,19 @@ async fn main() {
     };
 
     eprintln!("Loaded scenario: {}", scenario.title);
+
+    // Load custom font for Japanese text support
+    let custom_font = match load_ttf_font(FONT_PATH).await {
+        Ok(font) => {
+            eprintln!("Loaded custom font from {}", FONT_PATH);
+            Some(font)
+        }
+        Err(e) => {
+            eprintln!("Custom font not found ({}), using default font", e);
+            None
+        }
+    };
+    let font_ref = custom_font.as_ref();
 
     let mut game_state = GameState::new(scenario);
     let text_config = TextBoxConfig::default();
@@ -250,8 +264,8 @@ async fn main() {
                 draw_visual(&visual, &mut texture_cache).await;
 
                 // Draw text box on top
-                draw_text_box(&text_config, &text);
-                draw_continue_indicator(&text_config);
+                draw_text_box_with_font(&text_config, &text, font_ref);
+                draw_continue_indicator_with_font(&text_config, font_ref);
 
                 // Draw backlog overlay if enabled
                 if show_backlog {
@@ -299,7 +313,7 @@ async fn main() {
                 draw_visual(&visual, &mut texture_cache).await;
 
                 // Draw text box and choices on top
-                draw_text_box(&text_config, &text);
+                draw_text_box_with_font(&text_config, &text, font_ref);
 
                 // Draw backlog overlay if enabled
                 if show_backlog {
@@ -313,7 +327,7 @@ async fn main() {
                 }
             }
             DisplayState::End => {
-                draw_text_box(&text_config, "[ End ]");
+                draw_text_box_with_font(&text_config, "[ End ]", font_ref);
 
                 // Draw backlog overlay if enabled
                 if show_backlog {

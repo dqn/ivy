@@ -10,6 +10,7 @@ pub struct TextBoxConfig {
     pub bg_color: Color,
     pub text_color: Color,
     pub font_size: f32,
+    pub line_height: f32,
 }
 
 impl Default for TextBoxConfig {
@@ -23,27 +24,107 @@ impl Default for TextBoxConfig {
             bg_color: Color::new(0.0, 0.0, 0.0, 0.8),
             text_color: WHITE,
             font_size: 24.0,
+            line_height: 32.0,
         }
     }
 }
 
 /// Draw a text box with the given text.
 pub fn draw_text_box(config: &TextBoxConfig, text: &str) {
+    draw_text_box_with_font(config, text, None);
+}
+
+/// Draw a text box with the given text and optional custom font.
+pub fn draw_text_box_with_font(config: &TextBoxConfig, text: &str, font: Option<&Font>) {
     // Draw background
     draw_rectangle(config.x, config.y, config.width, config.height, config.bg_color);
 
     // Draw border
     draw_rectangle_lines(config.x, config.y, config.width, config.height, 2.0, WHITE);
 
-    // Draw text
+    // Draw text with word wrapping
     let text_x = config.x + config.padding;
     let text_y = config.y + config.padding + config.font_size;
+    let max_width = config.width - config.padding * 2.0;
 
-    draw_text(text, text_x, text_y, config.font_size, config.text_color);
+    // Simple character-based wrapping for Japanese text
+    let mut current_line = String::new();
+    let mut line_num = 0;
+    let max_lines = ((config.height - config.padding * 2.0) / config.line_height) as usize;
+
+    for ch in text.chars() {
+        current_line.push(ch);
+
+        // Measure current line width
+        let line_width = if let Some(f) = font {
+            measure_text(&current_line, Some(f), config.font_size as u16, 1.0).width
+        } else {
+            measure_text(&current_line, None, config.font_size as u16, 1.0).width
+        };
+
+        // Check if we need to wrap
+        if line_width > max_width || ch == '\n' {
+            // Remove last character if it caused overflow (not newline)
+            if ch != '\n' && current_line.len() > 1 {
+                current_line.pop();
+            }
+
+            // Draw the line
+            let y_pos = text_y + line_num as f32 * config.line_height;
+            if let Some(f) = font {
+                draw_text_ex(
+                    &current_line,
+                    text_x,
+                    y_pos,
+                    TextParams {
+                        font: Some(f),
+                        font_size: config.font_size as u16,
+                        color: config.text_color,
+                        ..Default::default()
+                    },
+                );
+            } else {
+                draw_text(&current_line, text_x, y_pos, config.font_size, config.text_color);
+            }
+
+            line_num += 1;
+            if line_num >= max_lines {
+                break;
+            }
+
+            // Start new line with the character that caused overflow
+            current_line = if ch != '\n' { ch.to_string() } else { String::new() };
+        }
+    }
+
+    // Draw remaining text
+    if !current_line.is_empty() && line_num < max_lines {
+        let y_pos = text_y + line_num as f32 * config.line_height;
+        if let Some(f) = font {
+            draw_text_ex(
+                &current_line,
+                text_x,
+                y_pos,
+                TextParams {
+                    font: Some(f),
+                    font_size: config.font_size as u16,
+                    color: config.text_color,
+                    ..Default::default()
+                },
+            );
+        } else {
+            draw_text(&current_line, text_x, y_pos, config.font_size, config.text_color);
+        }
+    }
 }
 
 /// Draw a "click to continue" indicator.
 pub fn draw_continue_indicator(config: &TextBoxConfig) {
+    draw_continue_indicator_with_font(config, None);
+}
+
+/// Draw a "click to continue" indicator with optional custom font.
+pub fn draw_continue_indicator_with_font(config: &TextBoxConfig, font: Option<&Font>) {
     let indicator = "▼";
     let x = config.x + config.width - config.padding - 20.0;
     let y = config.y + config.height - config.padding;
@@ -52,5 +133,19 @@ pub fn draw_continue_indicator(config: &TextBoxConfig) {
     let alpha = ((get_time() * 3.0).sin() * 0.5 + 0.5) as f32;
     let color = Color::new(1.0, 1.0, 1.0, alpha);
 
-    draw_text(indicator, x, y, 20.0, color);
+    if let Some(f) = font {
+        draw_text_ex(
+            indicator,
+            x,
+            y,
+            TextParams {
+                font: Some(f),
+                font_size: 20,
+                color,
+                ..Default::default()
+            },
+        );
+    } else {
+        draw_text(indicator, x, y, 20.0, color);
+    }
 }
