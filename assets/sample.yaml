@@ -50,4 +50,11 @@ script:
   - label: ending
     background: ""
     character: ""
+    if:
+      var: "found_treasure"
+      is: true
+      jump: treasure_ending
     text: "Thank you for playing!"
+
+  - label: treasure_ending
+    text: "Congratulations! You found the hidden treasure!"

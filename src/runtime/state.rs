@@ -228,6 +228,21 @@ impl GameState {
         }
     }
 
+    /// Check if condition for current index and return jump target if true.
+    fn check_condition(&self) -> Option<String> {
+        let if_cond = self
+            .scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.if_cond.as_ref())?;
+
+        if self.variables.equals(&if_cond.var, &if_cond.is) {
+            Some(if_cond.jump.clone())
+        } else {
+            None
+        }
+    }
+
     /// Push current state to history for rollback.
     fn push_history(&mut self) {
         let text = self.scenario.script.get(self.current_index)
@@ -321,6 +336,11 @@ impl GameState {
 
             if has_displayable {
                 self.process_set();
+                // Check conditional jump before displaying
+                if let Some(jump_label) = self.check_condition() {
+                    self.jump_to(&jump_label);
+                    return;
+                }
                 break;
             }
 
@@ -330,10 +350,16 @@ impl GameState {
             // Process set command
             self.process_set();
 
-            // Clone jump target (scope the borrow)
+            // Check conditional jump first
+            if let Some(jump_label) = self.check_condition() {
+                self.jump_to(&jump_label);
+                return;
+            }
+
+            // Clone unconditional jump target (scope the borrow)
             let jump_target = self.scenario.script[self.current_index].jump.clone();
 
-            // If command has jump, follow it
+            // If command has unconditional jump, follow it
             if let Some(jump_label) = jump_target {
                 self.jump_to(&jump_label);
                 return;

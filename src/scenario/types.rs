@@ -41,6 +41,17 @@ pub struct SetVar {
     pub value: crate::runtime::Value,
 }
 
+/// Conditional jump command.
+#[derive(Debug, Clone, Deserialize)]
+pub struct IfCondition {
+    /// Variable name to check.
+    pub var: String,
+    /// Expected value.
+    pub is: crate::runtime::Value,
+    /// Label to jump to if condition is true.
+    pub jump: String,
+}
+
 /// A single choice option that branches the story.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Choice {
@@ -77,6 +88,9 @@ pub struct Command {
     pub transition: Option<Transition>,
     /// Set a variable.
     pub set: Option<SetVar>,
+    /// Conditional jump.
+    #[serde(rename = "if")]
+    pub if_cond: Option<IfCondition>,
 }
 
 /// A complete scenario loaded from YAML.
