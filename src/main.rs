@@ -177,8 +177,15 @@ async fn main() {
                     let history: Vec<_> = game_state.history().iter().cloned().collect();
                     draw_backlog(&backlog_config, &mut backlog_state, &history);
                 } else {
-                    // Advance on click or Enter key (only when backlog not shown)
-                    if is_mouse_button_pressed(MouseButton::Left) || is_key_pressed(KeyCode::Enter) {
+                    // Skip mode: Ctrl key held down
+                    let skip_mode =
+                        is_key_down(KeyCode::LeftControl) || is_key_down(KeyCode::RightControl);
+
+                    // Advance on click, Enter key, or skip mode (only when backlog not shown)
+                    if is_mouse_button_pressed(MouseButton::Left)
+                        || is_key_pressed(KeyCode::Enter)
+                        || skip_mode
+                    {
                         game_state.advance();
                     }
                 }
