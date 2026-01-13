@@ -10,17 +10,18 @@ use macroquad::prelude::*;
 use audio::AudioManager;
 use render::{
     draw_backlog, draw_background, draw_character, draw_choices,
-    draw_continue_indicator_with_font, draw_text_box_with_font, draw_title_screen,
-    BacklogConfig, BacklogState, ChoiceButtonConfig, TextBoxConfig, TitleConfig, TitleMenuItem,
-    TransitionState,
+    draw_continue_indicator_with_font, draw_settings_screen, draw_text_box_with_font,
+    draw_title_screen, BacklogConfig, BacklogState, ChoiceButtonConfig, GameSettings,
+    SettingsConfig, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
 };
 use runtime::{DisplayState, GameState, SaveData, VisualState};
 use scenario::load_scenario;
 
-/// Game mode: title screen or in-game.
+/// Game mode: title screen, settings, or in-game.
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum GameMode {
     Title,
+    Settings,
     InGame,
 }
 
@@ -153,10 +154,19 @@ async fn main() {
     };
     let font_ref = custom_font.as_ref();
 
+    // Load settings
+    let mut settings = GameSettings::load();
+    eprintln!("Loaded settings: BGM={:.0}%, SE={:.0}%, Voice={:.0}%, Auto={:.1}x",
+        settings.bgm_volume * 100.0,
+        settings.se_volume * 100.0,
+        settings.voice_volume * 100.0,
+        settings.auto_speed);
+
     // Start with title screen
     let mut game_mode = GameMode::Title;
     let mut game_state: Option<GameState> = None;
     let title_config = TitleConfig::default();
+    let settings_config = SettingsConfig::default();
     let text_config = TextBoxConfig::default();
     let choice_config = ChoiceButtonConfig::default();
     let backlog_config = BacklogConfig::default();
@@ -215,6 +225,9 @@ async fn main() {
                                 }
                             }
                         }
+                        TitleMenuItem::Settings => {
+                            game_mode = GameMode::Settings;
+                        }
                         TitleMenuItem::Quit => {
                             break;
                         }
@@ -225,6 +238,24 @@ async fn main() {
                 if is_key_pressed(KeyCode::Escape) {
                     break;
                 }
+
+                next_frame().await;
+                continue;
+            }
+            GameMode::Settings => {
+                let result = draw_settings_screen(&settings_config, &mut settings, font_ref);
+
+                if result.back_pressed {
+                    // Save settings when leaving
+                    settings.save();
+                    eprintln!("Settings saved");
+                    game_mode = GameMode::Title;
+                }
+
+                // Apply volume settings to audio manager
+                audio_manager.set_bgm_volume(settings.bgm_volume);
+                audio_manager.set_se_volume(settings.se_volume);
+                audio_manager.set_voice_volume(settings.voice_volume);
 
                 next_frame().await;
                 continue;
@@ -366,8 +397,10 @@ async fn main() {
                     let mut auto_advance = false;
                     if auto_mode {
                         auto_timer += get_frame_time() as f64;
-                        // Wait time based on text length (base 2s + 0.05s per character)
-                        let wait_time = 2.0 + text.len() as f64 * 0.05;
+                        // Wait time based on text length, adjusted by auto speed setting
+                        // Higher speed = shorter wait time
+                        let base_wait = 2.0 + text.len() as f64 * 0.05;
+                        let wait_time = base_wait / settings.auto_speed as f64;
                         if auto_timer >= wait_time {
                             auto_advance = true;
                             auto_timer = 0.0;

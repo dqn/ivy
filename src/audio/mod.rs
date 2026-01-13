@@ -7,6 +7,9 @@ pub struct AudioManager {
     sound_cache: HashMap<String, Sound>,
     current_bgm: Option<String>,
     current_bgm_sound: Option<Sound>,
+    bgm_volume: f32,
+    se_volume: f32,
+    voice_volume: f32,
 }
 
 impl AudioManager {
@@ -15,7 +18,27 @@ impl AudioManager {
             sound_cache: HashMap::new(),
             current_bgm: None,
             current_bgm_sound: None,
+            bgm_volume: 1.0,
+            se_volume: 1.0,
+            voice_volume: 1.0,
         }
+    }
+
+    /// Set BGM volume (0.0 - 1.0).
+    pub fn set_bgm_volume(&mut self, volume: f32) {
+        self.bgm_volume = volume.clamp(0.0, 1.0);
+        // Note: macroquad doesn't support changing volume of playing sound
+        // Volume will be applied on next BGM change
+    }
+
+    /// Set SE volume (0.0 - 1.0).
+    pub fn set_se_volume(&mut self, volume: f32) {
+        self.se_volume = volume.clamp(0.0, 1.0);
+    }
+
+    /// Set voice volume (0.0 - 1.0).
+    pub fn set_voice_volume(&mut self, volume: f32) {
+        self.voice_volume = volume.clamp(0.0, 1.0);
     }
 
     /// Load a sound file, using cache if available.
@@ -70,7 +93,7 @@ impl AudioManager {
                         &sound,
                         macroquad::audio::PlaySoundParams {
                             looped: true,
-                            volume: 1.0,
+                            volume: self.bgm_volume,
                         },
                     );
                     self.current_bgm = Some(path.clone());
@@ -87,7 +110,13 @@ impl AudioManager {
                 return;
             }
             if let Some(sound) = self.get_sound(path).await {
-                play_sound_once(&sound);
+                play_sound(
+                    &sound,
+                    macroquad::audio::PlaySoundParams {
+                        looped: false,
+                        volume: self.se_volume,
+                    },
+                );
             }
         }
     }
@@ -99,7 +128,13 @@ impl AudioManager {
                 return;
             }
             if let Some(sound) = self.get_sound(path).await {
-                play_sound_once(&sound);
+                play_sound(
+                    &sound,
+                    macroquad::audio::PlaySoundParams {
+                        looped: false,
+                        volume: self.voice_volume,
+                    },
+                );
             }
         }
     }
