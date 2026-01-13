@@ -3,6 +3,13 @@ title: Sample Story
 script:
   - text: "Welcome to ivy - a simple visual novel engine."
 
+  - input:
+      var: "player_name"
+      prompt: "What is your name?"
+      default: "Player"
+
+  - text: "Nice to meet you, {var:player_name}!"
+
   - text: "This is a sample scenario to demonstrate the basic features."
 
   - text: "Where would you like to go?"
@@ -14,6 +21,8 @@ script:
 
   - label: forest
     background: "assets/bg_forest.png"
+    particles: "leaves"
+    particle_intensity: 0.3
     text: "You entered a {color:green}deep{/color}, {color:purple}mysterious{/color} forest..."
 
   - character: "assets/char_explorer.png"
@@ -47,10 +56,12 @@ script:
 
   - label: town
     background: "assets/bg_town.png"
+    particles: "snow"
+    particle_intensity: 0.5
     set:
       name: "visited_town"
       value: 1
-    text: "You arrived at a bustling town."
+    text: "You arrived at a bustling town. It's snowing!"
 
   - character: "assets/char_merchant.png"
     char_pos: "right"
@@ -63,6 +74,7 @@ script:
   - label: ending
     background: ""
     character: ""
+    particles: ""
     if:
       var: "found_treasure"
       is: true

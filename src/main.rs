@@ -11,19 +11,22 @@ use macroquad::prelude::*;
 use audio::AudioManager;
 use render::{
     draw_backlog, draw_background_with_offset, draw_character_animated, draw_choices_with_timer,
-    draw_continue_indicator_with_font, draw_settings_screen, draw_speaker_name,
-    draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen, BacklogConfig,
-    BacklogState, CharAnimationState, ChoiceButtonConfig, GameSettings, SettingsConfig, ShakeState,
-    TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState, TypewriterState,
+    draw_continue_indicator_with_font, draw_gallery, draw_input, draw_settings_screen,
+    draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen,
+    interpolate_variables, BacklogConfig, BacklogState, CharAnimationState, ChoiceButtonConfig,
+    GalleryConfig, GalleryState, GameSettings, InputConfig, InputState, ParticleState,
+    ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem,
+    TransitionState, TypewriterState,
 };
-use runtime::{DisplayState, GameState, SaveData, VisualState};
+use runtime::{DisplayState, GameState, SaveData, Unlocks, VisualState};
 use scenario::load_scenario;
 
-/// Game mode: title screen, settings, or in-game.
+/// Game mode: title screen, settings, gallery, or in-game.
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum GameMode {
     Title,
     Settings,
+    Gallery,
     InGame,
 }
 
@@ -217,7 +220,13 @@ async fn main() {
     let text_config = TextBoxConfig::default();
     let choice_config = ChoiceButtonConfig::default();
     let backlog_config = BacklogConfig::default();
+    let input_config = InputConfig::default();
+    let gallery_config = GalleryConfig::default();
     let mut backlog_state = BacklogState::default();
+    let mut input_state = InputState::default();
+    let mut gallery_state = GalleryState::default();
+    let mut unlocks = Unlocks::load();
+    let mut awaiting_input: Option<String> = None; // Variable name waiting for input
     let mut show_backlog = false;
     let mut texture_cache: HashMap<String, Texture2D> = HashMap::new();
     let mut audio_manager = AudioManager::new();
@@ -231,6 +240,7 @@ async fn main() {
     let mut wait_timer: f32 = 0.0;
     let mut in_wait: bool = false;
     let mut char_anim_state = CharAnimationState::default();
+    let mut particle_state = ParticleState::default();
     let mut choice_timer: Option<f32> = None;
     let mut choice_total_time: Option<f32> = None;
 
@@ -245,7 +255,10 @@ async fn main() {
                     || SaveData::slot_exists(3)
                     || std::path::Path::new(QUICK_SAVE_PATH).exists();
 
-                let result = draw_title_screen(&title_config, &scenario_title, has_save, font_ref);
+                // Check if gallery has any unlocked images
+                let has_gallery = unlocks.image_count() > 0;
+
+                let result = draw_title_screen(&title_config, &scenario_title, has_save, has_gallery, font_ref);
 
                 if let Some(item) = result.selected {
                     match item {
@@ -280,6 +293,10 @@ async fn main() {
                                 }
                             }
                         }
+                        TitleMenuItem::Gallery => {
+                            game_mode = GameMode::Gallery;
+                            gallery_state = GalleryState::default();
+                        }
                         TitleMenuItem::Settings => {
                             game_mode = GameMode::Settings;
                         }
@@ -311,6 +328,33 @@ async fn main() {
                 audio_manager.set_bgm_volume(settings.bgm_volume);
                 audio_manager.set_se_volume(settings.se_volume);
                 audio_manager.set_voice_volume(settings.voice_volume);
+
+                next_frame().await;
+                continue;
+            }
+            GameMode::Gallery => {
+                let images = unlocks.unlocked_images();
+                let result = draw_gallery(
+                    &gallery_config,
+                    &mut gallery_state,
+                    &images,
+                    &texture_cache,
+                    font_ref,
+                );
+
+                if result.back_pressed {
+                    game_mode = GameMode::Title;
+                }
+
+                // Load textures for gallery images (async)
+                for path in &images {
+                    if !texture_cache.contains_key(path) {
+                        if let Ok(texture) = load_texture(path).await {
+                            texture.set_filter(FilterMode::Linear);
+                            texture_cache.insert(path.clone(), texture);
+                        }
+                    }
+                }
 
                 next_frame().await;
                 continue;
@@ -402,9 +446,29 @@ async fn main() {
             }
         }
 
-        // Update audio and transition when command changes
+        // Update audio, transition, and unlock images when command changes
         let current_index = state.current_index();
         if last_index != Some(current_index) {
+            // Unlock images that are displayed (for CG gallery)
+            let display_state = state.display_state();
+            match &display_state {
+                DisplayState::Text { visual, .. }
+                | DisplayState::Choices { visual, .. }
+                | DisplayState::Wait { visual, .. }
+                | DisplayState::Input { visual, .. } => {
+                    if let Some(bg) = &visual.background {
+                        unlocks.unlock_image(bg);
+                    }
+                    if let Some(ch) = &visual.character {
+                        unlocks.unlock_image(ch);
+                    }
+                    for char_state in &visual.characters {
+                        unlocks.unlock_image(&char_state.path);
+                    }
+                }
+                DisplayState::End => {}
+            }
+
             // Update BGM
             audio_manager
                 .update_bgm(state.current_bgm())
@@ -436,6 +500,16 @@ async fn main() {
                 char_anim_state.start_exit(char_exit);
             }
 
+            // Update particles if specified
+            if let Some((particles, intensity)) = state.current_particles() {
+                if particles.is_empty() {
+                    particle_state.stop();
+                } else {
+                    let particle_type = ParticleType::from_str(particles);
+                    particle_state.set(particle_type, intensity);
+                }
+            }
+
             // Reset auto timer on command change
             auto_timer = 0.0;
 
@@ -463,24 +537,28 @@ async fn main() {
                 // Draw visuals first (background, then character) with shake offset
                 draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
 
-                // Draw speaker name if present
+                // Interpolate variables in text
+                let interpolated_text = interpolate_variables(&text, state.variables());
+
+                // Draw speaker name if present (also interpolate variables)
                 if let Some(ref name) = speaker {
-                    draw_speaker_name(&text_config, name, font_ref);
+                    let interpolated_name = interpolate_variables(name, state.variables());
+                    draw_speaker_name(&text_config, &interpolated_name, font_ref);
                 }
 
                 // Reset typewriter if text changed
-                if last_text.as_ref() != Some(&text) {
+                if last_text.as_ref() != Some(&interpolated_text) {
                     // Count visible characters (excluding color tags)
-                    let total_chars = count_visible_chars(&text);
+                    let total_chars = count_visible_chars(&interpolated_text);
                     typewriter_state.reset(total_chars);
-                    last_text = Some(text.clone());
+                    last_text = Some(interpolated_text.clone());
                 }
 
                 // Update typewriter state
                 let char_limit = typewriter_state.update(settings.text_speed);
 
                 // Draw text box with typewriter effect
-                draw_text_box_typewriter(&text_config, &text, font_ref, char_limit);
+                draw_text_box_typewriter(&text_config, &interpolated_text, font_ref, char_limit);
 
                 // Only show continue indicator when text is complete
                 if typewriter_state.is_complete() {
@@ -547,16 +625,20 @@ async fn main() {
                 // Draw visuals first with shake offset
                 draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
 
-                // Draw speaker name if present
+                // Interpolate variables in text
+                let interpolated_text = interpolate_variables(&text, state.variables());
+
+                // Draw speaker name if present (also interpolate variables)
                 if let Some(ref name) = speaker {
-                    draw_speaker_name(&text_config, name, font_ref);
+                    let interpolated_name = interpolate_variables(name, state.variables());
+                    draw_speaker_name(&text_config, &interpolated_name, font_ref);
                 }
 
                 // Reset typewriter if text changed
-                if last_text.as_ref() != Some(&text) {
-                    let total_chars = count_visible_chars(&text);
+                if last_text.as_ref() != Some(&interpolated_text) {
+                    let total_chars = count_visible_chars(&interpolated_text);
                     typewriter_state.reset(total_chars);
-                    last_text = Some(text.clone());
+                    last_text = Some(interpolated_text.clone());
                     // Reset choice timer when text changes
                     choice_timer = timeout;
                     choice_total_time = timeout;
@@ -566,7 +648,7 @@ async fn main() {
                 let char_limit = typewriter_state.update(settings.text_speed);
 
                 // Draw text box with typewriter effect
-                draw_text_box_typewriter(&text_config, &text, font_ref, char_limit);
+                draw_text_box_typewriter(&text_config, &interpolated_text, font_ref, char_limit);
 
                 // Draw backlog overlay if enabled
                 if show_backlog {
@@ -641,6 +723,39 @@ async fn main() {
                     state.advance();
                 }
             }
+            DisplayState::Input { input, visual } => {
+                // Draw visuals with shake offset
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
+
+                // Initialize input state if this is a new input command
+                if awaiting_input.as_ref() != Some(&input.var) {
+                    awaiting_input = Some(input.var.clone());
+                    input_state.reset(input.default.as_deref());
+                }
+
+                // Draw input dialog
+                let result = draw_input(
+                    &input_config,
+                    &mut input_state,
+                    input.prompt.as_deref(),
+                    font_ref,
+                );
+
+                if result.submitted {
+                    // Store input value as variable
+                    let value = runtime::Value::String(input_state.text.clone());
+                    state.set_variable(&input.var, value);
+                    awaiting_input = None;
+                    state.advance();
+                } else if result.cancelled {
+                    // Use default value or empty string
+                    let default_value = input.default.clone().unwrap_or_default();
+                    let value = runtime::Value::String(default_value);
+                    state.set_variable(&input.var, value);
+                    awaiting_input = None;
+                    state.advance();
+                }
+            }
             DisplayState::End => {
                 draw_text_box_with_font(&text_config, "[ End ]", font_ref);
 
@@ -658,6 +773,9 @@ async fn main() {
                 }
             }
         }
+
+        // Update and draw particles
+        particle_state.update_and_draw();
 
         // Draw transition overlay
         transition_state.draw();
