@@ -3,6 +3,6 @@ pub mod types;
 
 pub use parser::load_scenario;
 pub use types::{
-    CharAnimation, CharAnimationType, CharPosition, CharacterDisplay, Choice, IfCondition, Input,
-    Scenario, SetVar, Shake, ShakeType, Transition, TransitionType,
+    Achievement, CharAnimation, CharAnimationType, CharPosition, CharacterDisplay, Choice,
+    IfCondition, Input, Scenario, SetVar, Shake, ShakeType, Transition, TransitionType,
 };

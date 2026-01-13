@@ -546,4 +546,12 @@ impl GameState {
             .get(self.current_index)
             .and_then(|cmd| cmd.cinematic.map(|c| (c, cmd.cinematic_duration)))
     }
+
+    /// Get current achievement unlock command.
+    pub fn current_achievement(&self) -> Option<&crate::scenario::types::Achievement> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.achievement.as_ref())
+    }
 }

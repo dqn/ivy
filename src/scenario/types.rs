@@ -210,6 +210,20 @@ pub struct Command {
     /// Cinematic transition duration in seconds.
     #[serde(default = "default_cinematic_duration")]
     pub cinematic_duration: f32,
+    /// Achievement to unlock.
+    pub achievement: Option<Achievement>,
+}
+
+/// Achievement unlock command.
+#[derive(Debug, Clone, Deserialize)]
+pub struct Achievement {
+    /// Achievement ID.
+    pub id: String,
+    /// Display name.
+    pub name: String,
+    /// Description.
+    #[serde(default)]
+    pub description: String,
 }
 
 fn default_cinematic_duration() -> f32 {

@@ -94,6 +94,10 @@ script:
   - text: "(After a moment of silence...)"
 
   - label: treasure_ending
+    achievement:
+      id: "treasure_hunter"
+      name: "Treasure Hunter"
+      description: "Found the hidden treasure in the forest"
     text: "Congratulations! You found the {color:gold}hidden treasure{/color}!"
 
   # Multiple characters demo

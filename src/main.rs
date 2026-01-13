@@ -10,15 +10,15 @@ use macroquad::prelude::*;
 
 use audio::AudioManager;
 use render::{
-    draw_backlog, draw_background_with_offset, draw_character_animated, draw_choices_with_timer,
-    draw_continue_indicator_with_font, draw_gallery, draw_input, draw_settings_screen,
-    draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen,
-    interpolate_variables, BacklogConfig, BacklogState, CharAnimationState, CinematicState,
-    ChoiceButtonConfig, GalleryConfig, GalleryState, GameSettings, InputConfig, InputState,
-    ParticleState, ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig,
-    TitleMenuItem, TransitionState, TypewriterState,
+    draw_achievement, draw_backlog, draw_background_with_offset, draw_character_animated,
+    draw_choices_with_timer, draw_continue_indicator_with_font, draw_gallery, draw_input,
+    draw_settings_screen, draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font,
+    draw_title_screen, interpolate_variables, AchievementConfig, BacklogConfig, BacklogState,
+    CharAnimationState, CinematicState, ChoiceButtonConfig, GalleryConfig, GalleryState,
+    GameSettings, InputConfig, InputState, ParticleState, ParticleType, SettingsConfig,
+    ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState, TypewriterState,
 };
-use runtime::{DisplayState, GameState, SaveData, Unlocks, VisualState};
+use runtime::{AchievementNotifier, Achievements, DisplayState, GameState, SaveData, Unlocks, VisualState};
 use scenario::load_scenario;
 
 /// Game mode: title screen, settings, gallery, or in-game.
@@ -222,10 +222,13 @@ async fn main() {
     let backlog_config = BacklogConfig::default();
     let input_config = InputConfig::default();
     let gallery_config = GalleryConfig::default();
+    let achievement_config = AchievementConfig::default();
     let mut backlog_state = BacklogState::default();
     let mut input_state = InputState::default();
     let mut gallery_state = GalleryState::default();
     let mut unlocks = Unlocks::load();
+    let mut achievements = Achievements::load();
+    let mut achievement_notifier = AchievementNotifier::default();
     let mut awaiting_input: Option<String> = None; // Variable name waiting for input
     let mut show_backlog = false;
     let mut texture_cache: HashMap<String, Texture2D> = HashMap::new();
@@ -530,6 +533,18 @@ async fn main() {
                 cinematic_state.set(enabled, duration);
             }
 
+            // Unlock achievement if specified
+            if let Some(achievement) = state.current_achievement() {
+                if achievements.unlock(&achievement.id) {
+                    achievement_notifier.notify(
+                        &achievement.id,
+                        &achievement.name,
+                        &achievement.description,
+                    );
+                    eprintln!("Achievement unlocked: {}", achievement.name);
+                }
+            }
+
             // Reset auto timer on command change
             auto_timer = 0.0;
 
@@ -823,6 +838,10 @@ async fn main() {
         // Update and draw cinematic bars
         cinematic_state.update();
         cinematic_state.draw();
+
+        // Update and draw achievement notification
+        achievement_notifier.update(get_frame_time());
+        draw_achievement(&achievement_config, &achievement_notifier, font_ref);
 
         // Draw transition overlay
         transition_state.draw();

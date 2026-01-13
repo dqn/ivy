@@ -1,3 +1,4 @@
+pub mod achievement;
 pub mod backlog;
 pub mod character;
 pub mod cinematic;
@@ -13,6 +14,7 @@ pub mod transition;
 pub mod typewriter;
 pub mod ui;
 
+pub use achievement::{draw_achievement, AchievementConfig};
 pub use backlog::{draw_backlog, BacklogConfig, BacklogState};
 pub use character::{draw_character_animated, CharAnimationState};
 pub use cinematic::CinematicState;
