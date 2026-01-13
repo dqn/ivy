@@ -130,6 +130,8 @@ pub struct Command {
     /// Conditional jump.
     #[serde(rename = "if")]
     pub if_cond: Option<IfCondition>,
+    /// Wait duration in seconds.
+    pub wait: Option<f32>,
 }
 
 /// A complete scenario loaded from YAML.

@@ -61,5 +61,9 @@ script:
       jump: treasure_ending
     text: "Thank you for playing!"
 
+  # Wait command demo
+  - wait: 1.5
+  - text: "(After a moment of silence...)"
+
   - label: treasure_ending
     text: "Congratulations! You found the {color:gold}hidden treasure{/color}!"

@@ -217,6 +217,8 @@ async fn main() {
     let mut shake_state = ShakeState::default();
     let mut typewriter_state = TypewriterState::default();
     let mut last_text: Option<String> = None;
+    let mut wait_timer: f32 = 0.0;
+    let mut in_wait: bool = false;
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
@@ -553,6 +555,33 @@ async fn main() {
                             typewriter_state.complete();
                         }
                     }
+                }
+            }
+            DisplayState::Wait { duration, visual } => {
+                // Draw visuals with shake offset
+                draw_visual(&visual, &mut texture_cache, shake_offset).await;
+
+                // Reset wait timer if just started waiting
+                if !in_wait {
+                    in_wait = true;
+                    wait_timer = 0.0;
+                }
+
+                // Update wait timer
+                wait_timer += get_frame_time();
+
+                // Check if wait is complete or skipped
+                let skip_mode =
+                    is_key_down(KeyCode::LeftControl) || is_key_down(KeyCode::RightControl);
+
+                if wait_timer >= duration
+                    || skip_mode
+                    || is_mouse_button_pressed(MouseButton::Left)
+                    || is_key_pressed(KeyCode::Enter)
+                {
+                    in_wait = false;
+                    wait_timer = 0.0;
+                    state.advance();
                 }
             }
             DisplayState::End => {

@@ -91,6 +91,11 @@ pub enum DisplayState {
         choices: Vec<Choice>,
         visual: VisualState,
     },
+    /// Waiting for a specified duration.
+    Wait {
+        duration: f32,
+        visual: VisualState,
+    },
     /// Scenario has ended.
     End,
 }
@@ -178,6 +183,11 @@ impl GameState {
                 text: text.clone(),
                 visual,
             };
+        }
+
+        // Wait command without text
+        if let Some(duration) = command.wait {
+            return DisplayState::Wait { duration, visual };
         }
 
         // Command has no displayable content (should be unreachable after skip_labels).
@@ -334,7 +344,7 @@ impl GameState {
             // Check for displayable content (scope the borrow)
             let has_displayable = {
                 let command = &self.scenario.script[self.current_index];
-                command.text.is_some() || command.choices.is_some()
+                command.text.is_some() || command.choices.is_some() || command.wait.is_some()
             };
 
             if has_displayable {
