@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ivy - Visual Novel Engine</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a1f;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: sans-serif;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading...</div>
+    <canvas id="glcanvas"></canvas>
+    <script type="module">
+        import init from './pkg/ivy.js';
+
+        async function run() {
+            document.getElementById('loading').style.display = 'none';
+            await init();
+        }
+
+        run().catch(e => {
+            console.error('Failed to start:', e);
+            document.getElementById('loading').textContent = 'Failed to load game';
+        });
+    </script>
+</body>
+</html>

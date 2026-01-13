@@ -1,8 +1,7 @@
-use std::fs;
-use std::path::Path;
-
 use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
+
+use crate::platform;
 
 const CONFIG_PATH: &str = "config.json";
 
@@ -43,22 +42,22 @@ impl Default for GameSettings {
 }
 
 impl GameSettings {
-    /// Load settings from config file.
+    /// Load settings from config file (or localStorage on WASM).
     pub fn load() -> Self {
-        if !Path::new(CONFIG_PATH).exists() {
+        if !platform::file_exists(CONFIG_PATH) {
             return Self::default();
         }
 
-        match fs::read_to_string(CONFIG_PATH) {
+        match platform::read_file(CONFIG_PATH) {
             Ok(content) => serde_json::from_str(&content).unwrap_or_default(),
             Err(_) => Self::default(),
         }
     }
 
-    /// Save settings to config file.
+    /// Save settings to config file (or localStorage on WASM).
     pub fn save(&self) {
         if let Ok(json) = serde_json::to_string_pretty(self) {
-            let _ = fs::write(CONFIG_PATH, json);
+            let _ = platform::write_file(CONFIG_PATH, &json);
         }
     }
 }
