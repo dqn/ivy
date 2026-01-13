@@ -2,6 +2,7 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::platform;
+use crate::runtime::KeyBindings;
 
 const CONFIG_PATH: &str = "config.json";
 
@@ -26,6 +27,9 @@ pub struct GameSettings {
     /// Skip unread text (true = skip all, false = skip read only).
     #[serde(default = "default_skip_unread")]
     pub skip_unread: bool,
+    /// Key bindings.
+    #[serde(default)]
+    pub keybinds: KeyBindings,
 }
 
 fn default_skip_unread() -> bool {
@@ -53,6 +57,7 @@ impl Default for GameSettings {
             auto_speed: 1.0,
             text_speed: 30.0,
             skip_unread: true,
+            keybinds: KeyBindings::default(),
         }
     }
 }

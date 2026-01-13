@@ -19,7 +19,10 @@ use render::{
     ParticleState, ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig,
     TitleMenuItem, TransitionState, TypewriterState,
 };
-use runtime::{AchievementNotifier, Achievements, DisplayState, GameState, SaveData, Unlocks, VisualState};
+use runtime::{
+    AchievementNotifier, Achievements, Action, DisplayState, GameState, SaveData, Unlocks,
+    VisualState,
+};
 use scenario::load_scenario;
 
 /// Game mode: title screen, settings, gallery, or in-game.
@@ -388,12 +391,12 @@ async fn main() {
         let mut return_to_title = false;
 
         // Handle save/load
-        // F5 = quick save, F9 = quick load
+        // QuickSave / QuickLoad keybinds
         // Shift+1-0 = save to slot, 1-0 = load from slot
-        if is_key_pressed(KeyCode::F5) {
+        if settings.keybinds.is_pressed(Action::QuickSave) {
             save_game(state);
         }
-        if is_key_pressed(KeyCode::F9) {
+        if settings.keybinds.is_pressed(Action::QuickLoad) {
             if let Some(loaded_state) = load_game() {
                 *state = loaded_state;
                 last_index = None; // Force audio/transition update
@@ -430,14 +433,14 @@ async fn main() {
             }
         }
 
-        // Toggle backlog with L key
-        if is_key_pressed(KeyCode::L) {
+        // Toggle backlog
+        if settings.keybinds.is_pressed(Action::Backlog) {
             show_backlog = !show_backlog;
             backlog_state = BacklogState::default();
         }
 
-        // Toggle auto mode with A key
-        if is_key_pressed(KeyCode::A) {
+        // Toggle auto mode
+        if settings.keybinds.is_pressed(Action::AutoMode) {
             auto_mode = !auto_mode;
             auto_timer = 0.0;
             if auto_mode {
@@ -447,8 +450,8 @@ async fn main() {
             }
         }
 
-        // Toggle skip mode with S key
-        if is_key_pressed(KeyCode::S) {
+        // Toggle skip mode
+        if settings.keybinds.is_pressed(Action::SkipMode) {
             skip_mode = !skip_mode;
             if skip_mode {
                 eprintln!("Skip mode ON");
@@ -457,15 +460,15 @@ async fn main() {
             }
         }
 
-        // Toggle debug console with F12 key
-        if is_key_pressed(KeyCode::F12) {
+        // Toggle debug console
+        if settings.keybinds.is_pressed(Action::Debug) {
             debug_state.toggle();
         }
 
-        // Handle rollback (Up arrow or mouse wheel up) - only when backlog is not shown
+        // Handle rollback (keybind or mouse wheel up) - only when backlog is not shown
         if !show_backlog {
             let wheel = mouse_wheel();
-            if is_key_pressed(KeyCode::Up) || wheel.1 > 0.0 {
+            if settings.keybinds.is_pressed(Action::Rollback) || wheel.1 > 0.0 {
                 if state.can_rollback() {
                     state.rollback();
                 }
@@ -632,9 +635,9 @@ async fn main() {
                         }
                     }
 
-                    // Handle click/Enter
+                    // Handle click/Advance keybind
                     let input_pressed = is_mouse_button_pressed(MouseButton::Left)
-                        || is_key_pressed(KeyCode::Enter);
+                        || settings.keybinds.is_pressed(Action::Advance);
 
                     if skip_active || auto_advance {
                         // Skip mode and auto mode bypass typewriter
@@ -744,7 +747,7 @@ async fn main() {
                     } else {
                         // Click to complete text
                         if is_mouse_button_pressed(MouseButton::Left)
-                            || is_key_pressed(KeyCode::Enter)
+                            || settings.keybinds.is_pressed(Action::Advance)
                         {
                             typewriter_state.complete();
                         }
@@ -772,7 +775,7 @@ async fn main() {
                 if wait_timer >= duration
                     || skip_active
                     || is_mouse_button_pressed(MouseButton::Left)
-                    || is_key_pressed(KeyCode::Enter)
+                    || settings.keybinds.is_pressed(Action::Advance)
                 {
                     in_wait = false;
                     wait_timer = 0.0;
@@ -831,8 +834,10 @@ async fn main() {
                     draw_backlog(&backlog_config, &mut backlog_state, &history);
                 }
 
-                // Return to title on click or Enter, or exit on Escape
-                if is_mouse_button_pressed(MouseButton::Left) || is_key_pressed(KeyCode::Enter) {
+                // Return to title on click or Advance, or exit on Escape
+                if is_mouse_button_pressed(MouseButton::Left)
+                    || settings.keybinds.is_pressed(Action::Advance)
+                {
                     return_to_title = true;
                 } else if is_key_pressed(KeyCode::Escape) {
                     break;
