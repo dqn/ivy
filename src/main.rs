@@ -12,9 +12,9 @@ use audio::AudioManager;
 use render::{
     draw_backlog, draw_background_with_offset, draw_character_with_offset, draw_choices,
     draw_continue_indicator_with_font, draw_settings_screen, draw_speaker_name,
-    draw_text_box_with_font, draw_title_screen, BacklogConfig, BacklogState, ChoiceButtonConfig,
-    GameSettings, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem,
-    TransitionState,
+    draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen, BacklogConfig,
+    BacklogState, ChoiceButtonConfig, GameSettings, SettingsConfig, ShakeState, TextBoxConfig,
+    TitleConfig, TitleMenuItem, TransitionState, TypewriterState,
 };
 use runtime::{DisplayState, GameState, SaveData, VisualState};
 use scenario::load_scenario;
@@ -30,6 +30,36 @@ enum GameMode {
 const SCENARIO_PATH: &str = "assets/sample.yaml";
 const QUICK_SAVE_PATH: &str = "saves/save.json";
 const FONT_PATH: &str = "assets/fonts/NotoSansJP-Regular.ttf";
+
+/// Count visible characters in text (excluding color tags).
+fn count_visible_chars(text: &str) -> usize {
+    let mut count = 0;
+    let mut chars = text.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == '{' {
+            // Check for color tag
+            let mut tag = String::new();
+            while let Some(&next_ch) = chars.peek() {
+                if next_ch == '}' {
+                    chars.next();
+                    break;
+                }
+                tag.push(chars.next().unwrap());
+            }
+
+            // Only skip recognized tags
+            if !tag.starts_with("color:") && tag != "/color" {
+                // Not a color tag, count the braces and content
+                count += 2 + tag.chars().count();
+            }
+        } else {
+            count += 1;
+        }
+    }
+
+    count
+}
 
 fn window_conf() -> Conf {
     Conf {
@@ -185,6 +215,8 @@ async fn main() {
     let mut auto_timer = 0.0;
     let mut transition_state = TransitionState::default();
     let mut shake_state = ShakeState::default();
+    let mut typewriter_state = TypewriterState::default();
+    let mut last_text: Option<String> = None;
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
@@ -407,9 +439,24 @@ async fn main() {
                     draw_speaker_name(&text_config, name, font_ref);
                 }
 
-                // Draw text box on top
-                draw_text_box_with_font(&text_config, &text, font_ref);
-                draw_continue_indicator_with_font(&text_config, font_ref);
+                // Reset typewriter if text changed
+                if last_text.as_ref() != Some(&text) {
+                    // Count visible characters (excluding color tags)
+                    let total_chars = count_visible_chars(&text);
+                    typewriter_state.reset(total_chars);
+                    last_text = Some(text.clone());
+                }
+
+                // Update typewriter state
+                let char_limit = typewriter_state.update(settings.text_speed);
+
+                // Draw text box with typewriter effect
+                draw_text_box_typewriter(&text_config, &text, font_ref, char_limit);
+
+                // Only show continue indicator when text is complete
+                if typewriter_state.is_complete() {
+                    draw_continue_indicator_with_font(&text_config, font_ref);
+                }
 
                 // Draw backlog overlay if enabled
                 if show_backlog {
@@ -420,9 +467,9 @@ async fn main() {
                     let skip_mode =
                         is_key_down(KeyCode::LeftControl) || is_key_down(KeyCode::RightControl);
 
-                    // Auto mode timer
+                    // Auto mode timer (only counts when text is complete)
                     let mut auto_advance = false;
-                    if auto_mode {
+                    if auto_mode && typewriter_state.is_complete() {
                         auto_timer += get_frame_time() as f64;
                         // Wait time based on text length, adjusted by auto speed setting
                         // Higher speed = shorter wait time
@@ -434,14 +481,24 @@ async fn main() {
                         }
                     }
 
-                    // Advance on click, Enter key, skip mode, or auto mode
-                    if is_mouse_button_pressed(MouseButton::Left)
-                        || is_key_pressed(KeyCode::Enter)
-                        || skip_mode
-                        || auto_advance
-                    {
+                    // Handle click/Enter
+                    let input_pressed = is_mouse_button_pressed(MouseButton::Left)
+                        || is_key_pressed(KeyCode::Enter);
+
+                    if skip_mode || auto_advance {
+                        // Skip mode and auto mode bypass typewriter
+                        typewriter_state.complete();
                         state.advance();
-                        auto_timer = 0.0; // Reset timer on manual advance
+                        auto_timer = 0.0;
+                    } else if input_pressed {
+                        if typewriter_state.is_complete() {
+                            // Text is complete, advance to next
+                            state.advance();
+                            auto_timer = 0.0;
+                        } else {
+                            // Text is still animating, complete it instantly
+                            typewriter_state.complete();
+                        }
                     }
                 }
 
@@ -464,17 +521,37 @@ async fn main() {
                     draw_speaker_name(&text_config, name, font_ref);
                 }
 
-                // Draw text box and choices on top
-                draw_text_box_with_font(&text_config, &text, font_ref);
+                // Reset typewriter if text changed
+                if last_text.as_ref() != Some(&text) {
+                    let total_chars = count_visible_chars(&text);
+                    typewriter_state.reset(total_chars);
+                    last_text = Some(text.clone());
+                }
+
+                // Update typewriter state
+                let char_limit = typewriter_state.update(settings.text_speed);
+
+                // Draw text box with typewriter effect
+                draw_text_box_typewriter(&text_config, &text, font_ref, char_limit);
 
                 // Draw backlog overlay if enabled
                 if show_backlog {
                     let history: Vec<_> = state.history().iter().cloned().collect();
                     draw_backlog(&backlog_config, &mut backlog_state, &history);
                 } else {
-                    let result = draw_choices(&choice_config, &choices);
-                    if let Some(index) = result.selected {
-                        state.select_choice(index);
+                    // Only show choices when text is complete
+                    if typewriter_state.is_complete() {
+                        let result = draw_choices(&choice_config, &choices);
+                        if let Some(index) = result.selected {
+                            state.select_choice(index);
+                        }
+                    } else {
+                        // Click to complete text
+                        if is_mouse_button_pressed(MouseButton::Left)
+                            || is_key_pressed(KeyCode::Enter)
+                        {
+                            typewriter_state.complete();
+                        }
                     }
                 }
             }

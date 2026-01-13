@@ -20,6 +20,9 @@ pub struct GameSettings {
     /// Auto mode wait time multiplier (0.5 - 2.0).
     #[serde(default = "default_auto_speed")]
     pub auto_speed: f32,
+    /// Text speed in characters per second (0 = instant).
+    #[serde(default = "default_text_speed")]
+    pub text_speed: f32,
 }
 
 fn default_volume() -> f32 {
@@ -30,6 +33,10 @@ fn default_auto_speed() -> f32 {
     1.0
 }
 
+fn default_text_speed() -> f32 {
+    30.0 // 30 characters per second
+}
+
 impl Default for GameSettings {
     fn default() -> Self {
         Self {
@@ -37,6 +44,7 @@ impl Default for GameSettings {
             se_volume: 1.0,
             voice_volume: 1.0,
             auto_speed: 1.0,
+            text_speed: 30.0,
         }
     }
 }
@@ -94,8 +102,14 @@ pub struct SettingsResult {
     pub back_pressed: bool,
 }
 
+/// Slider value display format.
+enum SliderFormat {
+    Percent,
+    Value(&'static str),
+}
+
 /// Draw a slider and return the new value if changed.
-fn draw_slider(
+fn draw_slider_ex(
     x: f32,
     y: f32,
     width: f32,
@@ -104,6 +118,7 @@ fn draw_slider(
     min: f32,
     max: f32,
     label: &str,
+    format: SliderFormat,
     font: Option<&Font>,
     font_size: f32,
 ) -> f32 {
@@ -136,7 +151,16 @@ fn draw_slider(
     draw_rectangle_lines(x, y + 10.0, width, height, 2.0, WHITE);
 
     // Draw value text
-    let value_text = format!("{:.0}%", value * 100.0);
+    let value_text = match format {
+        SliderFormat::Percent => format!("{:.0}%", value * 100.0),
+        SliderFormat::Value(unit) => {
+            if value == 0.0 {
+                "Instant".to_string()
+            } else {
+                format!("{:.0}{}", value, unit)
+            }
+        }
+    };
     let value_params = if let Some(f) = font {
         TextParams {
             font: Some(f),
@@ -163,6 +187,22 @@ fn draw_slider(
     }
 
     value
+}
+
+/// Draw a slider and return the new value if changed.
+fn draw_slider(
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    value: f32,
+    min: f32,
+    max: f32,
+    label: &str,
+    font: Option<&Font>,
+    font_size: f32,
+) -> f32 {
+    draw_slider_ex(x, y, width, height, value, min, max, label, SliderFormat::Percent, font, font_size)
 }
 
 /// Draw the settings screen.
@@ -261,6 +301,27 @@ pub fn draw_settings_screen(
     // Round to 0.1
     if (settings.auto_speed - old_auto_speed).abs() > 0.001 {
         settings.auto_speed = (settings.auto_speed * 10.0).round() / 10.0;
+    }
+
+    // Text Speed
+    y += config.slider_spacing;
+    let old_text_speed = settings.text_speed;
+    settings.text_speed = draw_slider_ex(
+        slider_x,
+        y,
+        config.slider_width,
+        config.slider_height,
+        settings.text_speed,
+        0.0,
+        100.0,
+        "Text Speed",
+        SliderFormat::Value(" CPS"),
+        font,
+        config.label_font_size,
+    );
+    // Round to 5
+    if (settings.text_speed - old_text_speed).abs() > 0.001 {
+        settings.text_speed = (settings.text_speed / 5.0).round() * 5.0;
     }
 
     // Back button

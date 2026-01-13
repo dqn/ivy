@@ -148,6 +148,17 @@ pub fn draw_text_box(config: &TextBoxConfig, text: &str) {
     draw_text_box_with_font(config, text, None);
 }
 
+/// Draw a text box with a character limit (for typewriter effect).
+/// Returns the total number of visible characters (excluding tags).
+pub fn draw_text_box_typewriter(
+    config: &TextBoxConfig,
+    text: &str,
+    font: Option<&Font>,
+    char_limit: usize,
+) -> usize {
+    draw_text_box_internal(config, text, font, Some(char_limit))
+}
+
 /// Strip color tags from text for measurement purposes.
 fn strip_tags(text: &str) -> String {
     let mut result = String::new();
@@ -181,6 +192,17 @@ fn strip_tags(text: &str) -> String {
 /// Draw a text box with the given text and optional custom font.
 /// Supports rich text color tags: {color:red}, {color:#ff0000}, {/color}
 pub fn draw_text_box_with_font(config: &TextBoxConfig, text: &str, font: Option<&Font>) {
+    draw_text_box_internal(config, text, font, None);
+}
+
+/// Internal function for text box rendering with optional character limit.
+/// Returns the total number of visible characters (excluding tags).
+fn draw_text_box_internal(
+    config: &TextBoxConfig,
+    text: &str,
+    font: Option<&Font>,
+    char_limit: Option<usize>,
+) -> usize {
     // Draw background
     draw_rectangle(config.x, config.y, config.width, config.height, config.bg_color);
 
@@ -204,13 +226,28 @@ pub fn draw_text_box_with_font(config: &TextBoxConfig, text: &str, font: Option<
         }
     }
 
+    let total_chars = chars_with_colors.len();
+
+    // Apply character limit if specified
+    let display_count = match char_limit {
+        Some(limit) => limit.min(total_chars),
+        None => total_chars,
+    };
+
     // Simple character-based wrapping
     let mut current_line: Vec<(char, Color)> = Vec::new();
     let mut line_num = 0;
     let max_lines = ((config.height - config.padding * 2.0) / config.line_height) as usize;
+    let mut chars_displayed = 0;
 
     for (ch, color) in chars_with_colors {
+        // Stop if we've reached the character limit
+        if chars_displayed >= display_count {
+            break;
+        }
+
         current_line.push((ch, color));
+        chars_displayed += 1;
 
         // Measure current line width (plain text only)
         let plain_line: String = current_line.iter().map(|(c, _)| c).collect();
@@ -252,6 +289,8 @@ pub fn draw_text_box_with_font(config: &TextBoxConfig, text: &str, font: Option<
         let y_pos = text_y + line_num as f32 * config.line_height;
         draw_colored_line(&current_line, text_x, y_pos, config.font_size, font);
     }
+
+    total_chars
 }
 
 /// Draw a line of text with different colors for each character.
