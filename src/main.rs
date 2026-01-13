@@ -10,10 +10,11 @@ use macroquad::prelude::*;
 
 use audio::AudioManager;
 use render::{
-    draw_backlog, draw_background, draw_character, draw_choices,
+    draw_backlog, draw_background_with_offset, draw_character_with_offset, draw_choices,
     draw_continue_indicator_with_font, draw_settings_screen, draw_speaker_name,
     draw_text_box_with_font, draw_title_screen, BacklogConfig, BacklogState, ChoiceButtonConfig,
-    GameSettings, SettingsConfig, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
+    GameSettings, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem,
+    TransitionState,
 };
 use runtime::{DisplayState, GameState, SaveData, VisualState};
 use scenario::load_scenario;
@@ -58,19 +59,23 @@ async fn get_texture(path: &str, cache: &mut HashMap<String, Texture2D>) -> Opti
     }
 }
 
-/// Draw visual elements (background and character).
-async fn draw_visual(visual: &VisualState, cache: &mut HashMap<String, Texture2D>) {
+/// Draw visual elements (background and character) with shake offset.
+async fn draw_visual(
+    visual: &VisualState,
+    cache: &mut HashMap<String, Texture2D>,
+    offset: (f32, f32),
+) {
     // Draw background
     if let Some(bg_path) = &visual.background {
         if let Some(texture) = get_texture(bg_path, cache).await {
-            draw_background(&texture);
+            draw_background_with_offset(&texture, offset);
         }
     }
 
     // Draw character
     if let Some(char_path) = &visual.character {
         if let Some(texture) = get_texture(char_path, cache).await {
-            draw_character(&texture, visual.char_pos);
+            draw_character_with_offset(&texture, visual.char_pos, offset);
         }
     }
 }
@@ -179,6 +184,7 @@ async fn main() {
     let mut auto_mode = false;
     let mut auto_timer = 0.0;
     let mut transition_state = TransitionState::default();
+    let mut shake_state = ShakeState::default();
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
@@ -367,6 +373,11 @@ async fn main() {
                 transition_state.start(transition.transition_type, transition.duration);
             }
 
+            // Start shake if specified
+            if let Some(shake) = state.current_shake() {
+                shake_state.start(shake);
+            }
+
             // Reset auto timer on command change
             auto_timer = 0.0;
 
@@ -376,14 +387,20 @@ async fn main() {
         // Update transition state
         transition_state.update();
 
+        // Update shake state
+        shake_state.update();
+
+        // Get shake offset for visual rendering
+        let shake_offset = shake_state.offset();
+
         match state.display_state() {
             DisplayState::Text {
                 speaker,
                 text,
                 visual,
             } => {
-                // Draw visuals first (background, then character)
-                draw_visual(&visual, &mut texture_cache).await;
+                // Draw visuals first (background, then character) with shake offset
+                draw_visual(&visual, &mut texture_cache, shake_offset).await;
 
                 // Draw speaker name if present
                 if let Some(ref name) = speaker {
@@ -439,8 +456,8 @@ async fn main() {
                 choices,
                 visual,
             } => {
-                // Draw visuals first
-                draw_visual(&visual, &mut texture_cache).await;
+                // Draw visuals first with shake offset
+                draw_visual(&visual, &mut texture_cache, shake_offset).await;
 
                 // Draw speaker name if present
                 if let Some(ref name) = speaker {

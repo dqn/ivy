@@ -52,6 +52,41 @@ pub struct IfCondition {
     pub jump: String,
 }
 
+/// Shake effect type.
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ShakeType {
+    /// Horizontal shake (left-right).
+    #[default]
+    Horizontal,
+    /// Vertical shake (up-down).
+    Vertical,
+    /// Both horizontal and vertical.
+    Both,
+}
+
+/// Shake effect configuration.
+#[derive(Debug, Clone, Deserialize)]
+pub struct Shake {
+    /// Shake type (horizontal, vertical, both).
+    #[serde(rename = "type", default)]
+    pub shake_type: ShakeType,
+    /// Shake intensity in pixels.
+    #[serde(default = "default_shake_intensity")]
+    pub intensity: f32,
+    /// Duration in seconds.
+    #[serde(default = "default_shake_duration")]
+    pub duration: f32,
+}
+
+fn default_shake_intensity() -> f32 {
+    10.0
+}
+
+fn default_shake_duration() -> f32 {
+    0.5
+}
+
 /// A single choice option that branches the story.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Choice {
@@ -88,6 +123,8 @@ pub struct Command {
     pub voice: Option<String>,
     /// Transition effect.
     pub transition: Option<Transition>,
+    /// Shake effect.
+    pub shake: Option<Shake>,
     /// Set a variable.
     pub set: Option<SetVar>,
     /// Conditional jump.

@@ -8,10 +8,15 @@ const SCREEN_HEIGHT: f32 = 600.0;
 
 /// Draw a background image scaled to fill the screen.
 pub fn draw_background(texture: &Texture2D) {
+    draw_background_with_offset(texture, (0.0, 0.0));
+}
+
+/// Draw a background image with an offset (for shake effect).
+pub fn draw_background_with_offset(texture: &Texture2D, offset: (f32, f32)) {
     draw_texture_ex(
         texture,
-        0.0,
-        0.0,
+        offset.0,
+        offset.1,
         WHITE,
         DrawTextureParams {
             dest_size: Some(Vec2::new(SCREEN_WIDTH, SCREEN_HEIGHT)),
@@ -22,6 +27,11 @@ pub fn draw_background(texture: &Texture2D) {
 
 /// Draw a character sprite at the specified position.
 pub fn draw_character(texture: &Texture2D, position: CharPosition) {
+    draw_character_with_offset(texture, position, (0.0, 0.0));
+}
+
+/// Draw a character sprite with an offset (for shake effect).
+pub fn draw_character_with_offset(texture: &Texture2D, position: CharPosition, offset: (f32, f32)) {
     let texture_width = texture.width();
     let texture_height = texture.height();
 
@@ -48,8 +58,8 @@ pub fn draw_character(texture: &Texture2D, position: CharPosition) {
 
     draw_texture_ex(
         texture,
-        x,
-        y,
+        x + offset.0,
+        y + offset.1,
         WHITE,
         DrawTextureParams {
             dest_size: Some(Vec2::new(draw_width, draw_height)),

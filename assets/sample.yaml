@@ -30,6 +30,10 @@ script:
 
   - label: explore
     character: "assets/char_happy.png"
+    shake:
+      type: "both"
+      intensity: 15.0
+      duration: 0.5
     set:
       name: "found_treasure"
       value: true

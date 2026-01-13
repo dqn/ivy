@@ -439,4 +439,12 @@ impl GameState {
             .get(self.current_index)
             .and_then(|cmd| cmd.transition.as_ref())
     }
+
+    /// Get current shake command.
+    pub fn current_shake(&self) -> Option<&crate::scenario::types::Shake> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.shake.as_ref())
+    }
 }
