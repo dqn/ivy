@@ -103,6 +103,8 @@ async fn main() {
         }
     };
 
+    eprintln!("Loaded scenario: {}", scenario.title);
+
     let mut game_state = GameState::new(scenario);
     let text_config = TextBoxConfig::default();
     let choice_config = ChoiceButtonConfig::default();

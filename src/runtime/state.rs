@@ -99,7 +99,9 @@ impl GameState {
     }
 
     /// Get the current display state.
-    pub fn display_state(&self) -> DisplayState {
+    pub fn display_state(&mut self) -> DisplayState {
+        self.skip_labels();
+
         if self.current_index >= self.scenario.script.len() {
             return DisplayState::End;
         }
@@ -123,7 +125,7 @@ impl GameState {
             };
         }
 
-        // Command has no displayable content, skip it
+        // Command has no displayable content (should be unreachable after skip_labels).
         DisplayState::End
     }
 
@@ -246,6 +248,6 @@ impl GameState {
 
     /// Check if the game has ended.
     pub fn is_ended(&self) -> bool {
-        matches!(self.display_state(), DisplayState::End)
+        self.current_index >= self.scenario.script.len()
     }
 }
