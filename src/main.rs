@@ -10,11 +10,19 @@ use macroquad::prelude::*;
 use audio::AudioManager;
 use render::{
     draw_backlog, draw_background, draw_character, draw_choices,
-    draw_continue_indicator_with_font, draw_text_box_with_font, BacklogConfig, BacklogState,
-    ChoiceButtonConfig, TextBoxConfig, TransitionState,
+    draw_continue_indicator_with_font, draw_text_box_with_font, draw_title_screen,
+    BacklogConfig, BacklogState, ChoiceButtonConfig, TextBoxConfig, TitleConfig, TitleMenuItem,
+    TransitionState,
 };
 use runtime::{DisplayState, GameState, SaveData, VisualState};
 use scenario::load_scenario;
+
+/// Game mode: title screen or in-game.
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum GameMode {
+    Title,
+    InGame,
+}
 
 const SCENARIO_PATH: &str = "assets/sample.yaml";
 const QUICK_SAVE_PATH: &str = "saves/save.json";
@@ -129,7 +137,8 @@ async fn main() {
         }
     };
 
-    eprintln!("Loaded scenario: {}", scenario.title);
+    let scenario_title = scenario.title.clone();
+    eprintln!("Loaded scenario: {}", scenario_title);
 
     // Load custom font for Japanese text support
     let custom_font = match load_ttf_font(FONT_PATH).await {
@@ -144,7 +153,10 @@ async fn main() {
     };
     let font_ref = custom_font.as_ref();
 
-    let mut game_state = GameState::new(scenario);
+    // Start with title screen
+    let mut game_mode = GameMode::Title;
+    let mut game_state: Option<GameState> = None;
+    let title_config = TitleConfig::default();
     let text_config = TextBoxConfig::default();
     let choice_config = ChoiceButtonConfig::default();
     let backlog_config = BacklogConfig::default();
@@ -160,15 +172,89 @@ async fn main() {
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
 
+        match game_mode {
+            GameMode::Title => {
+                // Check if any save exists
+                let has_save = SaveData::slot_exists(1)
+                    || SaveData::slot_exists(2)
+                    || SaveData::slot_exists(3)
+                    || std::path::Path::new(QUICK_SAVE_PATH).exists();
+
+                let result = draw_title_screen(&title_config, &scenario_title, has_save, font_ref);
+
+                if let Some(item) = result.selected {
+                    match item {
+                        TitleMenuItem::NewGame => {
+                            // Start new game
+                            let new_scenario = load_scenario(SCENARIO_PATH).unwrap();
+                            game_state = Some(GameState::new(new_scenario));
+                            game_mode = GameMode::InGame;
+                            last_index = None;
+                            auto_mode = false;
+                            show_backlog = false;
+                        }
+                        TitleMenuItem::Continue => {
+                            // Try to load from quick save first, then from slots
+                            if let Some(loaded_state) = load_game() {
+                                game_state = Some(loaded_state);
+                                game_mode = GameMode::InGame;
+                                last_index = None;
+                                auto_mode = false;
+                                show_backlog = false;
+                            } else {
+                                // Try slots 1-3
+                                for slot in 1..=3 {
+                                    if let Some(loaded_state) = load_from_slot(slot) {
+                                        game_state = Some(loaded_state);
+                                        game_mode = GameMode::InGame;
+                                        last_index = None;
+                                        auto_mode = false;
+                                        show_backlog = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        TitleMenuItem::Quit => {
+                            break;
+                        }
+                    }
+                }
+
+                // Exit on Escape
+                if is_key_pressed(KeyCode::Escape) {
+                    break;
+                }
+
+                next_frame().await;
+                continue;
+            }
+            GameMode::InGame => {
+                // In-game logic follows
+            }
+        }
+
+        // Get mutable reference to game state
+        let state = match game_state.as_mut() {
+            Some(s) => s,
+            None => {
+                game_mode = GameMode::Title;
+                continue;
+            }
+        };
+
+        // Flag to return to title screen (set later, processed at end of loop)
+        let mut return_to_title = false;
+
         // Handle save/load
         // F5 = quick save, F9 = quick load
         // Shift+1-0 = save to slot, 1-0 = load from slot
         if is_key_pressed(KeyCode::F5) {
-            save_game(&game_state);
+            save_game(state);
         }
         if is_key_pressed(KeyCode::F9) {
             if let Some(loaded_state) = load_game() {
-                game_state = loaded_state;
+                *state = loaded_state;
                 last_index = None; // Force audio/transition update
             }
         }
@@ -191,10 +277,10 @@ async fn main() {
         for (key, slot) in slot_keys {
             if is_key_pressed(key) {
                 if shift_held {
-                    save_to_slot(&game_state, slot);
+                    save_to_slot(state, slot);
                 } else if SaveData::slot_exists(slot) {
                     if let Some(loaded_state) = load_from_slot(slot) {
-                        game_state = loaded_state;
+                        *state = loaded_state;
                         last_index = None; // Force audio/transition update
                     }
                 } else {
@@ -224,28 +310,28 @@ async fn main() {
         if !show_backlog {
             let wheel = mouse_wheel();
             if is_key_pressed(KeyCode::Up) || wheel.1 > 0.0 {
-                if game_state.can_rollback() {
-                    game_state.rollback();
+                if state.can_rollback() {
+                    state.rollback();
                 }
             }
         }
 
         // Update audio and transition when command changes
-        let current_index = game_state.current_index();
+        let current_index = state.current_index();
         if last_index != Some(current_index) {
             // Update BGM
             audio_manager
-                .update_bgm(game_state.current_bgm())
+                .update_bgm(state.current_bgm())
                 .await;
 
             // Play SE
-            audio_manager.play_se(game_state.current_se()).await;
+            audio_manager.play_se(state.current_se()).await;
 
             // Play voice
-            audio_manager.play_voice(game_state.current_voice()).await;
+            audio_manager.play_voice(state.current_voice()).await;
 
             // Start transition if specified
-            if let Some(transition) = game_state.current_transition() {
+            if let Some(transition) = state.current_transition() {
                 transition_state.start(transition.transition_type, transition.duration);
             }
 
@@ -258,7 +344,7 @@ async fn main() {
         // Update transition state
         transition_state.update();
 
-        match game_state.display_state() {
+        match state.display_state() {
             DisplayState::Text { text, visual } => {
                 // Draw visuals first (background, then character)
                 draw_visual(&visual, &mut texture_cache).await;
@@ -269,7 +355,7 @@ async fn main() {
 
                 // Draw backlog overlay if enabled
                 if show_backlog {
-                    let history: Vec<_> = game_state.history().iter().cloned().collect();
+                    let history: Vec<_> = state.history().iter().cloned().collect();
                     draw_backlog(&backlog_config, &mut backlog_state, &history);
                 } else {
                     // Skip mode: Ctrl key held down
@@ -294,7 +380,7 @@ async fn main() {
                         || skip_mode
                         || auto_advance
                     {
-                        game_state.advance();
+                        state.advance();
                         auto_timer = 0.0; // Reset timer on manual advance
                     }
                 }
@@ -317,12 +403,12 @@ async fn main() {
 
                 // Draw backlog overlay if enabled
                 if show_backlog {
-                    let history: Vec<_> = game_state.history().iter().cloned().collect();
+                    let history: Vec<_> = state.history().iter().cloned().collect();
                     draw_backlog(&backlog_config, &mut backlog_state, &history);
                 } else {
                     let result = draw_choices(&choice_config, &choices);
                     if let Some(index) = result.selected {
-                        game_state.select_choice(index);
+                        state.select_choice(index);
                     }
                 }
             }
@@ -331,12 +417,14 @@ async fn main() {
 
                 // Draw backlog overlay if enabled
                 if show_backlog {
-                    let history: Vec<_> = game_state.history().iter().cloned().collect();
+                    let history: Vec<_> = state.history().iter().cloned().collect();
                     draw_backlog(&backlog_config, &mut backlog_state, &history);
                 }
 
-                // Exit on Escape
-                if is_key_pressed(KeyCode::Escape) {
+                // Return to title on click or Enter, or exit on Escape
+                if is_mouse_button_pressed(MouseButton::Left) || is_key_pressed(KeyCode::Enter) {
+                    return_to_title = true;
+                } else if is_key_pressed(KeyCode::Escape) {
                     break;
                 }
             }
@@ -345,11 +433,17 @@ async fn main() {
         // Draw transition overlay
         transition_state.draw();
 
-        // Global exit on Escape
-        if is_key_pressed(KeyCode::Escape) && !game_state.is_ended() {
-            break;
+        // Return to title on Escape (instead of exiting)
+        if is_key_pressed(KeyCode::Escape) && !state.is_ended() {
+            return_to_title = true;
         }
 
-        next_frame().await
+        next_frame().await;
+
+        // Process return to title (after frame, when state borrow is dropped)
+        if return_to_title {
+            game_mode = GameMode::Title;
+            game_state = None;
+        }
     }
 }
