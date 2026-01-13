@@ -2,11 +2,26 @@ use macroquad::prelude::*;
 
 use crate::runtime::Variables;
 
-/// A segment of text with color information.
+/// A segment of text with color and ruby information.
 #[derive(Debug, Clone)]
 struct TextSegment {
     text: String,
     color: Option<Color>,
+    /// Ruby text (furigana) to display above the base text.
+    ruby: Option<String>,
+}
+
+/// A text element that can be a single character or a ruby group.
+#[derive(Debug, Clone)]
+enum TextElement {
+    /// Single character with color.
+    Char(char, Color),
+    /// Ruby group: base text with reading above.
+    Ruby {
+        base: String,
+        reading: String,
+        color: Color,
+    },
 }
 
 /// Interpolate variables in text.
@@ -86,8 +101,8 @@ fn parse_color(name: &str) -> Option<Color> {
     }
 }
 
-/// Parse rich text with color tags into segments.
-/// Supports: {color:red}, {color:#ff0000}, {/color}
+/// Parse rich text with color and ruby tags into segments.
+/// Supports: {color:red}, {color:#ff0000}, {/color}, {ruby:base:reading}
 fn parse_rich_text(text: &str, default_color: Color) -> Vec<TextSegment> {
     let mut segments = Vec::new();
     let mut current_text = String::new();
@@ -98,7 +113,7 @@ fn parse_rich_text(text: &str, default_color: Color) -> Vec<TextSegment> {
 
     while let Some(ch) = chars.next() {
         if ch == '{' {
-            // Check for color tag
+            // Check for tag
             let mut tag = String::new();
             while let Some(&next_ch) = chars.peek() {
                 if next_ch == '}' {
@@ -115,6 +130,7 @@ fn parse_rich_text(text: &str, default_color: Color) -> Vec<TextSegment> {
                     segments.push(TextSegment {
                         text: current_text.clone(),
                         color: current_color,
+                        ruby: None,
                     });
                     current_text.clear();
                 }
@@ -135,12 +151,41 @@ fn parse_rich_text(text: &str, default_color: Color) -> Vec<TextSegment> {
                     segments.push(TextSegment {
                         text: current_text.clone(),
                         color: current_color,
+                        ruby: None,
                     });
                     current_text.clear();
                 }
 
                 // Pop color from stack
                 current_color = color_stack.pop();
+            } else if tag.starts_with("ruby:") {
+                // Ruby tag: {ruby:base:reading}
+                // Save current segment if not empty
+                if !current_text.is_empty() {
+                    segments.push(TextSegment {
+                        text: current_text.clone(),
+                        color: current_color,
+                        ruby: None,
+                    });
+                    current_text.clear();
+                }
+
+                // Parse ruby tag
+                let ruby_content = &tag[5..];
+                if let Some(colon_pos) = ruby_content.find(':') {
+                    let base = &ruby_content[..colon_pos];
+                    let reading = &ruby_content[colon_pos + 1..];
+                    segments.push(TextSegment {
+                        text: base.to_string(),
+                        color: current_color,
+                        ruby: Some(reading.to_string()),
+                    });
+                } else {
+                    // Malformed ruby tag, treat as plain text
+                    current_text.push('{');
+                    current_text.push_str(&tag);
+                    current_text.push('}');
+                }
             } else {
                 // Not a recognized tag, keep as literal text
                 current_text.push('{');
@@ -157,6 +202,7 @@ fn parse_rich_text(text: &str, default_color: Color) -> Vec<TextSegment> {
         segments.push(TextSegment {
             text: current_text,
             color: current_color,
+            ruby: None,
         });
     }
 
@@ -208,7 +254,7 @@ pub fn draw_text_box_typewriter(
     draw_text_box_internal(config, text, font, Some(char_limit))
 }
 
-/// Strip color tags from text for measurement purposes.
+/// Strip color and ruby tags from text for measurement purposes.
 fn strip_tags(text: &str) -> String {
     let mut result = String::new();
     let mut chars = text.chars().peekable();
@@ -224,12 +270,20 @@ fn strip_tags(text: &str) -> String {
                 tag.push(chars.next().unwrap());
             }
 
-            // Only skip recognized tags
-            if !tag.starts_with("color:") && tag != "/color" {
+            // Handle ruby tags specially - extract base text
+            if tag.starts_with("ruby:") {
+                let ruby_content = &tag[5..];
+                if let Some(colon_pos) = ruby_content.find(':') {
+                    let base = &ruby_content[..colon_pos];
+                    result.push_str(base);
+                }
+            } else if !tag.starts_with("color:") && tag != "/color" {
+                // Unknown tags are kept as-is
                 result.push('{');
                 result.push_str(&tag);
                 result.push('}');
             }
+            // color tags and /color are simply skipped
         } else {
             result.push(ch);
         }
@@ -263,19 +317,37 @@ fn draw_text_box_internal(
 
     // Draw text with word wrapping
     let text_x = config.x + config.padding;
-    let text_y = config.y + config.padding + config.font_size;
+    // Add extra space for ruby text at the top
+    let ruby_space = 14.0;
+    let text_y = config.y + config.padding + config.font_size + ruby_space;
     let max_width = config.width - config.padding * 2.0;
 
-    // Build character list with colors for proper wrapping
-    let mut chars_with_colors: Vec<(char, Color)> = Vec::new();
+    // Build element list with colors and ruby for proper wrapping
+    let mut elements: Vec<TextElement> = Vec::new();
     for segment in &segments {
         let color = segment.color.unwrap_or(config.text_color);
-        for ch in segment.text.chars() {
-            chars_with_colors.push((ch, color));
+        if let Some(ref ruby) = segment.ruby {
+            // Ruby group counts as base text length for display count
+            elements.push(TextElement::Ruby {
+                base: segment.text.clone(),
+                reading: ruby.clone(),
+                color,
+            });
+        } else {
+            for ch in segment.text.chars() {
+                elements.push(TextElement::Char(ch, color));
+            }
         }
     }
 
-    let total_chars = chars_with_colors.len();
+    // Count total characters (base text for ruby groups)
+    let total_chars: usize = elements
+        .iter()
+        .map(|e| match e {
+            TextElement::Char(_, _) => 1,
+            TextElement::Ruby { base, .. } => base.chars().count(),
+        })
+        .sum();
 
     // Apply character limit if specified
     let display_count = match char_limit {
@@ -283,41 +355,54 @@ fn draw_text_box_internal(
         None => total_chars,
     };
 
-    // Simple character-based wrapping
-    let mut current_line: Vec<(char, Color)> = Vec::new();
+    // Simple element-based wrapping
+    let mut current_line: Vec<TextElement> = Vec::new();
     let mut line_num = 0;
-    let max_lines = ((config.height - config.padding * 2.0) / config.line_height) as usize;
+    let max_lines =
+        ((config.height - config.padding * 2.0 - ruby_space) / config.line_height) as usize;
     let mut chars_displayed = 0;
 
-    for (ch, color) in chars_with_colors {
+    for element in elements {
+        // Get element char count
+        let elem_chars = match &element {
+            TextElement::Char(_, _) => 1,
+            TextElement::Ruby { base, .. } => base.chars().count(),
+        };
+
         // Stop if we've reached the character limit
         if chars_displayed >= display_count {
             break;
         }
 
-        current_line.push((ch, color));
-        chars_displayed += 1;
+        // For ruby elements, we display the whole thing or nothing
+        if chars_displayed + elem_chars > display_count {
+            // Partial display not supported for ruby, skip
+            if matches!(element, TextElement::Ruby { .. }) {
+                break;
+            }
+        }
 
-        // Measure current line width (plain text only)
-        let plain_line: String = current_line.iter().map(|(c, _)| c).collect();
-        let line_width = if let Some(f) = font {
-            measure_text(&plain_line, Some(f), config.font_size as u16, 1.0).width
-        } else {
-            measure_text(&plain_line, None, config.font_size as u16, 1.0).width
-        };
+        current_line.push(element.clone());
+        chars_displayed += elem_chars;
+
+        // Measure current line width
+        let line_width = measure_line_width(&current_line, config.font_size, font);
+
+        // Check for newline character
+        let is_newline = matches!(&element, TextElement::Char('\n', _));
 
         // Check if we need to wrap
-        if line_width > max_width || ch == '\n' {
-            // Remove last character if it caused overflow (not newline)
-            let overflow_char = if ch != '\n' && current_line.len() > 1 {
+        if line_width > max_width || is_newline {
+            // Remove last element if it caused overflow (not newline)
+            let overflow_elem = if !is_newline && current_line.len() > 1 {
                 current_line.pop()
             } else {
                 None
             };
 
-            // Draw the line with colors
+            // Draw the line with colors and ruby
             let y_pos = text_y + line_num as f32 * config.line_height;
-            draw_colored_line(&current_line, text_x, y_pos, config.font_size, font);
+            draw_line_with_ruby(&current_line, text_x, y_pos, config.font_size, font);
 
             line_num += 1;
             if line_num >= max_lines {
@@ -325,8 +410,8 @@ fn draw_text_box_internal(
             }
 
             // Start new line
-            current_line = if let Some(oc) = overflow_char {
-                vec![oc]
+            current_line = if let Some(elem) = overflow_elem {
+                vec![elem]
             } else {
                 Vec::new()
             };
@@ -336,10 +421,113 @@ fn draw_text_box_internal(
     // Draw remaining text
     if !current_line.is_empty() && line_num < max_lines {
         let y_pos = text_y + line_num as f32 * config.line_height;
-        draw_colored_line(&current_line, text_x, y_pos, config.font_size, font);
+        draw_line_with_ruby(&current_line, text_x, y_pos, config.font_size, font);
     }
 
     total_chars
+}
+
+/// Measure the width of a line of text elements.
+fn measure_line_width(elements: &[TextElement], font_size: f32, font: Option<&Font>) -> f32 {
+    let mut width = 0.0;
+    for element in elements {
+        let text = match element {
+            TextElement::Char(ch, _) => ch.to_string(),
+            TextElement::Ruby { base, .. } => base.clone(),
+        };
+        width += measure_text(&text, font, font_size as u16, 1.0).width;
+    }
+    width
+}
+
+/// Draw a line of text elements with ruby support.
+fn draw_line_with_ruby(
+    elements: &[TextElement],
+    start_x: f32,
+    y: f32,
+    font_size: f32,
+    font: Option<&Font>,
+) {
+    let ruby_font_size = (font_size * 0.5).max(10.0);
+    let ruby_offset = font_size * 0.6;
+
+    let mut x = start_x;
+    for element in elements {
+        match element {
+            TextElement::Char(ch, color) => {
+                let text = ch.to_string();
+                if let Some(f) = font {
+                    draw_text_ex(
+                        &text,
+                        x,
+                        y,
+                        TextParams {
+                            font: Some(f),
+                            font_size: font_size as u16,
+                            color: *color,
+                            ..Default::default()
+                        },
+                    );
+                    x += measure_text(&text, Some(f), font_size as u16, 1.0).width;
+                } else {
+                    draw_text(&text, x, y, font_size, *color);
+                    x += measure_text(&text, None, font_size as u16, 1.0).width;
+                }
+            }
+            TextElement::Ruby {
+                base,
+                reading,
+                color,
+            } => {
+                // Measure base text width
+                let base_width = measure_text(base, font, font_size as u16, 1.0).width;
+
+                // Draw base text
+                if let Some(f) = font {
+                    draw_text_ex(
+                        base,
+                        x,
+                        y,
+                        TextParams {
+                            font: Some(f),
+                            font_size: font_size as u16,
+                            color: *color,
+                            ..Default::default()
+                        },
+                    );
+                } else {
+                    draw_text(base, x, y, font_size, *color);
+                }
+
+                // Measure ruby text width
+                let ruby_width = measure_text(reading, font, ruby_font_size as u16, 1.0).width;
+
+                // Center ruby above base text
+                let ruby_x = x + (base_width - ruby_width) / 2.0;
+                let ruby_y = y - ruby_offset;
+
+                // Draw ruby text (slightly transparent)
+                let ruby_color = Color::new(color.r, color.g, color.b, color.a * 0.9);
+                if let Some(f) = font {
+                    draw_text_ex(
+                        reading,
+                        ruby_x,
+                        ruby_y,
+                        TextParams {
+                            font: Some(f),
+                            font_size: ruby_font_size as u16,
+                            color: ruby_color,
+                            ..Default::default()
+                        },
+                    );
+                } else {
+                    draw_text(reading, ruby_x, ruby_y, ruby_font_size, ruby_color);
+                }
+
+                x += base_width;
+            }
+        }
+    }
 }
 
 /// Draw a line of text with different colors for each character.

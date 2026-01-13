@@ -12,6 +12,9 @@ script:
 
   - text: "This is a sample scenario to demonstrate the basic features."
 
+  # Ruby (furigana) demo
+  - text: "This engine supports {ruby:漢字:かんじ} with {ruby:振り仮名:ふりがな}!"
+
   - text: "Where would you like to go?"
     choices:
       - label: "Go to the forest"
