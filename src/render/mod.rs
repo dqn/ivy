@@ -10,7 +10,7 @@ pub use backlog::{draw_backlog, BacklogConfig, BacklogState};
 pub use image::{draw_background, draw_character};
 pub use settings::{draw_settings_screen, GameSettings, SettingsConfig};
 pub use text::{
-    draw_continue_indicator, draw_continue_indicator_with_font, draw_text_box,
+    draw_continue_indicator, draw_continue_indicator_with_font, draw_speaker_name, draw_text_box,
     draw_text_box_with_font, TextBoxConfig,
 };
 pub use title::{draw_title_screen, TitleConfig, TitleMenuItem};

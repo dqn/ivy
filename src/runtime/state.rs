@@ -79,9 +79,14 @@ pub struct HistoryEntry {
 #[derive(Debug, Clone)]
 pub enum DisplayState {
     /// Showing text, waiting for player to advance.
-    Text { text: String, visual: VisualState },
+    Text {
+        speaker: Option<String>,
+        text: String,
+        visual: VisualState,
+    },
     /// Showing choices, waiting for player to select.
     Choices {
+        speaker: Option<String>,
         text: String,
         choices: Vec<Choice>,
         visual: VisualState,
@@ -155,10 +160,12 @@ impl GameState {
 
         let command = &self.scenario.script[self.current_index];
         let visual = self.current_visual();
+        let speaker = command.speaker.clone();
 
         if let Some(choices) = &command.choices {
             let text = command.text.clone().unwrap_or_default();
             return DisplayState::Choices {
+                speaker,
                 text,
                 choices: choices.clone(),
                 visual,
@@ -167,6 +174,7 @@ impl GameState {
 
         if let Some(text) = &command.text {
             return DisplayState::Text {
+                speaker,
                 text: text.clone(),
                 visual,
             };

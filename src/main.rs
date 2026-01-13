@@ -11,9 +11,9 @@ use macroquad::prelude::*;
 use audio::AudioManager;
 use render::{
     draw_backlog, draw_background, draw_character, draw_choices,
-    draw_continue_indicator_with_font, draw_settings_screen, draw_text_box_with_font,
-    draw_title_screen, BacklogConfig, BacklogState, ChoiceButtonConfig, GameSettings,
-    SettingsConfig, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
+    draw_continue_indicator_with_font, draw_settings_screen, draw_speaker_name,
+    draw_text_box_with_font, draw_title_screen, BacklogConfig, BacklogState, ChoiceButtonConfig,
+    GameSettings, SettingsConfig, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
 };
 use runtime::{DisplayState, GameState, SaveData, VisualState};
 use scenario::load_scenario;
@@ -377,9 +377,18 @@ async fn main() {
         transition_state.update();
 
         match state.display_state() {
-            DisplayState::Text { text, visual } => {
+            DisplayState::Text {
+                speaker,
+                text,
+                visual,
+            } => {
                 // Draw visuals first (background, then character)
                 draw_visual(&visual, &mut texture_cache).await;
+
+                // Draw speaker name if present
+                if let Some(ref name) = speaker {
+                    draw_speaker_name(&text_config, name, font_ref);
+                }
 
                 // Draw text box on top
                 draw_text_box_with_font(&text_config, &text, font_ref);
@@ -425,12 +434,18 @@ async fn main() {
                 }
             }
             DisplayState::Choices {
+                speaker,
                 text,
                 choices,
                 visual,
             } => {
                 // Draw visuals first
                 draw_visual(&visual, &mut texture_cache).await;
+
+                // Draw speaker name if present
+                if let Some(ref name) = speaker {
+                    draw_speaker_name(&text_config, name, font_ref);
+                }
 
                 // Draw text box and choices on top
                 draw_text_box_with_font(&text_config, &text, font_ref);

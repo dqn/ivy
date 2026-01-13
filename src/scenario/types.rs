@@ -66,6 +66,8 @@ pub struct Choice {
 pub struct Command {
     /// Optional label for this command (used as jump target).
     pub label: Option<String>,
+    /// Speaker name to display.
+    pub speaker: Option<String>,
     /// Text to display (if any).
     pub text: Option<String>,
     /// Choices to present to the player (if any).

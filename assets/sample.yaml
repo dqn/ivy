@@ -18,6 +18,7 @@ script:
 
   - character: "assets/char_explorer.png"
     char_pos: "center"
+    speaker: "Explorer"
     text: "The trees are tall and the air is fresh."
 
   - text: "What do you do?"

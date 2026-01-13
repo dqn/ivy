@@ -118,6 +118,55 @@ pub fn draw_text_box_with_font(config: &TextBoxConfig, text: &str, font: Option<
     }
 }
 
+/// Draw the speaker name box above the text box.
+pub fn draw_speaker_name(config: &TextBoxConfig, speaker: &str, font: Option<&Font>) {
+    let speaker_height = 30.0;
+    let speaker_y = config.y - speaker_height - 5.0;
+    let speaker_padding = 10.0;
+
+    // Measure speaker name width
+    let name_width = if let Some(f) = font {
+        measure_text(speaker, Some(f), config.font_size as u16, 1.0).width
+    } else {
+        measure_text(speaker, None, config.font_size as u16, 1.0).width
+    };
+
+    let box_width = name_width + speaker_padding * 2.0;
+
+    // Draw speaker name box
+    draw_rectangle(
+        config.x,
+        speaker_y,
+        box_width,
+        speaker_height,
+        config.bg_color,
+    );
+    draw_rectangle_lines(config.x, speaker_y, box_width, speaker_height, 2.0, YELLOW);
+
+    // Draw speaker name
+    if let Some(f) = font {
+        draw_text_ex(
+            speaker,
+            config.x + speaker_padding,
+            speaker_y + speaker_height - 8.0,
+            TextParams {
+                font: Some(f),
+                font_size: config.font_size as u16,
+                color: YELLOW,
+                ..Default::default()
+            },
+        );
+    } else {
+        draw_text(
+            speaker,
+            config.x + speaker_padding,
+            speaker_y + speaker_height - 8.0,
+            config.font_size,
+            YELLOW,
+        );
+    }
+}
+
 /// Draw a "click to continue" indicator.
 pub fn draw_continue_indicator(config: &TextBoxConfig) {
     draw_continue_indicator_with_font(config, None);
