@@ -1,5 +1,119 @@
 use macroquad::prelude::*;
 
+/// A segment of text with color information.
+#[derive(Debug, Clone)]
+struct TextSegment {
+    text: String,
+    color: Option<Color>,
+}
+
+/// Parse color name or hex code to Color.
+fn parse_color(name: &str) -> Option<Color> {
+    // Check for hex color
+    if name.starts_with('#') && name.len() == 7 {
+        let r = u8::from_str_radix(&name[1..3], 16).ok()?;
+        let g = u8::from_str_radix(&name[3..5], 16).ok()?;
+        let b = u8::from_str_radix(&name[5..7], 16).ok()?;
+        return Some(Color::new(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0, 1.0));
+    }
+
+    // Named colors
+    match name.to_lowercase().as_str() {
+        "red" => Some(RED),
+        "green" => Some(GREEN),
+        "blue" => Some(BLUE),
+        "yellow" => Some(YELLOW),
+        "orange" => Some(ORANGE),
+        "pink" => Some(PINK),
+        "purple" => Some(PURPLE),
+        "white" => Some(WHITE),
+        "gray" | "grey" => Some(GRAY),
+        "black" => Some(BLACK),
+        "cyan" => Some(Color::new(0.0, 1.0, 1.0, 1.0)),
+        "magenta" => Some(Color::new(1.0, 0.0, 1.0, 1.0)),
+        "gold" => Some(GOLD),
+        "lime" => Some(LIME),
+        _ => None,
+    }
+}
+
+/// Parse rich text with color tags into segments.
+/// Supports: {color:red}, {color:#ff0000}, {/color}
+fn parse_rich_text(text: &str, default_color: Color) -> Vec<TextSegment> {
+    let mut segments = Vec::new();
+    let mut current_text = String::new();
+    let mut current_color: Option<Color> = None;
+    let mut color_stack: Vec<Color> = Vec::new();
+
+    let mut chars = text.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == '{' {
+            // Check for color tag
+            let mut tag = String::new();
+            while let Some(&next_ch) = chars.peek() {
+                if next_ch == '}' {
+                    chars.next();
+                    break;
+                }
+                tag.push(chars.next().unwrap());
+            }
+
+            // Process tag
+            if tag.starts_with("color:") {
+                // Save current segment if not empty
+                if !current_text.is_empty() {
+                    segments.push(TextSegment {
+                        text: current_text.clone(),
+                        color: current_color,
+                    });
+                    current_text.clear();
+                }
+
+                // Parse and push new color
+                let color_name = &tag[6..];
+                if let Some(color) = parse_color(color_name) {
+                    if let Some(old_color) = current_color {
+                        color_stack.push(old_color);
+                    } else {
+                        color_stack.push(default_color);
+                    }
+                    current_color = Some(color);
+                }
+            } else if tag == "/color" {
+                // Save current segment if not empty
+                if !current_text.is_empty() {
+                    segments.push(TextSegment {
+                        text: current_text.clone(),
+                        color: current_color,
+                    });
+                    current_text.clear();
+                }
+
+                // Pop color from stack
+                current_color = color_stack.pop();
+            } else {
+                // Not a recognized tag, keep as literal text
+                current_text.push('{');
+                current_text.push_str(&tag);
+                current_text.push('}');
+            }
+        } else {
+            current_text.push(ch);
+        }
+    }
+
+    // Add remaining text
+    if !current_text.is_empty() {
+        segments.push(TextSegment {
+            text: current_text,
+            color: current_color,
+        });
+    }
+
+    segments
+}
+
 /// Configuration for text box rendering.
 pub struct TextBoxConfig {
     pub x: f32,
@@ -34,7 +148,38 @@ pub fn draw_text_box(config: &TextBoxConfig, text: &str) {
     draw_text_box_with_font(config, text, None);
 }
 
+/// Strip color tags from text for measurement purposes.
+fn strip_tags(text: &str) -> String {
+    let mut result = String::new();
+    let mut chars = text.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == '{' {
+            let mut tag = String::new();
+            while let Some(&next_ch) = chars.peek() {
+                if next_ch == '}' {
+                    chars.next();
+                    break;
+                }
+                tag.push(chars.next().unwrap());
+            }
+
+            // Only skip recognized tags
+            if !tag.starts_with("color:") && tag != "/color" {
+                result.push('{');
+                result.push_str(&tag);
+                result.push('}');
+            }
+        } else {
+            result.push(ch);
+        }
+    }
+
+    result
+}
+
 /// Draw a text box with the given text and optional custom font.
+/// Supports rich text color tags: {color:red}, {color:#ff0000}, {/color}
 pub fn draw_text_box_with_font(config: &TextBoxConfig, text: &str, font: Option<&Font>) {
     // Draw background
     draw_rectangle(config.x, config.y, config.width, config.height, config.bg_color);
@@ -42,78 +187,113 @@ pub fn draw_text_box_with_font(config: &TextBoxConfig, text: &str, font: Option<
     // Draw border
     draw_rectangle_lines(config.x, config.y, config.width, config.height, 2.0, WHITE);
 
+    // Parse rich text into segments
+    let segments = parse_rich_text(text, config.text_color);
+
     // Draw text with word wrapping
     let text_x = config.x + config.padding;
     let text_y = config.y + config.padding + config.font_size;
     let max_width = config.width - config.padding * 2.0;
 
-    // Simple character-based wrapping for Japanese text
-    let mut current_line = String::new();
+    // Build character list with colors for proper wrapping
+    let mut chars_with_colors: Vec<(char, Color)> = Vec::new();
+    for segment in &segments {
+        let color = segment.color.unwrap_or(config.text_color);
+        for ch in segment.text.chars() {
+            chars_with_colors.push((ch, color));
+        }
+    }
+
+    // Simple character-based wrapping
+    let mut current_line: Vec<(char, Color)> = Vec::new();
     let mut line_num = 0;
     let max_lines = ((config.height - config.padding * 2.0) / config.line_height) as usize;
 
-    for ch in text.chars() {
-        current_line.push(ch);
+    for (ch, color) in chars_with_colors {
+        current_line.push((ch, color));
 
-        // Measure current line width
+        // Measure current line width (plain text only)
+        let plain_line: String = current_line.iter().map(|(c, _)| c).collect();
         let line_width = if let Some(f) = font {
-            measure_text(&current_line, Some(f), config.font_size as u16, 1.0).width
+            measure_text(&plain_line, Some(f), config.font_size as u16, 1.0).width
         } else {
-            measure_text(&current_line, None, config.font_size as u16, 1.0).width
+            measure_text(&plain_line, None, config.font_size as u16, 1.0).width
         };
 
         // Check if we need to wrap
         if line_width > max_width || ch == '\n' {
             // Remove last character if it caused overflow (not newline)
-            if ch != '\n' && current_line.len() > 1 {
-                current_line.pop();
-            }
-
-            // Draw the line
-            let y_pos = text_y + line_num as f32 * config.line_height;
-            if let Some(f) = font {
-                draw_text_ex(
-                    &current_line,
-                    text_x,
-                    y_pos,
-                    TextParams {
-                        font: Some(f),
-                        font_size: config.font_size as u16,
-                        color: config.text_color,
-                        ..Default::default()
-                    },
-                );
+            let overflow_char = if ch != '\n' && current_line.len() > 1 {
+                current_line.pop()
             } else {
-                draw_text(&current_line, text_x, y_pos, config.font_size, config.text_color);
-            }
+                None
+            };
+
+            // Draw the line with colors
+            let y_pos = text_y + line_num as f32 * config.line_height;
+            draw_colored_line(&current_line, text_x, y_pos, config.font_size, font);
 
             line_num += 1;
             if line_num >= max_lines {
                 break;
             }
 
-            // Start new line with the character that caused overflow
-            current_line = if ch != '\n' { ch.to_string() } else { String::new() };
+            // Start new line
+            current_line = if let Some(oc) = overflow_char {
+                vec![oc]
+            } else {
+                Vec::new()
+            };
         }
     }
 
     // Draw remaining text
     if !current_line.is_empty() && line_num < max_lines {
         let y_pos = text_y + line_num as f32 * config.line_height;
+        draw_colored_line(&current_line, text_x, y_pos, config.font_size, font);
+    }
+}
+
+/// Draw a line of text with different colors for each character.
+fn draw_colored_line(
+    chars: &[(char, Color)],
+    start_x: f32,
+    y: f32,
+    font_size: f32,
+    font: Option<&Font>,
+) {
+    // Group consecutive characters with the same color
+    let mut segments: Vec<(String, Color)> = Vec::new();
+
+    for (ch, color) in chars {
+        if let Some((text, last_color)) = segments.last_mut() {
+            if last_color == color {
+                text.push(*ch);
+                continue;
+            }
+        }
+        segments.push((ch.to_string(), *color));
+    }
+
+    // Draw each segment
+    let mut x = start_x;
+    for (text, color) in segments {
         if let Some(f) = font {
             draw_text_ex(
-                &current_line,
-                text_x,
-                y_pos,
+                &text,
+                x,
+                y,
                 TextParams {
                     font: Some(f),
-                    font_size: config.font_size as u16,
-                    color: config.text_color,
+                    font_size: font_size as u16,
+                    color,
                     ..Default::default()
                 },
             );
+            x += measure_text(&text, Some(f), font_size as u16, 1.0).width;
         } else {
-            draw_text(&current_line, text_x, y_pos, config.font_size, config.text_color);
+            draw_text(&text, x, y, font_size, color);
+            x += measure_text(&text, None, font_size as u16, 1.0).width;
         }
     }
 }

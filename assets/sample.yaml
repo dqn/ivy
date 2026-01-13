@@ -14,7 +14,7 @@ script:
 
   - label: forest
     background: "assets/bg_forest.png"
-    text: "You entered a deep, mysterious forest..."
+    text: "You entered a {color:green}deep{/color}, {color:purple}mysterious{/color} forest..."
 
   - character: "assets/char_explorer.png"
     char_pos: "center"
@@ -62,4 +62,4 @@ script:
     text: "Thank you for playing!"
 
   - label: treasure_ending
-    text: "Congratulations! You found the hidden treasure!"
+    text: "Congratulations! You found the {color:gold}hidden treasure{/color}!"
