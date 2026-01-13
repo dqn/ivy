@@ -1,0 +1,47 @@
+title: Sample Story
+
+script:
+  - text: "Welcome to ivy - a simple visual novel engine."
+
+  - text: "This is a sample scenario to demonstrate the basic features."
+
+  - text: "Where would you like to go?"
+    choices:
+      - label: "Go to the forest"
+        jump: forest
+      - label: "Go to the town"
+        jump: town
+
+  - label: forest
+    background: "assets/bg_forest.png"
+    text: "You entered a deep, mysterious forest..."
+
+  - character: "assets/char_explorer.png"
+    char_pos: "center"
+    text: "The trees are tall and the air is fresh."
+
+  - text: "What do you do?"
+    choices:
+      - label: "Explore deeper"
+        jump: explore
+      - label: "Return"
+        jump: ending
+
+  - label: explore
+    character: "assets/char_happy.png"
+    text: "You found a hidden treasure chest!"
+    jump: ending
+
+  - label: town
+    background: "assets/bg_town.png"
+    text: "You arrived at a bustling town."
+
+  - character: "assets/char_merchant.png"
+    char_pos: "right"
+    text: "People are walking around, vendors are selling goods."
+    jump: ending
+
+  - label: ending
+    background: ""
+    character: ""
+    text: "Thank you for playing!"
