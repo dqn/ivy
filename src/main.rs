@@ -10,11 +10,11 @@ use macroquad::prelude::*;
 
 use audio::AudioManager;
 use render::{
-    draw_backlog, draw_background_with_offset, draw_character_with_offset, draw_choices,
+    draw_backlog, draw_background_with_offset, draw_character_animated, draw_choices,
     draw_continue_indicator_with_font, draw_settings_screen, draw_speaker_name,
     draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen, BacklogConfig,
-    BacklogState, ChoiceButtonConfig, GameSettings, SettingsConfig, ShakeState, TextBoxConfig,
-    TitleConfig, TitleMenuItem, TransitionState, TypewriterState,
+    BacklogState, CharAnimationState, ChoiceButtonConfig, GameSettings, SettingsConfig, ShakeState,
+    TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState, TypewriterState,
 };
 use runtime::{DisplayState, GameState, SaveData, VisualState};
 use scenario::load_scenario;
@@ -89,11 +89,12 @@ async fn get_texture(path: &str, cache: &mut HashMap<String, Texture2D>) -> Opti
     }
 }
 
-/// Draw visual elements (background and character) with shake offset.
+/// Draw visual elements (background and character) with shake offset and character animation.
 async fn draw_visual(
     visual: &VisualState,
     cache: &mut HashMap<String, Texture2D>,
     offset: (f32, f32),
+    char_anim: &CharAnimationState,
 ) {
     // Draw background
     if let Some(bg_path) = &visual.background {
@@ -102,10 +103,10 @@ async fn draw_visual(
         }
     }
 
-    // Draw character
+    // Draw character with animation
     if let Some(char_path) = &visual.character {
         if let Some(texture) = get_texture(char_path, cache).await {
-            draw_character_with_offset(&texture, visual.char_pos, offset);
+            draw_character_animated(&texture, visual.char_pos, offset, char_anim);
         }
     }
 }
@@ -219,6 +220,7 @@ async fn main() {
     let mut last_text: Option<String> = None;
     let mut wait_timer: f32 = 0.0;
     let mut in_wait: bool = false;
+    let mut char_anim_state = CharAnimationState::default();
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
@@ -412,6 +414,16 @@ async fn main() {
                 shake_state.start(shake);
             }
 
+            // Start character enter animation if specified
+            if let Some(char_enter) = state.current_char_enter() {
+                char_anim_state.start_enter(char_enter);
+            }
+
+            // Start character exit animation if specified
+            if let Some(char_exit) = state.current_char_exit() {
+                char_anim_state.start_exit(char_exit);
+            }
+
             // Reset auto timer on command change
             auto_timer = 0.0;
 
@@ -424,6 +436,9 @@ async fn main() {
         // Update shake state
         shake_state.update();
 
+        // Update character animation state
+        char_anim_state.update();
+
         // Get shake offset for visual rendering
         let shake_offset = shake_state.offset();
 
@@ -434,7 +449,7 @@ async fn main() {
                 visual,
             } => {
                 // Draw visuals first (background, then character) with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
 
                 // Draw speaker name if present
                 if let Some(ref name) = speaker {
@@ -516,7 +531,7 @@ async fn main() {
                 visual,
             } => {
                 // Draw visuals first with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
 
                 // Draw speaker name if present
                 if let Some(ref name) = speaker {
@@ -559,7 +574,7 @@ async fn main() {
             }
             DisplayState::Wait { duration, visual } => {
                 // Draw visuals with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
 
                 // Reset wait timer if just started waiting
                 if !in_wait {

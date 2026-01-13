@@ -52,6 +52,34 @@ pub struct IfCondition {
     pub jump: String,
 }
 
+/// Character animation type.
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CharAnimationType {
+    /// No animation (instant).
+    #[default]
+    None,
+    /// Fade in/out.
+    Fade,
+    /// Slide from/to left.
+    SlideLeft,
+    /// Slide from/to right.
+    SlideRight,
+}
+
+/// Character enter/exit animation configuration.
+#[derive(Debug, Clone, Deserialize)]
+pub struct CharAnimation {
+    #[serde(rename = "type", default)]
+    pub animation_type: CharAnimationType,
+    #[serde(default = "default_char_animation_duration")]
+    pub duration: f32,
+}
+
+fn default_char_animation_duration() -> f32 {
+    0.3
+}
+
 /// Shake effect type.
 #[derive(Debug, Clone, Copy, Default, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -115,6 +143,10 @@ pub struct Command {
     pub character: Option<String>,
     /// Character sprite position.
     pub char_pos: Option<CharPosition>,
+    /// Character entrance animation.
+    pub char_enter: Option<CharAnimation>,
+    /// Character exit animation.
+    pub char_exit: Option<CharAnimation>,
     /// BGM file path (None = keep previous, Some("") = stop).
     pub bgm: Option<String>,
     /// Sound effect file path (plays once).

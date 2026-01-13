@@ -18,6 +18,9 @@ script:
 
   - character: "assets/char_explorer.png"
     char_pos: "center"
+    char_enter:
+      type: "slide_left"
+      duration: 0.4
     speaker: "Explorer"
     text: "The trees are tall and the air is fresh."
 
@@ -49,6 +52,9 @@ script:
 
   - character: "assets/char_merchant.png"
     char_pos: "right"
+    char_enter:
+      type: "fade"
+      duration: 0.5
     text: "People are walking around, vendors are selling goods."
     jump: ending
 

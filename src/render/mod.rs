@@ -1,4 +1,5 @@
 pub mod backlog;
+pub mod character;
 pub mod image;
 pub mod settings;
 pub mod shake;
@@ -9,6 +10,7 @@ pub mod typewriter;
 pub mod ui;
 
 pub use backlog::{draw_backlog, BacklogConfig, BacklogState};
+pub use character::{draw_character_animated, CharAnimationState};
 pub use image::{
     draw_background, draw_background_with_offset, draw_character, draw_character_with_offset,
 };

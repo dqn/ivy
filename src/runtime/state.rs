@@ -457,4 +457,20 @@ impl GameState {
             .get(self.current_index)
             .and_then(|cmd| cmd.shake.as_ref())
     }
+
+    /// Get current character enter animation.
+    pub fn current_char_enter(&self) -> Option<&crate::scenario::types::CharAnimation> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.char_enter.as_ref())
+    }
+
+    /// Get current character exit animation.
+    pub fn current_char_exit(&self) -> Option<&crate::scenario::types::CharAnimation> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.char_exit.as_ref())
+    }
 }
