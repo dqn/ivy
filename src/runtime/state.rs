@@ -341,4 +341,12 @@ impl GameState {
     pub fn current_index(&self) -> usize {
         self.current_index
     }
+
+    /// Get current transition command.
+    pub fn current_transition(&self) -> Option<&crate::scenario::types::Transition> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.transition.as_ref())
+    }
 }

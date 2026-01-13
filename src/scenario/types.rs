@@ -10,6 +10,30 @@ pub enum CharPosition {
     Right,
 }
 
+/// Transition effect type.
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TransitionType {
+    #[default]
+    None,
+    Fade,
+    FadeWhite,
+    Dissolve,
+}
+
+/// Transition configuration.
+#[derive(Debug, Clone, Deserialize)]
+pub struct Transition {
+    #[serde(rename = "type", default)]
+    pub transition_type: TransitionType,
+    #[serde(default = "default_duration")]
+    pub duration: f32,
+}
+
+fn default_duration() -> f32 {
+    0.5
+}
+
 /// A single choice option that branches the story.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Choice {
@@ -42,6 +66,8 @@ pub struct Command {
     pub se: Option<String>,
     /// Voice file path (plays once).
     pub voice: Option<String>,
+    /// Transition effect.
+    pub transition: Option<Transition>,
 }
 
 /// A complete scenario loaded from YAML.

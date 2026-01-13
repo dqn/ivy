@@ -11,6 +11,7 @@ use audio::AudioManager;
 use render::{
     draw_backlog, draw_background, draw_character, draw_choices, draw_continue_indicator,
     draw_text_box, BacklogConfig, BacklogState, ChoiceButtonConfig, TextBoxConfig,
+    TransitionState,
 };
 use runtime::{DisplayState, GameState, SaveData, VisualState};
 use scenario::load_scenario;
@@ -118,6 +119,7 @@ async fn main() {
     let mut last_index: Option<usize> = None;
     let mut auto_mode = false;
     let mut auto_timer = 0.0;
+    let mut transition_state = TransitionState::default();
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
@@ -159,7 +161,7 @@ async fn main() {
             }
         }
 
-        // Update audio when command changes
+        // Update audio and transition when command changes
         let current_index = game_state.current_index();
         if last_index != Some(current_index) {
             // Update BGM
@@ -173,11 +175,19 @@ async fn main() {
             // Play voice
             audio_manager.play_voice(game_state.current_voice()).await;
 
+            // Start transition if specified
+            if let Some(transition) = game_state.current_transition() {
+                transition_state.start(transition.transition_type, transition.duration);
+            }
+
             // Reset auto timer on command change
             auto_timer = 0.0;
 
             last_index = Some(current_index);
         }
+
+        // Update transition state
+        transition_state.update();
 
         match game_state.display_state() {
             DisplayState::Text { text, visual } => {
@@ -262,6 +272,9 @@ async fn main() {
                 }
             }
         }
+
+        // Draw transition overlay
+        transition_state.draw();
 
         // Global exit on Escape
         if is_key_pressed(KeyCode::Escape) && !game_state.is_ended() {
