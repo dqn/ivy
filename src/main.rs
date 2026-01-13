@@ -116,6 +116,8 @@ async fn main() {
     let mut texture_cache: HashMap<String, Texture2D> = HashMap::new();
     let mut audio_manager = AudioManager::new();
     let mut last_index: Option<usize> = None;
+    let mut auto_mode = false;
+    let mut auto_timer = 0.0;
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
@@ -134,6 +136,17 @@ async fn main() {
         if is_key_pressed(KeyCode::L) {
             show_backlog = !show_backlog;
             backlog_state = BacklogState::default();
+        }
+
+        // Toggle auto mode with A key
+        if is_key_pressed(KeyCode::A) {
+            auto_mode = !auto_mode;
+            auto_timer = 0.0;
+            if auto_mode {
+                eprintln!("Auto mode ON");
+            } else {
+                eprintln!("Auto mode OFF");
+            }
         }
 
         // Handle rollback (Up arrow or mouse wheel up) - only when backlog is not shown
@@ -160,6 +173,9 @@ async fn main() {
             // Play voice
             audio_manager.play_voice(game_state.current_voice()).await;
 
+            // Reset auto timer on command change
+            auto_timer = 0.0;
+
             last_index = Some(current_index);
         }
 
@@ -181,13 +197,32 @@ async fn main() {
                     let skip_mode =
                         is_key_down(KeyCode::LeftControl) || is_key_down(KeyCode::RightControl);
 
-                    // Advance on click, Enter key, or skip mode (only when backlog not shown)
+                    // Auto mode timer
+                    let mut auto_advance = false;
+                    if auto_mode {
+                        auto_timer += get_frame_time() as f64;
+                        // Wait time based on text length (base 2s + 0.05s per character)
+                        let wait_time = 2.0 + text.len() as f64 * 0.05;
+                        if auto_timer >= wait_time {
+                            auto_advance = true;
+                            auto_timer = 0.0;
+                        }
+                    }
+
+                    // Advance on click, Enter key, skip mode, or auto mode
                     if is_mouse_button_pressed(MouseButton::Left)
                         || is_key_pressed(KeyCode::Enter)
                         || skip_mode
+                        || auto_advance
                     {
                         game_state.advance();
+                        auto_timer = 0.0; // Reset timer on manual advance
                     }
+                }
+
+                // Draw auto mode indicator
+                if auto_mode {
+                    draw_text("AUTO", 750.0, 20.0, 20.0, YELLOW);
                 }
             }
             DisplayState::Choices {
