@@ -77,6 +77,11 @@ impl Variables {
         &self.data
     }
 
+    /// Iterate over variables.
+    pub fn iter(&self) -> impl Iterator<Item = (&String, &Value)> {
+        self.data.iter()
+    }
+
     /// Restore variables from serialized data.
     pub fn restore(&mut self, data: HashMap<String, Value>) {
         self.data = data;

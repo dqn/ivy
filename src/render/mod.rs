@@ -2,6 +2,7 @@ pub mod achievement;
 pub mod backlog;
 pub mod character;
 pub mod cinematic;
+pub mod debug;
 pub mod gallery;
 pub mod image;
 pub mod input;
@@ -16,6 +17,7 @@ pub mod ui;
 
 pub use achievement::{draw_achievement, AchievementConfig};
 pub use backlog::{draw_backlog, BacklogConfig, BacklogState};
+pub use debug::{draw_debug, DebugConfig, DebugState};
 pub use character::{draw_character_animated, CharAnimationState};
 pub use cinematic::CinematicState;
 pub use gallery::{draw_fullscreen_image, draw_gallery, GalleryConfig, GalleryResult, GalleryState};

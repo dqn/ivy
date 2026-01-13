@@ -11,12 +11,13 @@ use macroquad::prelude::*;
 use audio::AudioManager;
 use render::{
     draw_achievement, draw_backlog, draw_background_with_offset, draw_character_animated,
-    draw_choices_with_timer, draw_continue_indicator_with_font, draw_gallery, draw_input,
-    draw_settings_screen, draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font,
-    draw_title_screen, interpolate_variables, AchievementConfig, BacklogConfig, BacklogState,
-    CharAnimationState, CinematicState, ChoiceButtonConfig, GalleryConfig, GalleryState,
-    GameSettings, InputConfig, InputState, ParticleState, ParticleType, SettingsConfig,
-    ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState, TypewriterState,
+    draw_choices_with_timer, draw_continue_indicator_with_font, draw_debug, draw_gallery,
+    draw_input, draw_settings_screen, draw_speaker_name, draw_text_box_typewriter,
+    draw_text_box_with_font, draw_title_screen, interpolate_variables, AchievementConfig,
+    BacklogConfig, BacklogState, CharAnimationState, CinematicState, ChoiceButtonConfig,
+    DebugConfig, DebugState, GalleryConfig, GalleryState, GameSettings, InputConfig, InputState,
+    ParticleState, ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig,
+    TitleMenuItem, TransitionState, TypewriterState,
 };
 use runtime::{AchievementNotifier, Achievements, DisplayState, GameState, SaveData, Unlocks, VisualState};
 use scenario::load_scenario;
@@ -223,7 +224,9 @@ async fn main() {
     let input_config = InputConfig::default();
     let gallery_config = GalleryConfig::default();
     let achievement_config = AchievementConfig::default();
+    let debug_config = DebugConfig::default();
     let mut backlog_state = BacklogState::default();
+    let mut debug_state = DebugState::default();
     let mut input_state = InputState::default();
     let mut gallery_state = GalleryState::default();
     let mut unlocks = Unlocks::load();
@@ -452,6 +455,11 @@ async fn main() {
             } else {
                 eprintln!("Skip mode OFF");
             }
+        }
+
+        // Toggle debug console with F12 key
+        if is_key_pressed(KeyCode::F12) {
+            debug_state.toggle();
         }
 
         // Handle rollback (Up arrow or mouse wheel up) - only when backlog is not shown
@@ -842,6 +850,9 @@ async fn main() {
         // Update and draw achievement notification
         achievement_notifier.update(get_frame_time());
         draw_achievement(&achievement_config, &achievement_notifier, font_ref);
+
+        // Draw debug overlay
+        draw_debug(&debug_config, &debug_state, state, font_ref);
 
         // Draw transition overlay
         transition_state.draw();
