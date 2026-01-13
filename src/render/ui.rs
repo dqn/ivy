@@ -38,8 +38,57 @@ pub struct ChoiceResult {
 
 /// Draw choice buttons and return which one was clicked.
 pub fn draw_choices(config: &ChoiceButtonConfig, choices: &[Choice]) -> ChoiceResult {
+    draw_choices_with_timer(config, choices, None, None)
+}
+
+/// Draw choice buttons with optional timer display.
+pub fn draw_choices_with_timer(
+    config: &ChoiceButtonConfig,
+    choices: &[Choice],
+    remaining_time: Option<f32>,
+    default_choice: Option<usize>,
+) -> ChoiceResult {
     let mouse_pos = mouse_position();
     let mouse_clicked = is_mouse_button_pressed(MouseButton::Left);
+
+    // Draw timer bar if timeout is set
+    if let Some(remaining) = remaining_time {
+        let timer_y = config.start_y - 40.0;
+        let timer_height = 20.0;
+        let timer_width = config.width;
+
+        // Background
+        draw_rectangle(config.x, timer_y, timer_width, timer_height, DARKGRAY);
+
+        // Progress bar (decreasing from right)
+        let progress = remaining.max(0.0);
+        let max_time = remaining_time.unwrap_or(1.0).max(0.001);
+        // Estimate original timeout from remaining time (assumes this is called early enough)
+        // For better accuracy, we'd pass the total timeout as well
+        let fill_width = timer_width * (progress / max_time.max(progress));
+        let bar_color = if progress <= 3.0 {
+            Color::new(0.9, 0.2, 0.2, 1.0) // Red when low
+        } else if progress <= 5.0 {
+            Color::new(0.9, 0.6, 0.1, 1.0) // Orange when medium
+        } else {
+            Color::new(0.2, 0.7, 0.3, 1.0) // Green when plenty
+        };
+        draw_rectangle(config.x, timer_y, fill_width, timer_height, bar_color);
+
+        // Border
+        draw_rectangle_lines(config.x, timer_y, timer_width, timer_height, 2.0, WHITE);
+
+        // Timer text
+        let timer_text = format!("{:.1}s", progress);
+        let text_dim = measure_text(&timer_text, None, 16, 1.0);
+        draw_text(
+            &timer_text,
+            config.x + (timer_width - text_dim.width) / 2.0,
+            timer_y + timer_height - 4.0,
+            16.0,
+            WHITE,
+        );
+    }
 
     let mut selected = None;
 
@@ -52,23 +101,41 @@ pub fn draw_choices(config: &ChoiceButtonConfig, choices: &[Choice]) -> ChoiceRe
             && mouse_pos.1 >= y
             && mouse_pos.1 <= y + config.height;
 
+        // Check if this is the default choice
+        let is_default = default_choice == Some(i);
+
         // Determine background color
         let bg_color = if is_hover {
             config.hover_color
+        } else if is_default && remaining_time.is_some() {
+            // Highlight default choice when timer is active
+            Color::new(0.25, 0.25, 0.35, 0.9)
         } else {
             config.bg_color
         };
 
         // Draw button background
         draw_rectangle(config.x, y, config.width, config.height, bg_color);
-        draw_rectangle_lines(config.x, y, config.width, config.height, 2.0, WHITE);
+
+        // Draw border (highlight default choice)
+        let border_color = if is_default && remaining_time.is_some() {
+            YELLOW
+        } else {
+            WHITE
+        };
+        draw_rectangle_lines(config.x, y, config.width, config.height, 2.0, border_color);
 
         // Draw button text (centered)
-        let text_width = measure_text(&choice.label, None, config.font_size as u16, 1.0).width;
+        let label = if is_default && remaining_time.is_some() {
+            format!("{} [Default]", choice.label)
+        } else {
+            choice.label.clone()
+        };
+        let text_width = measure_text(&label, None, config.font_size as u16, 1.0).width;
         let text_x = config.x + (config.width - text_width) / 2.0;
         let text_y = y + (config.height + config.font_size) / 2.0 - 4.0;
 
-        draw_text(&choice.label, text_x, text_y, config.font_size, config.text_color);
+        draw_text(&label, text_x, text_y, config.font_size, config.text_color);
 
         // Check for click
         if is_hover && mouse_clicked {

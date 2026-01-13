@@ -100,6 +100,10 @@ pub enum DisplayState {
         text: String,
         choices: Vec<Choice>,
         visual: VisualState,
+        /// Optional timeout in seconds for timed choices.
+        timeout: Option<f32>,
+        /// Index of the default choice (selected on timeout).
+        default_choice: Option<usize>,
     },
     /// Waiting for a specified duration.
     Wait {
@@ -179,11 +183,18 @@ impl GameState {
 
         if let Some(choices) = &command.choices {
             let text = command.text.clone().unwrap_or_default();
+            // Find default choice index
+            let default_choice = choices
+                .iter()
+                .position(|c| c.default)
+                .or(Some(0)); // Default to first choice if none marked
             return DisplayState::Choices {
                 speaker,
                 text,
                 choices: choices.clone(),
                 visual,
+                timeout: command.timeout,
+                default_choice,
             };
         }
 

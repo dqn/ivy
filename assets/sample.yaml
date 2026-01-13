@@ -24,12 +24,14 @@ script:
     speaker: "Explorer"
     text: "The trees are tall and the air is fresh."
 
-  - text: "What do you do?"
+  - text: "Quick! What do you do?"
+    timeout: 5.0
     choices:
       - label: "Explore deeper"
         jump: explore
       - label: "Return"
         jump: ending
+        default: true
 
   - label: explore
     character: "assets/char_happy.png"

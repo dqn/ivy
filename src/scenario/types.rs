@@ -136,6 +136,9 @@ pub struct Choice {
     pub label: String,
     /// Label to jump to when this choice is selected.
     pub jump: String,
+    /// Whether this is the default choice when timeout expires.
+    #[serde(default)]
+    pub default: bool,
 }
 
 /// A single command in the scenario script.
@@ -180,6 +183,8 @@ pub struct Command {
     pub if_cond: Option<IfCondition>,
     /// Wait duration in seconds.
     pub wait: Option<f32>,
+    /// Timeout for choices in seconds (auto-selects default choice).
+    pub timeout: Option<f32>,
 }
 
 /// A complete scenario loaded from YAML.

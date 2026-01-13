@@ -23,4 +23,4 @@ pub use text::{
 };
 pub use title::{draw_title_screen, TitleConfig, TitleMenuItem};
 pub use transition::TransitionState;
-pub use ui::{draw_choices, ChoiceButtonConfig};
+pub use ui::{draw_choices, draw_choices_with_timer, ChoiceButtonConfig};

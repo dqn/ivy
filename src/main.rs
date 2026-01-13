@@ -10,7 +10,7 @@ use macroquad::prelude::*;
 
 use audio::AudioManager;
 use render::{
-    draw_backlog, draw_background_with_offset, draw_character_animated, draw_choices,
+    draw_backlog, draw_background_with_offset, draw_character_animated, draw_choices_with_timer,
     draw_continue_indicator_with_font, draw_settings_screen, draw_speaker_name,
     draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen, BacklogConfig,
     BacklogState, CharAnimationState, ChoiceButtonConfig, GameSettings, SettingsConfig, ShakeState,
@@ -231,6 +231,8 @@ async fn main() {
     let mut wait_timer: f32 = 0.0;
     let mut in_wait: bool = false;
     let mut char_anim_state = CharAnimationState::default();
+    let mut choice_timer: Option<f32> = None;
+    let mut choice_total_time: Option<f32> = None;
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
@@ -539,6 +541,8 @@ async fn main() {
                 text,
                 choices,
                 visual,
+                timeout,
+                default_choice,
             } => {
                 // Draw visuals first with shake offset
                 draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
@@ -553,6 +557,9 @@ async fn main() {
                     let total_chars = count_visible_chars(&text);
                     typewriter_state.reset(total_chars);
                     last_text = Some(text.clone());
+                    // Reset choice timer when text changes
+                    choice_timer = timeout;
+                    choice_total_time = timeout;
                 }
 
                 // Update typewriter state
@@ -568,9 +575,34 @@ async fn main() {
                 } else {
                     // Only show choices when text is complete
                     if typewriter_state.is_complete() {
-                        let result = draw_choices(&choice_config, &choices);
+                        // Update choice timer
+                        if let Some(ref mut remaining) = choice_timer {
+                            *remaining -= get_frame_time();
+
+                            // Check if timer expired
+                            if *remaining <= 0.0 {
+                                // Auto-select default choice
+                                if let Some(idx) = default_choice {
+                                    state.select_choice(idx);
+                                    choice_timer = None;
+                                    choice_total_time = None;
+                                }
+                            }
+                        }
+
+                        // Calculate remaining time relative to total for progress bar
+                        let remaining_time = choice_timer.map(|t| t.max(0.0));
+
+                        let result = draw_choices_with_timer(
+                            &choice_config,
+                            &choices,
+                            remaining_time,
+                            default_choice,
+                        );
                         if let Some(index) = result.selected {
                             state.select_choice(index);
+                            choice_timer = None;
+                            choice_total_time = None;
                         }
                     } else {
                         // Click to complete text
