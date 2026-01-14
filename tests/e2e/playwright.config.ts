@@ -6,12 +6,15 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  reporter: process.env.CI ? "github" : "html",
+  timeout: 30000,
 
   use: {
     baseURL: "http://localhost:8080",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
+    video: "on-first-retry",
+    viewport: { width: 800, height: 600 },
   },
 
   projects: [
@@ -33,5 +36,9 @@ export default defineConfig({
       maxDiffPixels: 100,
       threshold: 0.2,
     },
+    timeout: 10000,
   },
+
+  snapshotPathTemplate:
+    "{testDir}/../snapshots/{testFilePath}/{arg}{ext}",
 });

@@ -86,7 +86,7 @@ jobs:
           npm test
 
       - name: Upload Playwright report
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
@@ -99,6 +99,14 @@ jobs:
         with:
           name: test-screenshots
           path: tests/e2e/test-results/
+          retention-days: 7
+
+      - name: Upload snapshot diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-diffs
+          path: tests/e2e/snapshots/
           retention-days: 7
 
   lint:

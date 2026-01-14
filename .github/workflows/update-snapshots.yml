@@ -1,0 +1,82 @@
+name: Update Snapshots
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for updating snapshots"
+        required: true
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  update-snapshots:
+    name: Update Visual Snapshots
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-bindgen
+        run: cargo install wasm-bindgen-cli
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-wasm-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build WASM
+        run: ./build-wasm.sh
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: tests/e2e/package-lock.json
+
+      - name: Install E2E dependencies
+        run: |
+          cd tests/e2e
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Update Playwright snapshots
+        run: |
+          cd tests/e2e
+          npx playwright test --update-snapshots
+
+      - name: Update Insta snapshots
+        run: |
+          cargo install cargo-insta
+          cargo insta test --accept
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "chore: update visual snapshots"
+          title: "Update visual snapshots"
+          body: |
+            ## Summary
+            Update visual regression test snapshots.
+
+            **Reason:** ${{ inputs.reason }}
+
+            ## Checklist
+            - [ ] Review the snapshot changes
+            - [ ] Verify the changes are intentional
+          branch: update-snapshots
+          delete-branch: true
