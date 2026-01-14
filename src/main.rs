@@ -1,3 +1,6 @@
+// Many public APIs are not used in main but are provided for external use or future features.
+#![allow(dead_code)]
+
 mod audio;
 mod cache;
 mod flowchart;
@@ -35,7 +38,7 @@ use render::{
 };
 use runtime::{
     AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
-    SaveData, Unlocks, VisualState,
+    ReadState, SaveData, Unlocks, VisualState,
 };
 use scenario::{load_scenario, CharPosition};
 
@@ -150,6 +153,30 @@ fn load_from_slot(slot: u8) -> Option<GameState> {
     load_game_from(&path)
 }
 
+/// Save a screenshot to the screenshots directory.
+fn save_screenshot() {
+    use std::fs;
+
+    // Ensure screenshots directory exists
+    if let Err(e) = fs::create_dir_all("screenshots") {
+        eprintln!("Failed to create screenshots directory: {}", e);
+        return;
+    }
+
+    // Get current timestamp for filename
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+
+    let filename = format!("screenshots/screenshot_{}.png", timestamp);
+
+    // Capture screen and save
+    let image = get_screen_data();
+    image.export_png(&filename);
+    eprintln!("Screenshot saved: {}", filename);
+}
+
 #[macroquad::main(window_conf)]
 async fn main() {
     // Load scenario
@@ -239,6 +266,7 @@ async fn main() {
     chapter_manager.set_chapters(scenario_chapters);
     let mut unlocks = Unlocks::load();
     let mut achievements = Achievements::load();
+    let mut read_state = ReadState::load();
     let mut achievement_notifier = AchievementNotifier::default();
     let mut awaiting_input: Option<String> = None; // Variable name waiting for input
     let language_config = LanguageConfig::default();
@@ -357,6 +385,11 @@ async fn main() {
                     break;
                 }
 
+                // Screenshot
+                if settings.keybinds.is_pressed(Action::Screenshot) {
+                    save_screenshot();
+                }
+
                 next_frame().await;
                 continue;
             }
@@ -374,6 +407,11 @@ async fn main() {
                 audio_manager.set_bgm_volume(settings.bgm_volume);
                 audio_manager.set_se_volume(settings.se_volume);
                 audio_manager.set_voice_volume(settings.voice_volume);
+
+                // Screenshot
+                if settings.keybinds.is_pressed(Action::Screenshot) {
+                    save_screenshot();
+                }
 
                 next_frame().await;
                 continue;
@@ -399,6 +437,11 @@ async fn main() {
                             texture.set_filter(FilterMode::Linear);
                             texture_cache.insert(path.clone(), texture);
                         }
+                }
+
+                // Screenshot
+                if settings.keybinds.is_pressed(Action::Screenshot) {
+                    save_screenshot();
                 }
 
                 next_frame().await;
@@ -432,6 +475,11 @@ async fn main() {
                     }
                 }
 
+                // Screenshot
+                if settings.keybinds.is_pressed(Action::Screenshot) {
+                    save_screenshot();
+                }
+
                 next_frame().await;
                 continue;
             }
@@ -462,6 +510,11 @@ async fn main() {
                     } else {
                         GameMode::Title
                     };
+                }
+
+                // Screenshot
+                if settings.keybinds.is_pressed(Action::Screenshot) {
+                    save_screenshot();
                 }
 
                 next_frame().await;
@@ -882,13 +935,25 @@ async fn main() {
                             .is_pressed_with_gamepad(Action::Advance, &gamepad_state);
 
                     if skip_active || auto_advance {
-                        // Skip mode and auto mode bypass typewriter
-                        typewriter_state.complete();
-                        state.advance();
-                        auto_timer = 0.0;
+                        // Check if we can skip (skip_unread=true or text is read)
+                        let can_skip = settings.skip_unread
+                            || read_state.is_read(SCENARIO_PATH, state.current_index());
+
+                        if can_skip || auto_advance {
+                            // Skip mode and auto mode bypass typewriter
+                            typewriter_state.complete();
+                            read_state.mark_read(SCENARIO_PATH, state.current_index());
+                            state.advance();
+                            auto_timer = 0.0;
+                        } else {
+                            // Stop skip mode on unread text
+                            skip_mode = false;
+                            eprintln!("Skip mode stopped (unread text)");
+                        }
                     } else if input_pressed {
                         if typewriter_state.is_complete() {
                             // Text is complete, advance to next
+                            read_state.mark_read(SCENARIO_PATH, state.current_index());
                             state.advance();
                             auto_timer = 0.0;
                         } else {
@@ -984,6 +1049,7 @@ async fn main() {
                             if *remaining <= 0.0 {
                                 // Auto-select default choice
                                 if let Some(idx) = default_choice {
+                                    read_state.mark_read(SCENARIO_PATH, state.current_index());
                                     state.select_choice(idx);
                                     choice_timer = None;
                                     _choice_total_time = None;
@@ -1050,6 +1116,7 @@ async fn main() {
                         // --- Selection confirmation ---
                         // Mouse click
                         if let Some(index) = result.selected {
+                            read_state.mark_read(SCENARIO_PATH, state.current_index());
                             state.select_choice(index);
                             choice_timer = None;
                             _choice_total_time = None;
@@ -1058,6 +1125,7 @@ async fn main() {
                             // Gamepad A button
                             if gamepad_state.is_button_pressed(GamepadButton::A)
                                 && let Some(idx) = choice_nav_state.focus_index {
+                                    read_state.mark_read(SCENARIO_PATH, state.current_index());
                                     state.select_choice(idx);
                                     choice_timer = None;
                                     _choice_total_time = None;
@@ -1103,6 +1171,7 @@ async fn main() {
                 {
                     in_wait = false;
                     wait_timer = 0.0;
+                    read_state.mark_read(SCENARIO_PATH, state.current_index());
                     state.advance();
                 }
 
@@ -1145,6 +1214,7 @@ async fn main() {
                     let value = runtime::Value::String(input_state.text.clone());
                     state.set_variable(&input.var, value);
                     awaiting_input = None;
+                    read_state.mark_read(SCENARIO_PATH, state.current_index());
                     state.advance();
                 } else if result.cancelled {
                     // Use default value or empty string
@@ -1152,6 +1222,7 @@ async fn main() {
                     let value = runtime::Value::String(default_value);
                     state.set_variable(&input.var, value);
                     awaiting_input = None;
+                    read_state.mark_read(SCENARIO_PATH, state.current_index());
                     state.advance();
                 }
             }
@@ -1202,6 +1273,11 @@ async fn main() {
         // Return to title on Escape (instead of exiting)
         if is_key_pressed(KeyCode::Escape) && !state.is_ended() {
             return_to_title = true;
+        }
+
+        // Screenshot
+        if settings.keybinds.is_pressed(Action::Screenshot) {
+            save_screenshot();
         }
 
         next_frame().await;

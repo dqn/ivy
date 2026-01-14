@@ -15,6 +15,7 @@ pub enum Action {
     QuickLoad,
     Settings,
     Debug,
+    Screenshot,
 }
 
 impl Action {
@@ -30,6 +31,7 @@ impl Action {
             Action::QuickLoad,
             Action::Settings,
             Action::Debug,
+            Action::Screenshot,
         ]
     }
 
@@ -45,6 +47,7 @@ impl Action {
             Action::QuickLoad => "Quick Load",
             Action::Settings => "Settings",
             Action::Debug => "Debug",
+            Action::Screenshot => "Screenshot",
         }
     }
 }
@@ -279,9 +282,15 @@ pub struct KeyBindings {
     pub quick_load: KeyBinding,
     pub settings: KeyBinding,
     pub debug: KeyBinding,
+    #[serde(default = "default_screenshot")]
+    pub screenshot: KeyBinding,
     /// Gamepad bindings.
     #[serde(default)]
     pub gamepad: GamepadBindings,
+}
+
+fn default_screenshot() -> KeyBinding {
+    KeyBinding::new(KeyCode::F10)
 }
 
 impl Default for KeyBindings {
@@ -296,6 +305,7 @@ impl Default for KeyBindings {
             quick_load: KeyBinding::new(KeyCode::F9),
             settings: KeyBinding::new(KeyCode::Escape),
             debug: KeyBinding::new(KeyCode::F12),
+            screenshot: KeyBinding::new(KeyCode::F10),
             gamepad: GamepadBindings::default(),
         }
     }
@@ -314,6 +324,7 @@ impl KeyBindings {
             Action::QuickLoad => &self.quick_load,
             Action::Settings => &self.settings,
             Action::Debug => &self.debug,
+            Action::Screenshot => &self.screenshot,
         }
     }
 
@@ -329,6 +340,7 @@ impl KeyBindings {
             Action::QuickLoad => self.quick_load = binding,
             Action::Settings => self.settings = binding,
             Action::Debug => self.debug = binding,
+            Action::Screenshot => self.screenshot = binding,
         }
     }
 
@@ -341,8 +353,8 @@ impl KeyBindings {
             Action::SkipMode => Some(self.gamepad.skip_mode),
             Action::Backlog => Some(self.gamepad.backlog),
             Action::Settings => Some(self.gamepad.menu),
-            // No gamepad bindings for QuickSave, QuickLoad, Debug
-            Action::QuickSave | Action::QuickLoad | Action::Debug => None,
+            // No gamepad bindings for QuickSave, QuickLoad, Debug, Screenshot
+            Action::QuickSave | Action::QuickLoad | Action::Debug | Action::Screenshot => None,
         }
     }
 

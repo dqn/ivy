@@ -9,6 +9,52 @@ use crate::runtime::KeyBindings;
 
 const CONFIG_PATH: &str = "config.json";
 
+/// Text speed preset values.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TextSpeedPreset {
+    Slow,
+    Normal,
+    Fast,
+}
+
+impl TextSpeedPreset {
+    /// Convert preset to characters per second.
+    pub fn to_cps(self) -> f32 {
+        match self {
+            Self::Slow => 15.0,
+            Self::Normal => 30.0,
+            Self::Fast => 60.0,
+        }
+    }
+
+    /// Get display name.
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            Self::Slow => "Slow",
+            Self::Normal => "Normal",
+            Self::Fast => "Fast",
+        }
+    }
+
+    /// Get preset from CPS value.
+    pub fn from_cps(cps: f32) -> Option<Self> {
+        if (cps - 15.0).abs() < 0.1 {
+            Some(Self::Slow)
+        } else if (cps - 30.0).abs() < 0.1 {
+            Some(Self::Normal)
+        } else if (cps - 60.0).abs() < 0.1 {
+            Some(Self::Fast)
+        } else {
+            None
+        }
+    }
+
+    /// Get all presets.
+    pub fn all() -> &'static [Self] {
+        &[Self::Slow, Self::Normal, Self::Fast]
+    }
+}
+
 /// Game settings that can be adjusted by the player.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameSettings {
@@ -237,8 +283,76 @@ pub fn draw_settings_screen(
         settings.text_speed = (settings.text_speed / 5.0).round() * 5.0;
     }
 
+    // Text Speed Preset buttons
+    let preset_button_width = 80.0;
+    let preset_button_height = 30.0;
+    let preset_spacing = 10.0;
+    let preset_y = y + 40.0;
+    let current_preset = TextSpeedPreset::from_cps(settings.text_speed);
+
+    for (i, preset) in TextSpeedPreset::all().iter().enumerate() {
+        let btn_x = slider_x + (preset_button_width + preset_spacing) * i as f32;
+        let is_selected = current_preset == Some(*preset);
+
+        // Draw button with selection highlight
+        let mouse_pos = mouse_position();
+        let button_rect = Rect::new(btn_x, preset_y, preset_button_width, preset_button_height);
+        let is_hovered = button_rect.contains(Vec2::new(mouse_pos.0, mouse_pos.1));
+
+        let bg_color = if is_selected {
+            Color::new(0.3, 0.6, 0.3, 0.9)
+        } else if is_hovered {
+            Color::new(0.3, 0.3, 0.4, 0.9)
+        } else {
+            Color::new(0.2, 0.2, 0.25, 0.8)
+        };
+
+        draw_rectangle(btn_x, preset_y, preset_button_width, preset_button_height, bg_color);
+        draw_rectangle_lines(
+            btn_x,
+            preset_y,
+            preset_button_width,
+            preset_button_height,
+            2.0,
+            if is_selected {
+                Color::new(0.3, 0.8, 0.3, 1.0)
+            } else if is_hovered {
+                YELLOW
+            } else {
+                GRAY
+            },
+        );
+
+        // Draw button text
+        let text_params = if let Some(f) = font {
+            TextParams {
+                font: Some(f),
+                font_size: (config.label_font_size * 0.8) as u16,
+                color: if is_selected || is_hovered { WHITE } else { LIGHTGRAY },
+                ..Default::default()
+            }
+        } else {
+            TextParams {
+                font_size: (config.label_font_size * 0.8) as u16,
+                color: if is_selected || is_hovered { WHITE } else { LIGHTGRAY },
+                ..Default::default()
+            }
+        };
+
+        let label = preset.display_name();
+        let text_dim = measure_text(label, font, (config.label_font_size * 0.8) as u16, 1.0);
+        let text_x = btn_x + (preset_button_width - text_dim.width) / 2.0;
+        let text_y = preset_y + (preset_button_height + text_dim.height) / 2.0 - text_dim.offset_y / 2.0;
+        draw_text_ex(label, text_x, text_y, text_params);
+
+        // Handle click
+        if is_hovered && is_mouse_button_pressed(MouseButton::Left) {
+            settings.text_speed = preset.to_cps();
+        }
+    }
+
     // Skip Unread checkbox
-    y += config.slider_spacing;
+    y += config.slider_spacing + 40.0; // Extra space for preset buttons
     settings.skip_unread = draw_checkbox(
         slider_x,
         y,
