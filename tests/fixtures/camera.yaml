@@ -1,0 +1,32 @@
+title: Camera Test
+
+script:
+  - label: start
+    text: "Normal view."
+
+  - camera:
+      zoom: 1.5
+      duration: 1.0
+    text: "Zooming in..."
+
+  - camera:
+      pan:
+        x: 100
+        y: 0
+      duration: 0.5
+    text: "Panning right..."
+
+  - camera:
+      tilt: 5
+      duration: 0.3
+    text: "Tilting slightly..."
+
+  - camera:
+      pan:
+        x: 0
+        y: 0
+      zoom: 1.0
+      tilt: 0
+      duration: 1.0
+      easing: ease_out_quad
+    text: "Back to normal."

@@ -534,3 +534,49 @@ script:
     assert_eq!(modular_ref.name, "sakura");
     assert_eq!(modular_ref.variants.get("expression"), Some(&1));
 }
+
+#[test]
+fn test_parse_camera_command() {
+    use ivy::scenario::{CameraFocus, Easing};
+
+    let yaml = r#"
+title: Camera Test
+
+script:
+  - camera:
+      zoom: 1.5
+      duration: 1.0
+    text: "Zooming in..."
+
+  - camera:
+      pan:
+        x: 100
+        y: -50
+      zoom: 1.2
+      tilt: 5
+      focus: top_left
+      duration: 2.0
+      easing: ease_in_out_cubic
+    text: "Combined effects"
+"#;
+
+    let scenario = parse_scenario(yaml).unwrap();
+
+    // First camera command
+    let camera1 = scenario.script[0].camera.as_ref().unwrap();
+    assert!(camera1.pan.is_none());
+    assert_eq!(camera1.zoom, Some(1.5));
+    assert!(camera1.tilt.is_none());
+    assert_eq!(camera1.duration, 1.0);
+
+    // Second camera command with all options
+    let camera2 = scenario.script[1].camera.as_ref().unwrap();
+    let pan = camera2.pan.as_ref().unwrap();
+    assert_eq!(pan.x, 100.0);
+    assert_eq!(pan.y, -50.0);
+    assert_eq!(camera2.zoom, Some(1.2));
+    assert_eq!(camera2.tilt, Some(5.0));
+    assert!(matches!(camera2.focus, CameraFocus::TopLeft));
+    assert_eq!(camera2.duration, 2.0);
+    assert!(matches!(camera2.easing, Easing::EaseInOutCubic));
+}

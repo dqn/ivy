@@ -135,6 +135,33 @@ script:
       expression: 1             # 表情を変更
     text: "表情だけ変更"
 
+  # ダイナミックカメラ（パン、ズーム、チルト）
+  - camera:
+      zoom: 1.5               # ズームレベル（1.0 = 通常）
+      duration: 1.0           # アニメーション時間
+      easing: ease_out_quad   # イージング関数
+    text: "ズームイン"
+
+  - camera:
+      pan:
+        x: 100                # X方向オフセット（ピクセル）
+        y: 50                 # Y方向オフセット（ピクセル）
+      duration: 0.5
+    text: "パン移動"
+
+  - camera:
+      tilt: 5                 # 傾き（度）
+      duration: 0.3
+    text: "カメラ傾斜"
+
+  - camera:
+      pan: { x: 0, y: 0 }     # 複合エフェクト
+      zoom: 1.0
+      tilt: 0
+      focus: center           # フォーカス点
+      duration: 1.5
+    text: "通常に戻る"
+
   # 動画再生（--features video が必要）
   - video:
       path: "assets/videos/opening.webm"
@@ -241,6 +268,7 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [x] シネマティックバー（レターボックス）
 - [x] イージング関数（14種類）
 - [x] トランジション拡張（Wipe, Slide, Pixelate, Iris, Blinds）
+- [x] ダイナミックカメラ（パン、ズーム、チルト）
 
 ### テキスト機能
 - [x] 色付きテキスト `{color:red}text{/color}`
@@ -282,7 +310,6 @@ cd tests/e2e && npm run test:update  # スナップショット更新
   - [ ] VSCode拡張（シンタックスハイライト、補完）
   - [ ] シナリオバリデーター（構文チェック）
   - [ ] リアルタイムプレビュー
-- [ ] ダイナミックカメラ（パン、ズーム、チルト）
 - [ ] 動画背景
 - [ ] レイヤードオーディオ（環境音の重ね合わせ）
 - [ ] Live2D対応

@@ -31,16 +31,17 @@ use render::{
     DebugConfig, DebugState, FlowchartConfig, FlowchartState, GalleryConfig, GalleryState,
     GameSettings, InputConfig, InputSource, InputState, NvlConfig, NvlState, ParticleState,
     ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem,
-    TransitionState, TypewriterState, VideoState, count_nvl_chars, count_visible_chars,
-    draw_achievement, draw_background_with_offset, draw_backlog, draw_chapter_select,
-    draw_character_animated, draw_choices_with_timer, draw_continue_indicator_with_font,
-    draw_debug, draw_flowchart, draw_gallery, draw_input, draw_modular_char, draw_nvl_text_box,
-    draw_settings_screen, draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font,
-    draw_title_screen, interpolate_variables,
+    TransitionState, TypewriterState, VideoState, calculate_camera_transform, count_nvl_chars,
+    count_visible_chars, draw_achievement, draw_background_with_offset, draw_backlog,
+    draw_chapter_select, draw_character_animated, draw_choices_with_timer,
+    draw_continue_indicator_with_font, draw_debug, draw_flowchart, draw_gallery, draw_input,
+    draw_modular_char, draw_nvl_text_box, draw_settings_screen, draw_speaker_name,
+    draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen, interpolate_variables,
+    pop_camera_transform, push_camera_transform,
 };
 use runtime::{
-    AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
-    ReadState, SaveData, Unlocks, VisualState,
+    AchievementNotifier, Achievements, Action, CameraAnimationState, CameraState, Chapter,
+    ChapterManager, DisplayState, GameState, ReadState, SaveData, Unlocks, VisualState,
 };
 use scenario::{CharPosition, ModularCharDef, load_scenario};
 
@@ -310,6 +311,8 @@ async fn main() {
     let mut _choice_total_time: Option<f32> = None;
     let mut choice_nav_state = ChoiceNavState::default();
     let mut last_mouse_pos: (f32, f32) = (0.0, 0.0);
+    let mut camera_state = CameraState::default();
+    let mut camera_anim_state = CameraAnimationState::default();
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
@@ -843,6 +846,23 @@ async fn main() {
                 eprintln!("Achievement unlocked: {}", achievement.name);
             }
 
+            // Start camera animation if specified
+            if let Some(camera_cmd) = state.current_camera() {
+                let target = CameraState {
+                    pan_x: camera_cmd.pan.as_ref().map(|p| p.x).unwrap_or(camera_state.pan_x),
+                    pan_y: camera_cmd.pan.as_ref().map(|p| p.y).unwrap_or(camera_state.pan_y),
+                    zoom: camera_cmd.zoom.unwrap_or(camera_state.zoom),
+                    tilt: camera_cmd.tilt.unwrap_or(camera_state.tilt),
+                    focus: camera_cmd.focus,
+                };
+                camera_anim_state.start(
+                    camera_state.clone(),
+                    target,
+                    camera_cmd.duration,
+                    camera_cmd.easing,
+                );
+            }
+
             // Reset auto timer on command change
             auto_timer = 0.0;
 
@@ -897,8 +917,19 @@ async fn main() {
             idle_state.update();
         }
 
+        // Update camera animation state
+        camera_anim_state.update(get_frame_time());
+        camera_state = camera_anim_state.current();
+
         // Get shake offset for visual rendering
         let shake_offset = shake_state.offset();
+
+        // Calculate camera transform
+        let camera_transform = calculate_camera_transform(
+            &camera_state,
+            screen_width(),
+            screen_height(),
+        );
 
         match state.display_state() {
             DisplayState::Text {
@@ -917,7 +948,8 @@ async fn main() {
                     nvl_state.clear();
                 }
 
-                // Draw visuals first (background, then character) with shake offset
+                // Draw visuals first (background, then character) with shake offset and camera
+                push_camera_transform(&camera_transform);
                 draw_visual(
                     &visual,
                     &mut texture_cache,
@@ -929,6 +961,7 @@ async fn main() {
                     &modular_char_defs,
                 )
                 .await;
+                pop_camera_transform(&camera_transform);
 
                 // Resolve localized text
                 let resolved_text = language_config.resolve(&text);
@@ -1088,7 +1121,8 @@ async fn main() {
                     eprintln!("Skip mode OFF (reached choices)");
                 }
 
-                // Draw visuals first with shake offset
+                // Draw visuals first with shake offset and camera
+                push_camera_transform(&camera_transform);
                 draw_visual(
                     &visual,
                     &mut texture_cache,
@@ -1100,6 +1134,7 @@ async fn main() {
                     &modular_char_defs,
                 )
                 .await;
+                pop_camera_transform(&camera_transform);
 
                 // Resolve localized text
                 let resolved_text = language_config.resolve(&text);
@@ -1251,7 +1286,8 @@ async fn main() {
                 }
             }
             DisplayState::Wait { duration, visual } => {
-                // Draw visuals with shake offset
+                // Draw visuals with shake offset and camera
+                push_camera_transform(&camera_transform);
                 draw_visual(
                     &visual,
                     &mut texture_cache,
@@ -1263,6 +1299,7 @@ async fn main() {
                     &modular_char_defs,
                 )
                 .await;
+                pop_camera_transform(&camera_transform);
 
                 // Reset wait timer if just started waiting
                 if !in_wait {
@@ -1308,7 +1345,8 @@ async fn main() {
                 }
             }
             DisplayState::Input { input, visual } => {
-                // Draw visuals with shake offset
+                // Draw visuals with shake offset and camera
+                push_camera_transform(&camera_transform);
                 draw_visual(
                     &visual,
                     &mut texture_cache,
@@ -1320,6 +1358,7 @@ async fn main() {
                     &modular_char_defs,
                 )
                 .await;
+                pop_camera_transform(&camera_transform);
 
                 // Initialize input state if this is a new input command
                 if awaiting_input.as_ref() != Some(&input.var) {

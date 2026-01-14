@@ -357,6 +357,66 @@ fn default_shake_duration() -> f32 {
     0.5
 }
 
+/// Camera focus point.
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CameraFocus {
+    /// Center of screen (default).
+    #[default]
+    Center,
+    /// Top-left corner.
+    TopLeft,
+    /// Top-center.
+    TopCenter,
+    /// Top-right corner.
+    TopRight,
+    /// Left-center.
+    Left,
+    /// Right-center.
+    Right,
+    /// Bottom-left corner.
+    BottomLeft,
+    /// Bottom-center.
+    BottomCenter,
+    /// Bottom-right corner.
+    BottomRight,
+}
+
+/// Camera pan offset.
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+pub struct CameraPan {
+    /// Horizontal offset in pixels.
+    #[serde(default)]
+    pub x: f32,
+    /// Vertical offset in pixels.
+    #[serde(default)]
+    pub y: f32,
+}
+
+/// Camera command for dynamic camera effects.
+#[derive(Debug, Clone, Deserialize)]
+pub struct CameraCommand {
+    /// Pan offset (horizontal and vertical movement).
+    pub pan: Option<CameraPan>,
+    /// Zoom level (1.0 = normal, > 1.0 = zoom in, < 1.0 = zoom out).
+    pub zoom: Option<f32>,
+    /// Tilt angle in degrees.
+    pub tilt: Option<f32>,
+    /// Focus point for zoom.
+    #[serde(default)]
+    pub focus: CameraFocus,
+    /// Animation duration in seconds.
+    #[serde(default = "default_camera_duration")]
+    pub duration: f32,
+    /// Easing function for animation.
+    #[serde(default)]
+    pub easing: Easing,
+}
+
+fn default_camera_duration() -> f32 {
+    0.5
+}
+
 /// Video playback command.
 #[derive(Debug, Clone, Deserialize)]
 pub struct VideoCommand {
@@ -458,6 +518,8 @@ pub struct Command {
     pub achievement: Option<Achievement>,
     /// Video playback command.
     pub video: Option<VideoCommand>,
+    /// Camera control (pan, zoom, tilt).
+    pub camera: Option<CameraCommand>,
     /// NVL mode toggle. true = switch to NVL mode, false = switch to ADV mode.
     pub nvl: Option<bool>,
     /// Clear NVL text buffer and start fresh page.

@@ -1,5 +1,6 @@
 pub mod achievement;
 pub mod backlog;
+pub mod camera;
 pub mod chapter_select;
 pub mod character;
 pub mod cinematic;
@@ -45,3 +46,4 @@ pub use ui::{ChoiceButtonConfig, ChoiceNavState, InputSource, draw_choices_with_
 pub use video::VideoState;
 pub use nvl::{NvlConfig, NvlState, count_nvl_chars, draw_nvl_text_box};
 pub use modular_char::draw_modular_char;
+pub use camera::{calculate_camera_transform, pop_camera_transform, push_camera_transform};

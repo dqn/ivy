@@ -146,6 +146,39 @@ script:
   - nvl: false
     text: "And now we're back to ADV mode with the text box at the bottom."
 
+  # Dynamic camera demo
+  - label: camera_demo
+    background: "assets/bg_forest.png"
+    text: "Let's demonstrate dynamic camera effects."
+
+  - camera:
+      zoom: 1.3
+      duration: 1.0
+      easing: ease_out_quad
+    text: "The camera zooms in for a dramatic close-up..."
+
+  - camera:
+      pan:
+        x: 100
+        y: 0
+      duration: 0.8
+    text: "...then pans to the right..."
+
+  - camera:
+      tilt: 5
+      duration: 0.5
+    text: "...and tilts slightly for tension."
+
+  - camera:
+      pan:
+        x: 0
+        y: 0
+      zoom: 1.0
+      tilt: 0
+      duration: 1.5
+      easing: ease_in_out_cubic
+    text: "And smoothly returns to normal view."
+
   # Modular character demo (layered sprite compositing)
   # Note: These paths are examples - actual files would need to exist
   # - label: modular_char_demo

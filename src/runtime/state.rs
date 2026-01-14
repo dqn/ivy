@@ -524,6 +524,14 @@ impl GameState {
         self.scenario.modular_characters.get(name)
     }
 
+    /// Get current camera command.
+    pub fn current_camera(&self) -> Option<&crate::scenario::types::CameraCommand> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.camera.as_ref())
+    }
+
     /// Reload scenario while preserving state.
     ///
     /// Attempts to maintain the current position by finding the same label

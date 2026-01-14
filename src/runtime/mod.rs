@@ -19,4 +19,4 @@ pub use state::GameState;
 pub use unlocks::Unlocks;
 pub use variables::{Value, Variables};
 #[allow(unused_imports)]
-pub use visual::{CharacterState, VisualState};
+pub use visual::{CameraAnimationState, CameraState, CharacterState, VisualState};
