@@ -39,11 +39,12 @@ fn test_is_pressed_with_wrong_key() {
 fn test_is_pressed_with_modifier() {
     use ivy::runtime::keybinds::{KeyBinding, Modifier, SerializableKeyCode};
 
-    let mut bindings = KeyBindings::default();
-    // Set QuickSave to Shift+S
-    bindings.quick_save = KeyBinding {
-        key: SerializableKeyCode(KeyCode::S),
-        modifier: Some(Modifier::Shift),
+    let bindings = KeyBindings {
+        quick_save: KeyBinding {
+            key: SerializableKeyCode(KeyCode::S),
+            modifier: Some(Modifier::Shift),
+        },
+        ..Default::default()
     };
 
     let mut input = TestInput::new();
@@ -64,10 +65,12 @@ fn test_is_pressed_with_modifier() {
 fn test_is_pressed_with_right_modifier() {
     use ivy::runtime::keybinds::{KeyBinding, Modifier, SerializableKeyCode};
 
-    let mut bindings = KeyBindings::default();
-    bindings.quick_save = KeyBinding {
-        key: SerializableKeyCode(KeyCode::S),
-        modifier: Some(Modifier::Shift),
+    let bindings = KeyBindings {
+        quick_save: KeyBinding {
+            key: SerializableKeyCode(KeyCode::S),
+            modifier: Some(Modifier::Shift),
+        },
+        ..Default::default()
     };
 
     let mut input = TestInput::new();
@@ -82,10 +85,12 @@ fn test_is_pressed_with_right_modifier() {
 fn test_is_pressed_with_ctrl_modifier() {
     use ivy::runtime::keybinds::{KeyBinding, Modifier, SerializableKeyCode};
 
-    let mut bindings = KeyBindings::default();
-    bindings.settings = KeyBinding {
-        key: SerializableKeyCode(KeyCode::P),
-        modifier: Some(Modifier::Ctrl),
+    let bindings = KeyBindings {
+        settings: KeyBinding {
+            key: SerializableKeyCode(KeyCode::P),
+            modifier: Some(Modifier::Ctrl),
+        },
+        ..Default::default()
     };
 
     let mut input = TestInput::new();
@@ -100,10 +105,12 @@ fn test_is_pressed_with_ctrl_modifier() {
 fn test_is_pressed_with_alt_modifier() {
     use ivy::runtime::keybinds::{KeyBinding, Modifier, SerializableKeyCode};
 
-    let mut bindings = KeyBindings::default();
-    bindings.debug = KeyBinding {
-        key: SerializableKeyCode(KeyCode::D),
-        modifier: Some(Modifier::Alt),
+    let bindings = KeyBindings {
+        debug: KeyBinding {
+            key: SerializableKeyCode(KeyCode::D),
+            modifier: Some(Modifier::Alt),
+        },
+        ..Default::default()
     };
 
     let mut input = TestInput::new();
@@ -143,10 +150,12 @@ fn test_clear_frame_resets_pressed_state() {
 fn test_hold_key_persists_after_clear_frame() {
     use ivy::runtime::keybinds::{KeyBinding, Modifier, SerializableKeyCode};
 
-    let mut bindings = KeyBindings::default();
-    bindings.quick_save = KeyBinding {
-        key: SerializableKeyCode(KeyCode::S),
-        modifier: Some(Modifier::Shift),
+    let bindings = KeyBindings {
+        quick_save: KeyBinding {
+            key: SerializableKeyCode(KeyCode::S),
+            modifier: Some(Modifier::Shift),
+        },
+        ..Default::default()
     };
 
     let mut input = TestInput::new();

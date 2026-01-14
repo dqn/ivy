@@ -282,7 +282,7 @@ impl TransitionState {
                     progress // Open during phase 1
                 }
             }
-            TransitionDirection::Close | _ => {
+            _ => {
                 if self.phase == 0 {
                     1.0 - progress
                 } else {
@@ -366,7 +366,7 @@ impl TransitionState {
                     draw_rectangle(0.0, y, w, covered_height, BLACK);
                 }
             }
-            TransitionDirection::Vertical | _ => {
+            _ => {
                 let blind_width = w / count as f32;
                 for i in 0..count {
                     let x = i as f32 * blind_width;

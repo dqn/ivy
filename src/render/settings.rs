@@ -197,7 +197,7 @@ pub fn draw_settings_screen(
 
     // Auto Speed
     y += config.slider_spacing;
-    let speed_label = format!("Auto Speed ({}x)", format!("{:.1}", settings.auto_speed));
+    let speed_label = format!("Auto Speed ({:.1}x)", settings.auto_speed);
     let old_auto_speed = settings.auto_speed;
     settings.auto_speed = draw_slider(
         slider_x,

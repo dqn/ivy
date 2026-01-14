@@ -65,6 +65,7 @@ pub fn draw_checkbox(
 }
 
 /// Draw a slider with extended formatting options and return the new value if changed.
+#[allow(clippy::too_many_arguments)]
 pub fn draw_slider_ex(
     x: f32,
     y: f32,
@@ -154,6 +155,7 @@ pub fn draw_slider_ex(
 }
 
 /// Draw a slider with percentage format and return the new value if changed.
+#[allow(clippy::too_many_arguments)]
 pub fn draw_slider(
     x: f32,
     y: f32,

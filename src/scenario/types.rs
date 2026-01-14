@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::i18n::LocalizedString;
 
 /// Easing functions for smooth animations.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Easing {
     /// Linear interpolation (no easing).
@@ -110,7 +110,7 @@ impl Easing {
 }
 
 /// Character sprite position on screen.
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CharPosition {
     Left,
@@ -251,7 +251,7 @@ pub struct CharacterDisplay {
 }
 
 /// Character animation type.
-#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CharAnimationType {
     /// No animation (instant).
@@ -266,7 +266,7 @@ pub enum CharAnimationType {
 }
 
 /// Character enter/exit animation configuration.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CharAnimation {
     #[serde(rename = "type", default)]
     pub animation_type: CharAnimationType,
@@ -281,7 +281,7 @@ fn default_char_animation_duration() -> f32 {
 }
 
 /// Character idle animation type (looping animations).
-#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CharIdleType {
     /// No idle animation.
@@ -298,7 +298,7 @@ pub enum CharIdleType {
 }
 
 /// Character idle animation configuration.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CharIdleAnimation {
     #[serde(rename = "type", default)]
     pub idle_type: CharIdleType,

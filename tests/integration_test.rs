@@ -675,7 +675,7 @@ script:
   - text: "Second"
   - text: "Third"
 "#;
-    let scenario = parse_scenario(yaml).unwrap();
+    let _scenario = parse_scenario(yaml).unwrap();
 
     let visual = VisualState {
         background: Some("bg.png".to_string()),
@@ -685,10 +685,16 @@ script:
             CharacterState {
                 path: "a.png".to_string(),
                 position: CharPosition::Left,
+                enter: None,
+                exit: None,
+                idle: None,
             },
             CharacterState {
                 path: "b.png".to_string(),
                 position: CharPosition::Right,
+                enter: None,
+                exit: None,
+                idle: None,
             },
         ],
     };

@@ -159,6 +159,9 @@ impl GameState {
                 .map(|c| CharacterState {
                     path: c.image.clone(),
                     position: c.pos,
+                    enter: c.enter.clone(),
+                    exit: c.exit.clone(),
+                    idle: c.idle.clone(),
                 })
                 .collect();
             // Clear single character when using multiple

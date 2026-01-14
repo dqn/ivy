@@ -12,7 +12,7 @@ pub enum AnimationDirection {
 }
 
 /// Character animation state.
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct CharAnimationState {
     active: bool,
     direction: Option<AnimationDirection>,
@@ -135,7 +135,7 @@ impl CharAnimationState {
 }
 
 /// Character idle animation state (looping).
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct CharIdleState {
     active: bool,
     idle_type: CharIdleType,

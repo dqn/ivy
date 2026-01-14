@@ -9,6 +9,8 @@ mod runtime;
 mod scenario;
 mod types;
 
+use std::collections::HashMap;
+
 use macroquad::prelude::*;
 
 use cache::TextureCache;
@@ -32,7 +34,7 @@ use runtime::{
     AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
     SaveData, Unlocks, VisualState,
 };
-use scenario::load_scenario;
+use scenario::{load_scenario, CharPosition};
 
 /// Game mode: title screen, settings, gallery, chapters, or in-game.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -64,6 +66,8 @@ async fn draw_visual(
     offset: (f32, f32),
     char_anim: &CharAnimationState,
     char_idle: &CharIdleState,
+    char_anim_states: &HashMap<CharPosition, CharAnimationState>,
+    char_idle_states: &HashMap<CharPosition, CharIdleState>,
 ) {
     // Draw background
     if let Some(bg_path) = &visual.background
@@ -75,17 +79,10 @@ async fn draw_visual(
     if !visual.characters.is_empty() {
         for char_state in &visual.characters {
             if let Some(texture) = cache.get(&char_state.path).await {
-                // Note: For multiple characters, we use default animation states
-                // Full animation support for multiple characters would require per-character state
-                let default_anim = CharAnimationState::default();
-                let default_idle = CharIdleState::default();
-                draw_character_animated(
-                    &texture,
-                    char_state.position,
-                    offset,
-                    &default_anim,
-                    &default_idle,
-                );
+                let pos = char_state.position;
+                let anim = char_anim_states.get(&pos).cloned().unwrap_or_default();
+                let idle = char_idle_states.get(&pos).cloned().unwrap_or_default();
+                draw_character_animated(&texture, pos, offset, &anim, &idle);
             }
         }
     } else if let Some(char_path) = &visual.character {
@@ -254,6 +251,10 @@ async fn main() {
     let mut char_anim_state = CharAnimationState::default();
     let mut char_idle_state = CharIdleState::default();
     let mut pending_idle: Option<scenario::CharIdleAnimation> = None;
+    // Position-based animation states for multi-character support
+    let mut char_anim_states: HashMap<CharPosition, CharAnimationState> = HashMap::new();
+    let mut char_idle_states: HashMap<CharPosition, CharIdleState> = HashMap::new();
+    let mut pending_idles: HashMap<CharPosition, scenario::CharIdleAnimation> = HashMap::new();
     let mut particle_state = ParticleState::default();
     let mut cinematic_state = CinematicState::default();
     let mut choice_timer: Option<f32> = None;
@@ -623,6 +624,55 @@ async fn main() {
                     pending_idle = None;
                 }
 
+            // Handle multiple character animations
+            if let Some(visual) = visual {
+                // Track which positions are currently active
+                let active_positions: std::collections::HashSet<_> =
+                    visual.characters.iter().map(|c| c.position).collect();
+
+                // Clear animations for positions no longer in use
+                for pos in [CharPosition::Left, CharPosition::Center, CharPosition::Right] {
+                    if !active_positions.contains(&pos) {
+                        if let Some(anim) = char_anim_states.get_mut(&pos) {
+                            anim.reset();
+                        }
+                        if let Some(idle) = char_idle_states.get_mut(&pos) {
+                            idle.stop();
+                        }
+                        pending_idles.remove(&pos);
+                    }
+                }
+
+                // Start animations for each character
+                for char_state in &visual.characters {
+                    let pos = char_state.position;
+
+                    // Initialize state if not exists
+                    char_anim_states.entry(pos).or_default();
+                    char_idle_states.entry(pos).or_default();
+
+                    // Start enter animation if specified
+                    if let Some(enter) = &char_state.enter {
+                        char_anim_states.get_mut(&pos).unwrap().start_enter(enter);
+                        // Store pending idle to start after enter completes
+                        if let Some(idle) = &char_state.idle {
+                            pending_idles.insert(pos, idle.clone());
+                        }
+                        char_idle_states.get_mut(&pos).unwrap().stop();
+                    } else if let Some(idle) = &char_state.idle {
+                        // No enter animation, start idle directly
+                        char_idle_states.get_mut(&pos).unwrap().start(idle);
+                    }
+
+                    // Start exit animation if specified
+                    if let Some(exit) = &char_state.exit {
+                        char_anim_states.get_mut(&pos).unwrap().start_exit(exit);
+                        char_idle_states.get_mut(&pos).unwrap().stop();
+                        pending_idles.remove(&pos);
+                    }
+                }
+            }
+
             // Update particles if specified
             if let Some((particles, intensity)) = state.current_particles() {
                 if particles.is_empty() {
@@ -675,6 +725,35 @@ async fn main() {
         // Update idle animation state
         char_idle_state.update();
 
+        // Update multiple character animation states
+        for anim_state in char_anim_states.values_mut() {
+            anim_state.update();
+        }
+
+        // Check if enter animations completed and start pending idles
+        let completed_positions: Vec<CharPosition> = char_anim_states
+            .iter()
+            .filter(|(_, anim_state)| {
+                !anim_state.is_active()
+                    && anim_state.direction()
+                        == Some(render::character::AnimationDirection::Enter)
+            })
+            .map(|(pos, _)| *pos)
+            .collect();
+
+        for pos in completed_positions {
+            if let Some(idle) = pending_idles.remove(&pos)
+                && let Some(idle_state) = char_idle_states.get_mut(&pos)
+            {
+                idle_state.start(&idle);
+            }
+        }
+
+        // Update multiple character idle animation states
+        for idle_state in char_idle_states.values_mut() {
+            idle_state.update();
+        }
+
         // Get shake offset for visual rendering
         let shake_offset = shake_state.offset();
 
@@ -685,7 +764,7 @@ async fn main() {
                 visual,
             } => {
                 // Draw visuals first (background, then character) with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state, &char_anim_states, &char_idle_states).await;
 
                 // Resolve localized text
                 let resolved_text = language_config.resolve(&text);
@@ -803,7 +882,7 @@ async fn main() {
                 }
 
                 // Draw visuals first with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state, &char_anim_states, &char_idle_states).await;
 
                 // Resolve localized text
                 let resolved_text = language_config.resolve(&text);
@@ -952,7 +1031,7 @@ async fn main() {
             }
             DisplayState::Wait { duration, visual } => {
                 // Draw visuals with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state, &char_anim_states, &char_idle_states).await;
 
                 // Reset wait timer if just started waiting
                 if !in_wait {
@@ -998,7 +1077,7 @@ async fn main() {
             }
             DisplayState::Input { input, visual } => {
                 // Draw visuals with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state, &char_anim_states, &char_idle_states).await;
 
                 // Initialize input state if this is a new input command
                 if awaiting_input.as_ref() != Some(&input.var) {

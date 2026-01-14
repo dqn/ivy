@@ -84,10 +84,16 @@ fn test_save_data_with_characters() {
             CharacterState {
                 path: "char_a.png".to_string(),
                 position: CharPosition::Left,
+                enter: None,
+                exit: None,
+                idle: None,
             },
             CharacterState {
                 path: "char_b.png".to_string(),
                 position: CharPosition::Right,
+                enter: None,
+                exit: None,
+                idle: None,
             },
         ],
     };
