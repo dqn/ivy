@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 
-use crate::runtime::chapters::{Chapter, ChapterManager};
+use crate::runtime::chapters::ChapterManager;
 
 /// Chapter select screen configuration.
 pub struct ChapterSelectConfig {

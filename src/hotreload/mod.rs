@@ -51,14 +51,13 @@ mod native {
         pub fn poll(&mut self) -> bool {
             let mut changed = false;
             while let Ok(event) = self.rx.try_recv() {
-                if let Ok(event) = event {
-                    if matches!(
+                if let Ok(event) = event
+                    && matches!(
                         event.kind,
                         notify::EventKind::Modify(_) | notify::EventKind::Create(_)
                     ) {
                         changed = true;
                     }
-                }
             }
             changed
         }

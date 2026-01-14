@@ -81,8 +81,8 @@ impl LocalizedString {
 
 impl From<String> for LocalizedString {
     fn from(s: String) -> Self {
-        if s.starts_with('@') {
-            LocalizedString::Key(s[1..].to_string())
+        if let Some(stripped) = s.strip_prefix('@') {
+            LocalizedString::Key(stripped.to_string())
         } else {
             LocalizedString::Plain(s)
         }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use macroquad::audio::{Sound, load_sound, play_sound, play_sound_once, stop_sound};
+use macroquad::audio::{Sound, load_sound, play_sound, stop_sound};
 
 /// Audio manager for BGM, SE, and voice playback.
 pub struct AudioManager {
@@ -146,11 +146,10 @@ impl AudioManager {
 
     /// Restore BGM from save data.
     pub async fn restore_bgm(&mut self, bgm: Option<String>) {
-        if let Some(path) = bgm {
-            if !path.is_empty() {
+        if let Some(path) = bgm
+            && !path.is_empty() {
                 self.update_bgm(Some(&path)).await;
             }
-        }
     }
 }
 

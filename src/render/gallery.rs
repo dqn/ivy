@@ -34,21 +34,13 @@ impl Default for GalleryConfig {
 }
 
 /// State for gallery navigation.
+#[derive(Default)]
 pub struct GalleryState {
     pub selected_index: usize,
     pub scroll_offset: usize,
     pub viewing_image: bool,
 }
 
-impl Default for GalleryState {
-    fn default() -> Self {
-        Self {
-            selected_index: 0,
-            scroll_offset: 0,
-            viewing_image: false,
-        }
-    }
-}
 
 /// Result of drawing gallery.
 pub struct GalleryResult {
@@ -257,15 +249,13 @@ pub fn draw_gallery(
             && mouse.0 <= x + config.thumbnail_width
             && mouse.1 >= y
             && mouse.1 <= y + config.thumbnail_height
-        {
-            if is_mouse_button_pressed(MouseButton::Left) {
+            && is_mouse_button_pressed(MouseButton::Left) {
                 state.selected_index = i;
             }
-        }
     }
 
     // Draw scrollbar if needed
-    let total_rows = (images.len() + config.columns - 1) / config.columns;
+    let total_rows = images.len().div_ceil(config.columns);
     if total_rows > visible_rows {
         let scrollbar_x = screen_w - config.padding;
         let scrollbar_height = screen_h - grid_y - config.padding;

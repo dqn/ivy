@@ -73,8 +73,7 @@ pub fn interpolate_variables(text: &str, variables: &Variables) -> String {
             }
 
             // Check if it's a variable reference
-            if tag.starts_with("var:") {
-                let var_name = &tag[4..];
+            if let Some(var_name) = tag.strip_prefix("var:") {
                 if let Some(value) = variables.get(var_name) {
                     match value {
                         crate::runtime::Value::String(s) => result.push_str(s),
@@ -159,7 +158,7 @@ fn parse_rich_text(text: &str, default_color: Color) -> Vec<TextSegment> {
             }
 
             // Process tag
-            if tag.starts_with("color:") {
+            if let Some(color_name) = tag.strip_prefix("color:") {
                 // Save current segment if not empty
                 if !current_text.is_empty() {
                     segments.push(TextSegment {
@@ -171,7 +170,6 @@ fn parse_rich_text(text: &str, default_color: Color) -> Vec<TextSegment> {
                 }
 
                 // Parse and push new color
-                let color_name = &tag[6..];
                 if let Some(color) = parse_color(color_name) {
                     if let Some(old_color) = current_color {
                         color_stack.push(old_color);
@@ -193,7 +191,7 @@ fn parse_rich_text(text: &str, default_color: Color) -> Vec<TextSegment> {
 
                 // Pop color from stack
                 current_color = color_stack.pop();
-            } else if tag.starts_with("ruby:") {
+            } else if let Some(ruby_content) = tag.strip_prefix("ruby:") {
                 // Ruby tag: {ruby:base:reading}
                 // Save current segment if not empty
                 if !current_text.is_empty() {
@@ -206,7 +204,6 @@ fn parse_rich_text(text: &str, default_color: Color) -> Vec<TextSegment> {
                 }
 
                 // Parse ruby tag
-                let ruby_content = &tag[5..];
                 if let Some(colon_pos) = ruby_content.find(':') {
                     let base = &ruby_content[..colon_pos];
                     let reading = &ruby_content[colon_pos + 1..];
@@ -306,8 +303,7 @@ fn strip_tags(text: &str) -> String {
             }
 
             // Handle ruby tags specially - extract base text
-            if tag.starts_with("ruby:") {
-                let ruby_content = &tag[5..];
+            if let Some(ruby_content) = tag.strip_prefix("ruby:") {
                 if let Some(colon_pos) = ruby_content.find(':') {
                     let base = &ruby_content[..colon_pos];
                     result.push_str(base);
@@ -583,12 +579,11 @@ fn draw_colored_line(
     let mut segments: Vec<(String, Color)> = Vec::new();
 
     for (ch, color) in chars {
-        if let Some((text, last_color)) = segments.last_mut() {
-            if last_color == color {
+        if let Some((text, last_color)) = segments.last_mut()
+            && last_color == color {
                 text.push(*ch);
                 continue;
             }
-        }
         segments.push((ch.to_string(), *color));
     }
 

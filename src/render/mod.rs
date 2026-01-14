@@ -24,23 +24,21 @@ pub use character::{CharAnimationState, CharIdleState, draw_character_animated};
 pub use cinematic::CinematicState;
 pub use debug::{DebugConfig, DebugState, draw_debug};
 pub use gallery::{
-    GalleryConfig, GalleryResult, GalleryState, draw_fullscreen_image, draw_gallery,
+    GalleryConfig, GalleryState, draw_gallery,
 };
-pub use image::{
-    draw_background, draw_background_with_offset, draw_character, draw_character_with_offset,
-};
-pub use input::{InputConfig, InputResult, InputState, draw_input};
+pub use image::draw_background_with_offset;
+pub use input::{InputConfig, InputState, draw_input};
 pub use particles::{ParticleState, ParticleType};
 pub use settings::{GameSettings, SettingsConfig, draw_settings_screen};
 pub use shake::ShakeState;
 pub use text::{
-    TextBoxConfig, count_visible_chars, draw_continue_indicator, draw_continue_indicator_with_font,
-    draw_speaker_name, draw_text_box, draw_text_box_typewriter, draw_text_box_with_font,
+    TextBoxConfig, count_visible_chars, draw_continue_indicator_with_font,
+    draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font,
     interpolate_variables,
 };
 pub use title::{TitleConfig, TitleMenuItem, draw_title_screen};
 pub use transition::TransitionState;
 pub use typewriter::TypewriterState;
 pub use ui::{
-    ChoiceButtonConfig, ChoiceNavState, InputSource, draw_choices, draw_choices_with_timer,
+    ChoiceButtonConfig, ChoiceNavState, InputSource, draw_choices_with_timer,
 };

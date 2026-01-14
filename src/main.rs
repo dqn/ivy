@@ -66,11 +66,10 @@ async fn draw_visual(
     char_idle: &CharIdleState,
 ) {
     // Draw background
-    if let Some(bg_path) = &visual.background {
-        if let Some(texture) = cache.get(bg_path).await {
+    if let Some(bg_path) = &visual.background
+        && let Some(texture) = cache.get(bg_path).await {
             draw_background_with_offset(&texture, offset);
         }
-    }
 
     // Draw multiple characters (if specified)
     if !visual.characters.is_empty() {
@@ -258,7 +257,7 @@ async fn main() {
     let mut particle_state = ParticleState::default();
     let mut cinematic_state = CinematicState::default();
     let mut choice_timer: Option<f32> = None;
-    let mut choice_total_time: Option<f32> = None;
+    let mut _choice_total_time: Option<f32> = None;
     let mut choice_nav_state = ChoiceNavState::default();
     let mut last_mouse_pos: (f32, f32) = (0.0, 0.0);
 
@@ -386,12 +385,11 @@ async fn main() {
 
                 // Load textures for gallery images (async)
                 for path in &images {
-                    if !texture_cache.contains(path) {
-                        if let Ok(texture) = load_texture(path).await {
+                    if !texture_cache.contains(path)
+                        && let Ok(texture) = load_texture(path).await {
                             texture.set_filter(FilterMode::Linear);
                             texture_cache.insert(path.clone(), texture);
                         }
-                    }
                 }
 
                 next_frame().await;
@@ -434,9 +432,9 @@ async fn main() {
         }
 
         // Check for hot reload
-        if let Some(ref mut reloader) = hot_reloader {
-            if reloader.poll() {
-                if let Some(ref mut state) = game_state {
+        if let Some(ref mut reloader) = hot_reloader
+            && reloader.poll()
+                && let Some(ref mut state) = game_state {
                     match load_scenario(SCENARIO_PATH) {
                         Ok(new_scenario) => {
                             state.reload_scenario(new_scenario);
@@ -448,8 +446,6 @@ async fn main() {
                         }
                     }
                 }
-            }
-        }
 
         // Get mutable reference to game state
         let state = match game_state.as_mut() {
@@ -469,12 +465,11 @@ async fn main() {
         if settings.keybinds.is_pressed_with_gamepad(Action::QuickSave, &gamepad_state) {
             save_game(state);
         }
-        if settings.keybinds.is_pressed_with_gamepad(Action::QuickLoad, &gamepad_state) {
-            if let Some(loaded_state) = load_game() {
+        if settings.keybinds.is_pressed_with_gamepad(Action::QuickLoad, &gamepad_state)
+            && let Some(loaded_state) = load_game() {
                 *state = loaded_state;
                 last_index = None; // Force audio/transition update
             }
-        }
 
         // Slot save/load (1-9, 0=10)
         let shift_held = is_key_down(KeyCode::LeftShift) || is_key_down(KeyCode::RightShift);
@@ -541,13 +536,11 @@ async fn main() {
         // Handle rollback (keybind or mouse wheel up) - only when backlog is not shown
         if !show_backlog {
             let wheel = mouse_wheel();
-            if settings.keybinds.is_pressed_with_gamepad(Action::Rollback, &gamepad_state)
-                || wheel.1 > 0.0
-            {
-                if state.can_rollback() {
+            if (settings.keybinds.is_pressed_with_gamepad(Action::Rollback, &gamepad_state)
+                || wheel.1 > 0.0)
+                && state.can_rollback() {
                     state.rollback();
                 }
-            }
         }
 
         // Update audio, transition, and unlock images when command changes
@@ -624,12 +617,11 @@ async fn main() {
                 DisplayState::Choices { visual, .. } => Some(visual),
                 _ => None,
             };
-            if let Some(visual) = visual {
-                if visual.character.is_none() {
+            if let Some(visual) = visual
+                && visual.character.is_none() {
                     char_idle_state.stop();
                     pending_idle = None;
                 }
-            }
 
             // Update particles if specified
             if let Some((particles, intensity)) = state.current_particles() {
@@ -647,8 +639,8 @@ async fn main() {
             }
 
             // Unlock achievement if specified
-            if let Some(achievement) = state.current_achievement() {
-                if achievements.unlock(&achievement.id) {
+            if let Some(achievement) = state.current_achievement()
+                && achievements.unlock(&achievement.id) {
                     achievement_notifier.notify(
                         &achievement.id,
                         &achievement.name,
@@ -656,7 +648,6 @@ async fn main() {
                     );
                     eprintln!("Achievement unlocked: {}", achievement.name);
                 }
-            }
 
             // Reset auto timer on command change
             auto_timer = 0.0;
@@ -677,11 +668,9 @@ async fn main() {
         if !char_anim_state.is_active()
             && char_anim_state.direction()
                 == Some(render::character::AnimationDirection::Enter)
-        {
-            if let Some(idle) = pending_idle.take() {
+            && let Some(idle) = pending_idle.take() {
                 char_idle_state.start(&idle);
             }
-        }
 
         // Update idle animation state
         char_idle_state.update();
@@ -835,9 +824,10 @@ async fn main() {
                     let total_chars = count_visible_chars(&interpolated_text);
                     typewriter_state.reset(total_chars);
                     last_text = Some(interpolated_text.clone());
-                    // Reset choice timer when text changes
+                    // Reset choice timer and navigation state when text changes
                     choice_timer = timeout;
-                    choice_total_time = timeout;
+                    _choice_total_time = timeout;
+                    choice_nav_state = ChoiceNavState::default();
                 }
 
                 // Update typewriter state
@@ -870,7 +860,7 @@ async fn main() {
                                 if let Some(idx) = default_choice {
                                     state.select_choice(idx);
                                     choice_timer = None;
-                                    choice_total_time = None;
+                                    _choice_total_time = None;
                                     choice_nav_state = ChoiceNavState::default();
                                 }
                             }
@@ -936,18 +926,17 @@ async fn main() {
                         if let Some(index) = result.selected {
                             state.select_choice(index);
                             choice_timer = None;
-                            choice_total_time = None;
+                            _choice_total_time = None;
                             choice_nav_state = ChoiceNavState::default();
                         } else if choice_nav_state.input_source == InputSource::Gamepad {
                             // Gamepad A button
-                            if gamepad_state.is_button_pressed(GamepadButton::A) {
-                                if let Some(idx) = choice_nav_state.focus_index {
+                            if gamepad_state.is_button_pressed(GamepadButton::A)
+                                && let Some(idx) = choice_nav_state.focus_index {
                                     state.select_choice(idx);
                                     choice_timer = None;
-                                    choice_total_time = None;
+                                    _choice_total_time = None;
                                     choice_nav_state = ChoiceNavState::default();
                                 }
-                            }
                         }
                     } else {
                         // Click to complete text
