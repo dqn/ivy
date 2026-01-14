@@ -47,28 +47,29 @@ impl VideoState {
         // Get dimensions first to avoid borrow conflicts.
         let (w, h) = self.player.dimensions();
 
-        if let Some(frame_data) = self.player.update() {
-            if w > 0 && h > 0 {
-                // Copy frame data to avoid borrow issues.
-                let frame_data = frame_data.to_vec();
+        if let Some(frame_data) = self.player.update()
+            && w > 0
+            && h > 0
+        {
+            // Copy frame data to avoid borrow issues.
+            let frame_data = frame_data.to_vec();
 
-                if let Some(ref texture) = self.texture {
-                    if texture.width() as u32 != w || texture.height() as u32 != h {
-                        self.texture = None;
-                    }
-                }
+            if let Some(ref texture) = self.texture
+                && (texture.width() as u32 != w || texture.height() as u32 != h)
+            {
+                self.texture = None;
+            }
 
-                if self.texture.is_none() {
-                    let texture = Texture2D::from_rgba8(w as u16, h as u16, &frame_data);
-                    texture.set_filter(FilterMode::Linear);
-                    self.texture = Some(texture);
-                } else if let Some(ref texture) = self.texture {
-                    texture.update(&Image {
-                        bytes: frame_data,
-                        width: w as u16,
-                        height: h as u16,
-                    });
-                }
+            if self.texture.is_none() {
+                let texture = Texture2D::from_rgba8(w as u16, h as u16, &frame_data);
+                texture.set_filter(FilterMode::Linear);
+                self.texture = Some(texture);
+            } else if let Some(ref texture) = self.texture {
+                texture.update(&Image {
+                    bytes: frame_data,
+                    width: w as u16,
+                    height: h as u16,
+                });
             }
         }
 
