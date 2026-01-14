@@ -244,6 +244,7 @@ mod tests {
         Scenario {
             title: "Test".to_string(),
             chapters: vec![],
+            modular_characters: std::collections::HashMap::new(),
             script: vec![],
         }
     }

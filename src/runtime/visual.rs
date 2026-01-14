@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::scenario::{CharAnimation, CharIdleAnimation, CharPosition};
@@ -18,6 +20,18 @@ pub struct CharacterState {
     pub idle: Option<CharIdleAnimation>,
 }
 
+/// Modular character state for layered sprite compositing.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ModularCharState {
+    /// Character definition name.
+    pub name: String,
+    /// Screen position.
+    pub position: CharPosition,
+    /// Layer variant selections (layer_name -> variant_index).
+    #[serde(default)]
+    pub variants: HashMap<String, usize>,
+}
+
 /// Visual state (background and character sprite).
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct VisualState {
@@ -31,4 +45,7 @@ pub struct VisualState {
     /// NVL mode (full-screen text display).
     #[serde(default)]
     pub nvl_mode: bool,
+    /// Modular character (layered sprite compositing).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub modular_char: Option<ModularCharState>,
 }

@@ -104,6 +104,37 @@ script:
   - nvl: false                  # ADVモードに戻る
     text: "通常のテキストボックス表示"
 
+  # モジュラーキャラクター（レイヤード スプライト合成）
+modular_characters:
+  sakura:
+    base: "assets/characters/sakura/base.png"
+    layers:
+      - name: "hair"
+        images:
+          - "assets/characters/sakura/hair_normal.png"
+          - "assets/characters/sakura/hair_wind.png"
+      - name: "expression"
+        images:
+          - "assets/characters/sakura/expr_neutral.png"
+          - "assets/characters/sakura/expr_smile.png"
+      - name: "outfit"
+        images:
+          - "assets/characters/sakura/outfit_school.png"
+          - "assets/characters/sakura/outfit_casual.png"
+
+script:
+  - modular_char:
+      name: sakura
+      expression: 0             # レイヤーのバリアント番号
+      outfit: 0
+    char_pos: center
+    text: "モジュラーキャラクター"
+
+  - modular_char:
+      name: sakura
+      expression: 1             # 表情を変更
+    text: "表情だけ変更"
+
   # 動画再生（--features video が必要）
   - video:
       path: "assets/videos/opening.webm"
@@ -187,6 +218,7 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [x] 背景画像表示
 - [x] キャラクタースプライト表示（left/center/right）
 - [x] 複数キャラクター表示
+- [x] モジュラーキャラクター（レイヤード スプライト合成）
 - [x] 画像キャッシュ
 - [x] 画像状態の継続
 
@@ -244,9 +276,6 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [x] 動画再生（ネイティブ: FFmpeg、WASM: HTML5 video）※ `--features video` で有効化
 
 ### 今後の予定
-
-#### 高優先度（コア機能拡張）
-- [ ] モジュラーキャラクター（パーツ組み合わせ）
 
 #### 中優先度（開発体験・演出強化）
 - [ ] 開発ツール

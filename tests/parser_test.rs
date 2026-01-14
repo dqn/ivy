@@ -491,3 +491,46 @@ script:
     assert_eq!(scenario.script[3].nvl, Some(false));
     assert!(!scenario.script[3].nvl_clear);
 }
+
+#[test]
+fn test_parse_modular_characters() {
+    let yaml = r#"
+title: Modular Character Test
+
+modular_characters:
+  sakura:
+    base: "assets/sakura/base.png"
+    layers:
+      - name: "hair"
+        images:
+          - "assets/sakura/hair_a.png"
+          - "assets/sakura/hair_b.png"
+      - name: "expression"
+        images:
+          - "assets/sakura/expr_neutral.png"
+          - "assets/sakura/expr_smile.png"
+
+script:
+  - text: "Hello"
+    modular_char:
+      name: sakura
+      expression: 1
+"#;
+
+    let scenario = parse_scenario(yaml).unwrap();
+
+    // Check modular character definition
+    assert!(scenario.modular_characters.contains_key("sakura"));
+    let sakura = &scenario.modular_characters["sakura"];
+    assert_eq!(sakura.base, "assets/sakura/base.png");
+    assert_eq!(sakura.layers.len(), 2);
+    assert_eq!(sakura.layers[0].name, "hair");
+    assert_eq!(sakura.layers[0].images.len(), 2);
+    assert_eq!(sakura.layers[1].name, "expression");
+    assert_eq!(sakura.layers[1].images.len(), 2);
+
+    // Check command reference
+    let modular_ref = scenario.script[0].modular_char.as_ref().unwrap();
+    assert_eq!(modular_ref.name, "sakura");
+    assert_eq!(modular_ref.variants.get("expression"), Some(&1));
+}

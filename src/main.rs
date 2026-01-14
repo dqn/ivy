@@ -34,15 +34,15 @@ use render::{
     TransitionState, TypewriterState, VideoState, count_nvl_chars, count_visible_chars,
     draw_achievement, draw_background_with_offset, draw_backlog, draw_chapter_select,
     draw_character_animated, draw_choices_with_timer, draw_continue_indicator_with_font,
-    draw_debug, draw_flowchart, draw_gallery, draw_input, draw_nvl_text_box, draw_settings_screen,
-    draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen,
-    interpolate_variables,
+    draw_debug, draw_flowchart, draw_gallery, draw_input, draw_modular_char, draw_nvl_text_box,
+    draw_settings_screen, draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font,
+    draw_title_screen, interpolate_variables,
 };
 use runtime::{
     AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
     ReadState, SaveData, Unlocks, VisualState,
 };
-use scenario::{CharPosition, load_scenario};
+use scenario::{CharPosition, ModularCharDef, load_scenario};
 
 /// Game mode: title screen, settings, gallery, chapters, flowchart, or in-game.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -77,6 +77,7 @@ async fn draw_visual(
     char_idle: &CharIdleState,
     char_anim_states: &HashMap<CharPosition, CharAnimationState>,
     char_idle_states: &HashMap<CharPosition, CharIdleState>,
+    modular_char_defs: &HashMap<String, ModularCharDef>,
 ) {
     // Draw background
     if let Some(bg_path) = &visual.background
@@ -85,8 +86,13 @@ async fn draw_visual(
         draw_background_with_offset(&texture, offset);
     }
 
-    // Draw multiple characters (if specified)
-    if !visual.characters.is_empty() {
+    // Draw modular character (if specified)
+    if let Some(modular) = &visual.modular_char {
+        if let Some(def) = modular_char_defs.get(&modular.name) {
+            draw_modular_char(modular, def, cache, offset).await;
+        }
+    } else if !visual.characters.is_empty() {
+        // Draw multiple characters (if specified)
         for char_state in &visual.characters {
             if let Some(texture) = cache.get(&char_state.path).await {
                 let pos = char_state.position;
@@ -218,6 +224,7 @@ async fn main() {
             description: c.description.clone(),
         })
         .collect();
+    let mut modular_char_defs = scenario.modular_characters.clone();
     eprintln!("Loaded scenario: {}", scenario_title);
 
     // Load custom font for Japanese text support
@@ -539,6 +546,7 @@ async fn main() {
         {
             match load_scenario(SCENARIO_PATH) {
                 Ok(new_scenario) => {
+                    modular_char_defs = new_scenario.modular_characters.clone();
                     state.reload_scenario(new_scenario);
                     last_index = None; // Force audio/transition update
                     flowchart_state.dirty = true; // Invalidate flowchart cache
@@ -918,6 +926,7 @@ async fn main() {
                     &char_idle_state,
                     &char_anim_states,
                     &char_idle_states,
+                    &modular_char_defs,
                 )
                 .await;
 
@@ -1088,6 +1097,7 @@ async fn main() {
                     &char_idle_state,
                     &char_anim_states,
                     &char_idle_states,
+                    &modular_char_defs,
                 )
                 .await;
 
@@ -1250,6 +1260,7 @@ async fn main() {
                     &char_idle_state,
                     &char_anim_states,
                     &char_idle_states,
+                    &modular_char_defs,
                 )
                 .await;
 
@@ -1306,6 +1317,7 @@ async fn main() {
                     &char_idle_state,
                     &char_anim_states,
                     &char_idle_states,
+                    &modular_char_defs,
                 )
                 .await;
 

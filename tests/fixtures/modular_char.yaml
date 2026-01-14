@@ -1,0 +1,42 @@
+title: Modular Character Test
+
+modular_characters:
+  sakura:
+    base: "assets/characters/sakura/base.png"
+    layers:
+      - name: "hair"
+        images:
+          - "assets/characters/sakura/hair_normal.png"
+          - "assets/characters/sakura/hair_wind.png"
+      - name: "expression"
+        images:
+          - "assets/characters/sakura/expr_neutral.png"
+          - "assets/characters/sakura/expr_smile.png"
+          - "assets/characters/sakura/expr_angry.png"
+      - name: "outfit"
+        images:
+          - "assets/characters/sakura/outfit_school.png"
+          - "assets/characters/sakura/outfit_casual.png"
+
+script:
+  - text: "Default modular character (all variants at index 0)"
+    modular_char:
+      name: sakura
+    char_pos: center
+
+  - text: "Modular character with different expression"
+    modular_char:
+      name: sakura
+      expression: 1
+    char_pos: center
+
+  - text: "Modular character with multiple variant changes"
+    modular_char:
+      name: sakura
+      hair: 1
+      expression: 2
+      outfit: 1
+    char_pos: left
+
+  - text: "Back to regular character"
+    character: "assets/char.png"

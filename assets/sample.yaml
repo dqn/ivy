@@ -145,3 +145,18 @@ script:
 
   - nvl: false
     text: "And now we're back to ADV mode with the text box at the bottom."
+
+  # Modular character demo (layered sprite compositing)
+  # Note: These paths are examples - actual files would need to exist
+  # - label: modular_char_demo
+  #   modular_char:
+  #     name: sakura
+  #     expression: 0
+  #     outfit: 0
+  #   char_pos: center
+  #   text: "Modular characters allow combining multiple image layers."
+  #
+  #   modular_char:
+  #     name: sakura
+  #     expression: 1
+  #   text: "Change expressions without loading entirely new sprites!"

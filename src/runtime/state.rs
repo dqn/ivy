@@ -196,6 +196,18 @@ impl GameState {
             visual.nvl_mode = nvl;
         }
 
+        // Apply modular character override
+        if let Some(modular) = &command.modular_char {
+            visual.modular_char = Some(crate::runtime::visual::ModularCharState {
+                name: modular.name.clone(),
+                position: command.char_pos.unwrap_or(visual.char_pos),
+                variants: modular.variants.clone(),
+            });
+            // Clear single character and multiple characters when using modular
+            visual.character = None;
+            visual.characters.clear();
+        }
+
         visual
     }
 
@@ -505,6 +517,11 @@ impl GameState {
             .get(self.current_index)
             .map(|cmd| cmd.nvl_clear)
             .unwrap_or(false)
+    }
+
+    /// Get modular character definition by name.
+    pub fn get_modular_char_def(&self, name: &str) -> Option<&crate::scenario::ModularCharDef> {
+        self.scenario.modular_characters.get(name)
     }
 
     /// Reload scenario while preserving state.

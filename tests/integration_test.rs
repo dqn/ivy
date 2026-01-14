@@ -698,6 +698,7 @@ script:
             },
         ],
         nvl_mode: false,
+        modular_char: None,
     };
 
     let save = SaveData {

@@ -55,6 +55,7 @@ fn test_save_data_with_visual_state() {
         char_pos: CharPosition::Center,
         characters: vec![],
         nvl_mode: false,
+        modular_char: None,
     };
 
     let save = SaveData {
@@ -98,6 +99,7 @@ fn test_save_data_with_characters() {
             },
         ],
         nvl_mode: false,
+        modular_char: None,
     };
 
     let save = SaveData {

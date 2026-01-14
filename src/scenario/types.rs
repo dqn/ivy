@@ -463,6 +463,8 @@ pub struct Command {
     /// Clear NVL text buffer and start fresh page.
     #[serde(default)]
     pub nvl_clear: bool,
+    /// Modular character reference (layered sprite compositing).
+    pub modular_char: Option<ModularCharRef>,
 }
 
 /// Achievement unlock command.
@@ -499,6 +501,35 @@ pub struct ChapterDef {
     pub description: String,
 }
 
+/// Layer definition for modular characters.
+#[derive(Debug, Clone, Deserialize)]
+pub struct LayerDef {
+    /// Layer name (e.g., "hair", "expression", "outfit").
+    pub name: String,
+    /// List of image paths for this layer's variants.
+    pub images: Vec<String>,
+}
+
+/// Modular character definition for layered sprite compositing.
+#[derive(Debug, Clone, Deserialize)]
+pub struct ModularCharDef {
+    /// Base image path (body silhouette).
+    pub base: String,
+    /// Ordered list of layers (rendered from first to last).
+    #[serde(default)]
+    pub layers: Vec<LayerDef>,
+}
+
+/// Modular character reference in commands.
+#[derive(Debug, Clone, Deserialize)]
+pub struct ModularCharRef {
+    /// Character definition name.
+    pub name: String,
+    /// Layer variant selections (layer_name -> variant_index).
+    #[serde(flatten)]
+    pub variants: std::collections::HashMap<String, usize>,
+}
+
 /// A complete scenario loaded from YAML.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Scenario {
@@ -507,6 +538,9 @@ pub struct Scenario {
     /// Optional chapter definitions.
     #[serde(default)]
     pub chapters: Vec<ChapterDef>,
+    /// Modular character definitions (name -> definition).
+    #[serde(default)]
+    pub modular_characters: std::collections::HashMap<String, ModularCharDef>,
     /// List of commands that make up the script.
     pub script: Vec<Command>,
 }
