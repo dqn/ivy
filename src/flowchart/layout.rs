@@ -148,7 +148,7 @@ fn assign_positions(
     // Simple centering: shift positions to center each layer
     let max_width = layer_nodes.values().map(|n| n.len()).max().unwrap_or(1);
 
-    for (_, nodes) in &layer_nodes {
+    for nodes in layer_nodes.values() {
         let layer_width = nodes.len();
         let offset = (max_width - layer_width) / 2;
 

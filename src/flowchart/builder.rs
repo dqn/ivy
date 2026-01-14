@@ -173,25 +173,25 @@ pub fn build_flowchart(scenario: &Scenario) -> Flowchart {
         }
 
         // Conditional edge
-        if let Some(if_cond) = &cmd.if_cond {
-            if let Some(&target_idx) = label_to_index.get(&if_cond.jump) {
-                if let Some(&to_id) = flowchart.index_to_node.get(&target_idx) {
-                    flowchart.edges.push(FlowchartEdge {
-                        from: from_id,
-                        to: to_id,
-                        edge_type: EdgeType::Conditional,
-                        label: Some(format!("{} == {:?}", if_cond.var, if_cond.is)),
-                    });
-                } else if let Some(&to_id) =
-                    find_nearest_node(&flowchart, &significant_indices, target_idx)
-                {
-                    flowchart.edges.push(FlowchartEdge {
-                        from: from_id,
-                        to: to_id,
-                        edge_type: EdgeType::Conditional,
-                        label: Some(format!("{} == {:?}", if_cond.var, if_cond.is)),
-                    });
-                }
+        if let Some(if_cond) = &cmd.if_cond
+            && let Some(&target_idx) = label_to_index.get(&if_cond.jump)
+        {
+            if let Some(&to_id) = flowchart.index_to_node.get(&target_idx) {
+                flowchart.edges.push(FlowchartEdge {
+                    from: from_id,
+                    to: to_id,
+                    edge_type: EdgeType::Conditional,
+                    label: Some(format!("{} == {:?}", if_cond.var, if_cond.is)),
+                });
+            } else if let Some(&to_id) =
+                find_nearest_node(&flowchart, &significant_indices, target_idx)
+            {
+                flowchart.edges.push(FlowchartEdge {
+                    from: from_id,
+                    to: to_id,
+                    edge_type: EdgeType::Conditional,
+                    label: Some(format!("{} == {:?}", if_cond.var, if_cond.is)),
+                });
             }
             // Conditional also has sequential flow (else branch)
         }
@@ -225,10 +225,10 @@ fn find_nearest_node<'a>(
 
     // Find nearest significant index at or after target
     for &idx in significant_indices {
-        if idx >= target_idx {
-            if let Some(id) = flowchart.index_to_node.get(&idx) {
-                return Some(id);
-            }
+        if idx >= target_idx
+            && let Some(id) = flowchart.index_to_node.get(&idx)
+        {
+            return Some(id);
         }
     }
 
