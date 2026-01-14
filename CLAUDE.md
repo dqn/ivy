@@ -35,6 +35,19 @@ assets/                  # ゲームアセット
 
 saves/                   # セーブデータ
 └── save.json            # クイックセーブ
+
+tests/                   # テスト
+├── fixtures/            # テスト用YAMLシナリオ
+├── snapshots/           # Instaスナップショット
+├── e2e/                 # Playwright E2Eテスト
+│   ├── specs/           # テストファイル
+│   └── helpers/         # ヘルパー関数
+├── snapshot_test.rs     # DisplayStateスナップショット
+├── state_test.rs        # GameState統合テスト
+├── parser_test.rs       # YAMLパーサーテスト
+├── variables_test.rs    # 変数システムテスト
+├── keybinds_test.rs     # キーバインドテスト
+└── integration_test.rs  # シナリオ実行テスト
 ```
 
 ## シナリオ形式（YAML）
@@ -83,6 +96,17 @@ script:
 cargo run              # 実行
 cargo build            # ビルド
 cargo build --release  # リリースビルド
+
+# テスト
+cargo test             # 全テスト実行
+cargo test --lib       # 単体テストのみ
+cargo test --test '*'  # 統合テストのみ
+cargo insta test       # スナップショットテスト
+cargo insta review     # スナップショット確認・承認
+
+# E2Eテスト
+cd tests/e2e && npm test           # E2Eテスト実行
+cd tests/e2e && npm run test:update  # スナップショット更新
 ```
 
 ## 操作
@@ -164,7 +188,19 @@ cargo build --release  # リリースビルド
 - [x] 日本語フォント対応
 
 ### 今後の予定
-- [ ] 動画再生
+
+#### 短期（優先度: 高）
+- [ ] イージング関数（全アニメーションの品質向上）
+- [ ] トランジション拡張（Wipe, Slide, Pixelate, Iris, Blinds）
 - [ ] コントローラー対応
+
+#### 中期（優先度: 中）
 - [ ] 多言語対応（i18n）
 - [ ] フローチャート表示
+- [ ] モジュラーキャラクター（パーツ組み合わせ）
+
+#### 長期（優先度: 低）
+- [ ] 動画再生
+- [ ] Live2D対応
+- [ ] リップシンク
+- [ ] ホットリロード
