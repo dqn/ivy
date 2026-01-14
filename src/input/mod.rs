@@ -89,6 +89,111 @@ impl InputProvider for MacroquadInput {
     }
 }
 
+/// Shared gamepad state (polled once per frame).
+#[cfg(not(target_arch = "wasm32"))]
+pub struct GamepadState {
+    gamepads: gamepads::Gamepads,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl GamepadState {
+    /// Create a new gamepad state.
+    pub fn new() -> Self {
+        Self {
+            gamepads: gamepads::Gamepads::new(),
+        }
+    }
+
+    /// Poll for gamepad events. Call once per frame.
+    pub fn poll(&mut self) {
+        self.gamepads.poll();
+    }
+
+    /// Check if a button was just pressed on any connected gamepad.
+    pub fn is_button_pressed(&self, button: GamepadButton) -> bool {
+        let target = gamepad::to_gamepads_button(button);
+        for gamepad in self.gamepads.all() {
+            if gamepad.is_just_pressed(target) {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Check if a button is currently held down on any connected gamepad.
+    pub fn is_button_down(&self, button: GamepadButton) -> bool {
+        let target = gamepad::to_gamepads_button(button);
+        for gamepad in self.gamepads.all() {
+            if gamepad.is_currently_pressed(target) {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Get axis value from the first connected gamepad.
+    pub fn axis(&self, axis: GamepadAxis) -> f32 {
+        if let Some(gamepad) = self.gamepads.all().next() {
+            match axis {
+                GamepadAxis::LeftX => gamepad.left_stick_x(),
+                GamepadAxis::LeftY => gamepad.left_stick_y(),
+                GamepadAxis::RightX => gamepad.right_stick_x(),
+                GamepadAxis::RightY => gamepad.right_stick_y(),
+            }
+        } else {
+            0.0
+        }
+    }
+
+    /// Check if any gamepad is connected.
+    pub fn is_any_connected(&self) -> bool {
+        self.gamepads.all().next().is_some()
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl Default for GamepadState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Stub gamepad state for WASM.
+#[cfg(target_arch = "wasm32")]
+pub struct GamepadState;
+
+#[cfg(target_arch = "wasm32")]
+impl GamepadState {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn poll(&mut self) {}
+
+    pub fn is_button_pressed(&self, _button: GamepadButton) -> bool {
+        false
+    }
+
+    pub fn is_button_down(&self, _button: GamepadButton) -> bool {
+        false
+    }
+
+    pub fn axis(&self, _axis: GamepadAxis) -> f32 {
+        0.0
+    }
+
+    pub fn is_any_connected(&self) -> bool {
+        false
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+impl Default for GamepadState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Test input provider with queued events.
 pub mod test {
     use super::*;

@@ -146,3 +146,42 @@ pub fn to_macroquad_axis(axis: GamepadAxis) -> usize {
 pub fn to_macroquad_axis(_axis: GamepadAxis) -> usize {
     0
 }
+
+/// Convert gamepads::Button to GamepadButton.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn from_gamepads_button(button: gamepads::Button) -> Option<GamepadButton> {
+    match button {
+        gamepads::Button::ActionDown => Some(GamepadButton::A),
+        gamepads::Button::ActionRight => Some(GamepadButton::B),
+        gamepads::Button::ActionLeft => Some(GamepadButton::X),
+        gamepads::Button::ActionUp => Some(GamepadButton::Y),
+        gamepads::Button::FrontLeftUpper => Some(GamepadButton::LB),
+        gamepads::Button::FrontRightUpper => Some(GamepadButton::RB),
+        gamepads::Button::LeftCenterCluster => Some(GamepadButton::Select),
+        gamepads::Button::RightCenterCluster => Some(GamepadButton::Start),
+        gamepads::Button::DPadUp => Some(GamepadButton::DPadUp),
+        gamepads::Button::DPadDown => Some(GamepadButton::DPadDown),
+        gamepads::Button::DPadLeft => Some(GamepadButton::DPadLeft),
+        gamepads::Button::DPadRight => Some(GamepadButton::DPadRight),
+        _ => None,
+    }
+}
+
+/// Convert GamepadButton to gamepads::Button.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn to_gamepads_button(button: GamepadButton) -> gamepads::Button {
+    match button {
+        GamepadButton::A => gamepads::Button::ActionDown,
+        GamepadButton::B => gamepads::Button::ActionRight,
+        GamepadButton::X => gamepads::Button::ActionLeft,
+        GamepadButton::Y => gamepads::Button::ActionUp,
+        GamepadButton::LB => gamepads::Button::FrontLeftUpper,
+        GamepadButton::RB => gamepads::Button::FrontRightUpper,
+        GamepadButton::Select => gamepads::Button::LeftCenterCluster,
+        GamepadButton::Start => gamepads::Button::RightCenterCluster,
+        GamepadButton::DPadUp => gamepads::Button::DPadUp,
+        GamepadButton::DPadDown => gamepads::Button::DPadDown,
+        GamepadButton::DPadLeft => gamepads::Button::DPadLeft,
+        GamepadButton::DPadRight => gamepads::Button::DPadRight,
+    }
+}

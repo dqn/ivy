@@ -373,12 +373,31 @@ impl KeyBindings {
         modifier_ok && is_key_pressed(binding.key.0)
     }
 
-    /// Check if an action is triggered via gamepad.
-    /// Note: Gamepad support is not yet available in macroquad 0.4.
-    /// TODO: Add `gamepads` crate for gamepad support.
+    /// Check if an action is triggered via gamepad (stub for backward compatibility).
     fn is_gamepad_pressed(&self, _action: Action) -> bool {
-        // Stub implementation - gamepad support pending
         false
+    }
+
+    /// Check if an action is triggered (keyboard or gamepad with GamepadState).
+    pub fn is_pressed_with_gamepad(
+        &self,
+        action: Action,
+        gamepad_state: &crate::input::GamepadState,
+    ) -> bool {
+        self.is_keyboard_pressed(action) || self.is_gamepad_pressed_impl(action, gamepad_state)
+    }
+
+    /// Check if an action is triggered via gamepad using GamepadState.
+    fn is_gamepad_pressed_impl(
+        &self,
+        action: Action,
+        gamepad_state: &crate::input::GamepadState,
+    ) -> bool {
+        if let Some(button) = self.get_gamepad(action) {
+            gamepad_state.is_button_pressed(button)
+        } else {
+            false
+        }
     }
 
     /// Check if an action is triggered (using InputProvider).

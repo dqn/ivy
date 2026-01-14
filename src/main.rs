@@ -13,6 +13,7 @@ use macroquad::prelude::*;
 
 use cache::TextureCache;
 use i18n::LanguageConfig;
+use input::GamepadState;
 
 use audio::AudioManager;
 use hotreload::HotReloader;
@@ -232,6 +233,7 @@ async fn main() {
     let mut show_backlog = false;
     let mut texture_cache = TextureCache::new();
     let mut audio_manager = AudioManager::new();
+    let mut gamepad_state = GamepadState::new();
     let mut last_index: Option<usize> = None;
     let mut auto_mode = false;
     let mut auto_timer = 0.0;
@@ -250,6 +252,9 @@ async fn main() {
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
+
+        // Poll gamepad events at the start of each frame
+        gamepad_state.poll();
 
         match game_mode {
             GameMode::Title => {
@@ -449,10 +454,10 @@ async fn main() {
         // Handle save/load
         // QuickSave / QuickLoad keybinds
         // Shift+1-0 = save to slot, 1-0 = load from slot
-        if settings.keybinds.is_pressed(Action::QuickSave) {
+        if settings.keybinds.is_pressed_with_gamepad(Action::QuickSave, &gamepad_state) {
             save_game(state);
         }
-        if settings.keybinds.is_pressed(Action::QuickLoad) {
+        if settings.keybinds.is_pressed_with_gamepad(Action::QuickLoad, &gamepad_state) {
             if let Some(loaded_state) = load_game() {
                 *state = loaded_state;
                 last_index = None; // Force audio/transition update
@@ -490,13 +495,13 @@ async fn main() {
         }
 
         // Toggle backlog
-        if settings.keybinds.is_pressed(Action::Backlog) {
+        if settings.keybinds.is_pressed_with_gamepad(Action::Backlog, &gamepad_state) {
             show_backlog = !show_backlog;
             backlog_state = BacklogState::default();
         }
 
         // Toggle auto mode
-        if settings.keybinds.is_pressed(Action::AutoMode) {
+        if settings.keybinds.is_pressed_with_gamepad(Action::AutoMode, &gamepad_state) {
             auto_mode = !auto_mode;
             auto_timer = 0.0;
             if auto_mode {
@@ -507,7 +512,7 @@ async fn main() {
         }
 
         // Toggle skip mode
-        if settings.keybinds.is_pressed(Action::SkipMode) {
+        if settings.keybinds.is_pressed_with_gamepad(Action::SkipMode, &gamepad_state) {
             skip_mode = !skip_mode;
             if skip_mode {
                 eprintln!("Skip mode ON");
@@ -517,14 +522,16 @@ async fn main() {
         }
 
         // Toggle debug console
-        if settings.keybinds.is_pressed(Action::Debug) {
+        if settings.keybinds.is_pressed_with_gamepad(Action::Debug, &gamepad_state) {
             debug_state.toggle();
         }
 
         // Handle rollback (keybind or mouse wheel up) - only when backlog is not shown
         if !show_backlog {
             let wheel = mouse_wheel();
-            if settings.keybinds.is_pressed(Action::Rollback) || wheel.1 > 0.0 {
+            if settings.keybinds.is_pressed_with_gamepad(Action::Rollback, &gamepad_state)
+                || wheel.1 > 0.0
+            {
                 if state.can_rollback() {
                     state.rollback();
                 }
@@ -708,7 +715,9 @@ async fn main() {
 
                     // Handle click/Advance keybind
                     let input_pressed = is_mouse_button_pressed(MouseButton::Left)
-                        || settings.keybinds.is_pressed(Action::Advance);
+                        || settings
+                            .keybinds
+                            .is_pressed_with_gamepad(Action::Advance, &gamepad_state);
 
                     if skip_active || auto_advance {
                         // Skip mode and auto mode bypass typewriter
@@ -835,7 +844,9 @@ async fn main() {
                     } else {
                         // Click to complete text
                         if is_mouse_button_pressed(MouseButton::Left)
-                            || settings.keybinds.is_pressed(Action::Advance)
+                            || settings
+                                .keybinds
+                                .is_pressed_with_gamepad(Action::Advance, &gamepad_state)
                         {
                             typewriter_state.complete();
                         }
@@ -863,7 +874,9 @@ async fn main() {
                 if wait_timer >= duration
                     || skip_active
                     || is_mouse_button_pressed(MouseButton::Left)
-                    || settings.keybinds.is_pressed(Action::Advance)
+                    || settings
+                        .keybinds
+                        .is_pressed_with_gamepad(Action::Advance, &gamepad_state)
                 {
                     in_wait = false;
                     wait_timer = 0.0;
@@ -935,7 +948,9 @@ async fn main() {
 
                 // Return to title on click or Advance, or exit on Escape
                 if is_mouse_button_pressed(MouseButton::Left)
-                    || settings.keybinds.is_pressed(Action::Advance)
+                    || settings
+                        .keybinds
+                        .is_pressed_with_gamepad(Action::Advance, &gamepad_state)
                 {
                     return_to_title = true;
                 } else if is_key_pressed(KeyCode::Escape) {
