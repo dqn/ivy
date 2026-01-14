@@ -36,6 +36,13 @@ pub enum DisplayState {
     Wait { duration: f32, visual: VisualState },
     /// Waiting for player text input.
     Input { input: Input, visual: VisualState },
+    /// Playing a video.
+    Video {
+        path: String,
+        skippable: bool,
+        loop_video: bool,
+        visual: VisualState,
+    },
     /// Scenario has ended.
     End,
 }

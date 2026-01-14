@@ -16,6 +16,7 @@ pub mod title;
 pub mod transition;
 pub mod typewriter;
 pub mod ui;
+pub mod video;
 pub mod widgets;
 
 pub use achievement::{AchievementConfig, draw_achievement};
@@ -44,3 +45,4 @@ pub use ui::{
     ChoiceButtonConfig, ChoiceNavState, InputSource, draw_choices_with_timer,
 };
 pub use flowchart::{FlowchartConfig, FlowchartState, draw_flowchart};
+pub use video::VideoState;

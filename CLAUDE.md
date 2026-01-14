@@ -91,6 +91,12 @@ script:
     text: "ラベル付きテキスト"
 
   - jump: ending              # 無条件ジャンプ
+
+  # 動画再生（--features video が必要）
+  - video:
+      path: "assets/videos/opening.webm"
+      skippable: false        # スキップ不可
+      bgm_fade_out: 1.0       # BGMフェードアウト秒数
 ```
 
 ### 画像状態の継続ルール
@@ -105,6 +111,10 @@ script:
 cargo run              # 実行
 cargo build            # ビルド
 cargo build --release  # リリースビルド
+
+# 動画機能付きビルド（FFmpeg必要）
+cargo run --features video
+cargo build --features video
 
 # テスト
 cargo test             # 全テスト実行
@@ -153,6 +163,7 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 | anyhow | エラー処理 |
 | notify | ファイル監視（ネイティブのみ、ホットリロード用） |
 | gamepads | ゲームパッド入力（ネイティブのみ） |
+| video-rs | 動画再生（ネイティブのみ、optional、FFmpeg必要） |
 
 ## 実装状況
 
@@ -215,6 +226,9 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [x] コントローラー対応（`gamepads`クレート統合済み）
 - [x] 多言語対応（LocalizedString型、Command型統合済み）
 
+### 演出（追加）
+- [x] 動画再生（ネイティブ: FFmpeg、WASM: HTML5 video）※ `--features video` で有効化
+
 ### 今後の予定
 
 #### 中期（優先度: 中）
@@ -222,6 +236,5 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [ ] モジュラーキャラクター（パーツ組み合わせ）
 
 #### 長期（優先度: 低）
-- [ ] 動画再生
 - [ ] Live2D対応
 - [ ] リップシンク

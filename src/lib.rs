@@ -8,3 +8,4 @@ pub mod platform;
 pub mod runtime;
 pub mod scenario;
 pub mod types;
+pub mod video;

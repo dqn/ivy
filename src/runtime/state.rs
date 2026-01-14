@@ -130,6 +130,16 @@ impl GameState {
             };
         }
 
+        // Video command
+        if let Some(video) = &command.video {
+            return DisplayState::Video {
+                path: video.path.clone(),
+                skippable: video.skippable,
+                loop_video: video.loop_video,
+                visual,
+            };
+        }
+
         // Command has no displayable content (should be unreachable after skip_labels).
         DisplayState::End
     }

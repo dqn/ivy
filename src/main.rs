@@ -12,6 +12,7 @@ mod render;
 mod runtime;
 mod scenario;
 mod types;
+mod video;
 
 use std::collections::HashMap;
 
@@ -34,7 +35,7 @@ use render::{
     draw_chapter_select, draw_character_animated, draw_choices_with_timer,
     draw_continue_indicator_with_font, draw_debug, draw_flowchart, draw_gallery, draw_input,
     draw_settings_screen, draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font,
-    draw_title_screen, interpolate_variables,
+    draw_title_screen, interpolate_variables, VideoState,
 };
 use runtime::{
     AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
@@ -293,6 +294,7 @@ async fn main() {
     let mut pending_idles: HashMap<CharPosition, scenario::CharIdleAnimation> = HashMap::new();
     let mut particle_state = ParticleState::default();
     let mut cinematic_state = CinematicState::default();
+    let mut video_state = VideoState::new();
     let mut choice_timer: Option<f32> = None;
     let mut _choice_total_time: Option<f32> = None;
     let mut choice_nav_state = ChoiceNavState::default();
@@ -653,7 +655,8 @@ async fn main() {
                 DisplayState::Text { visual, .. }
                 | DisplayState::Choices { visual, .. }
                 | DisplayState::Wait { visual, .. }
-                | DisplayState::Input { visual, .. } => {
+                | DisplayState::Input { visual, .. }
+                | DisplayState::Video { visual, .. } => {
                     if let Some(bg) = &visual.background {
                         unlocks.unlock_image(bg);
                     }
@@ -1222,6 +1225,42 @@ async fn main() {
                     let value = runtime::Value::String(default_value);
                     state.set_variable(&input.var, value);
                     awaiting_input = None;
+                    read_state.mark_read(SCENARIO_PATH, state.current_index());
+                    state.advance();
+                }
+            }
+            DisplayState::Video {
+                path,
+                skippable,
+                loop_video,
+                ..
+            } => {
+                // Start video playback if not already playing
+                if !video_state.is_playing() && !video_state.is_finished() {
+                    // Fade out BGM before video starts
+                    audio_manager.stop_bgm_fade(0.5).await;
+
+                    if let Err(e) = video_state.start(&path, skippable, loop_video) {
+                        eprintln!("Failed to start video: {}", e);
+                        // Skip to next command on error
+                        state.advance();
+                    }
+                }
+
+                // Update and draw video
+                video_state.update();
+                video_state.draw();
+
+                // Check for skip input
+                let skip_pressed = is_mouse_button_pressed(MouseButton::Left)
+                    || settings
+                        .keybinds
+                        .is_pressed_with_gamepad(Action::Advance, &gamepad_state)
+                    || is_key_pressed(KeyCode::Escape);
+
+                // Advance when video finishes or is skipped
+                if video_state.is_finished() || (skip_pressed && video_state.can_skip()) {
+                    video_state.stop();
                     read_state.mark_read(SCENARIO_PATH, state.current_index());
                     state.advance();
                 }

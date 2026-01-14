@@ -139,6 +139,18 @@ impl AudioManager {
         }
     }
 
+    /// Stop BGM with fade out (fade duration is currently ignored).
+    /// Note: macroquad doesn't support volume fading, so this immediately stops the BGM.
+    #[allow(unused_variables)]
+    pub async fn stop_bgm_fade(&mut self, fade_duration: f32) {
+        // TODO: Implement actual fade out when macroquad supports it
+        if let Some(sound) = &self.current_bgm_sound {
+            stop_sound(sound);
+        }
+        self.current_bgm = None;
+        self.current_bgm_sound = None;
+    }
+
     /// Get current BGM path for save data.
     pub fn current_bgm(&self) -> Option<&String> {
         self.current_bgm.as_ref()

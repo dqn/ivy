@@ -357,6 +357,33 @@ fn default_shake_duration() -> f32 {
     0.5
 }
 
+/// Video playback command.
+#[derive(Debug, Clone, Deserialize)]
+pub struct VideoCommand {
+    /// Video file path.
+    pub path: String,
+    /// Whether the video can be skipped by the player.
+    #[serde(default = "default_video_skippable")]
+    pub skippable: bool,
+    /// Whether to loop the video.
+    #[serde(default)]
+    pub loop_video: bool,
+    /// BGM fade out duration in seconds when video starts (0 = instant stop).
+    #[serde(default = "default_video_bgm_fade")]
+    pub bgm_fade_out: f32,
+    /// BGM fade in duration in seconds when video ends.
+    #[serde(default = "default_video_bgm_fade")]
+    pub bgm_fade_in: f32,
+}
+
+fn default_video_skippable() -> bool {
+    true
+}
+
+fn default_video_bgm_fade() -> f32 {
+    0.5
+}
+
 /// A single choice option that branches the story.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choice {
@@ -429,6 +456,8 @@ pub struct Command {
     pub cinematic_duration: f32,
     /// Achievement to unlock.
     pub achievement: Option<Achievement>,
+    /// Video playback command.
+    pub video: Option<VideoCommand>,
 }
 
 /// Achievement unlock command.
