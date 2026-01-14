@@ -4,6 +4,7 @@ pub mod chapter_select;
 pub mod character;
 pub mod cinematic;
 pub mod debug;
+pub mod flowchart;
 pub mod gallery;
 pub mod image;
 pub mod input;
@@ -42,3 +43,4 @@ pub use typewriter::TypewriterState;
 pub use ui::{
     ChoiceButtonConfig, ChoiceNavState, InputSource, draw_choices_with_timer,
 };
+pub use flowchart::{FlowchartConfig, FlowchartState, draw_flowchart};

@@ -1,5 +1,6 @@
 mod audio;
 mod cache;
+mod flowchart;
 mod hotreload;
 mod i18n;
 mod input;
@@ -19,16 +20,18 @@ use input::{GamepadAxis, GamepadButton, GamepadState, STICK_THRESHOLD};
 
 use audio::AudioManager;
 use hotreload::HotReloader;
+use flowchart::{build_flowchart, calculate_layout, Flowchart, LayoutConfig, NodeId, NodeLayout};
 use render::{
     AchievementConfig, BacklogConfig, BacklogState, ChapterSelectConfig, ChapterSelectState,
     CharAnimationState, CharIdleState, ChoiceButtonConfig, ChoiceNavState, CinematicState,
-    DebugConfig, DebugState, GalleryConfig, GalleryState, GameSettings, InputConfig, InputSource,
-    InputState, ParticleState, ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig,
-    TitleMenuItem, TransitionState, TypewriterState, count_visible_chars, draw_achievement,
-    draw_background_with_offset, draw_backlog, draw_chapter_select, draw_character_animated,
-    draw_choices_with_timer, draw_continue_indicator_with_font, draw_debug, draw_gallery,
-    draw_input, draw_settings_screen, draw_speaker_name, draw_text_box_typewriter,
-    draw_text_box_with_font, draw_title_screen, interpolate_variables,
+    DebugConfig, DebugState, FlowchartConfig, FlowchartState, GalleryConfig, GalleryState,
+    GameSettings, InputConfig, InputSource, InputState, ParticleState, ParticleType, SettingsConfig,
+    ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState, TypewriterState,
+    count_visible_chars, draw_achievement, draw_background_with_offset, draw_backlog,
+    draw_chapter_select, draw_character_animated, draw_choices_with_timer,
+    draw_continue_indicator_with_font, draw_debug, draw_flowchart, draw_gallery, draw_input,
+    draw_settings_screen, draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font,
+    draw_title_screen, interpolate_variables,
 };
 use runtime::{
     AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
@@ -36,13 +39,14 @@ use runtime::{
 };
 use scenario::{load_scenario, CharPosition};
 
-/// Game mode: title screen, settings, gallery, chapters, or in-game.
+/// Game mode: title screen, settings, gallery, chapters, flowchart, or in-game.
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum GameMode {
     Title,
     Settings,
     Gallery,
     Chapters,
+    Flowchart,
     InGame,
 }
 
@@ -222,11 +226,15 @@ async fn main() {
     let achievement_config = AchievementConfig::default();
     let debug_config = DebugConfig::default();
     let chapter_select_config = ChapterSelectConfig::default();
+    let flowchart_config = FlowchartConfig::default();
+    let layout_config = LayoutConfig::default();
     let mut backlog_state = BacklogState::default();
     let mut debug_state = DebugState::default();
     let mut input_state = InputState::default();
     let mut gallery_state = GalleryState::default();
     let mut chapter_select_state = ChapterSelectState::default();
+    let mut flowchart_state = FlowchartState::new();
+    let mut flowchart_cache: Option<(Flowchart, HashMap<NodeId, NodeLayout>)> = None;
     let mut chapter_manager = ChapterManager::new();
     chapter_manager.set_chapters(scenario_chapters);
     let mut unlocks = Unlocks::load();
@@ -427,6 +435,38 @@ async fn main() {
                 next_frame().await;
                 continue;
             }
+            GameMode::Flowchart => {
+                // Build flowchart if dirty or not cached
+                if flowchart_state.dirty || flowchart_cache.is_none() {
+                    let fc = build_flowchart(&scenario);
+                    let layouts = calculate_layout(&fc, &layout_config);
+                    flowchart_cache = Some((fc, layouts));
+                    flowchart_state.dirty = false;
+                }
+
+                let (fc, layouts) = flowchart_cache.as_ref().unwrap();
+                let current_idx = game_state.as_ref().map(|s| s.current_index());
+
+                let result = draw_flowchart(
+                    &flowchart_config,
+                    &mut flowchart_state,
+                    fc,
+                    layouts,
+                    current_idx,
+                    font_ref,
+                );
+
+                if result.back_pressed {
+                    game_mode = if game_state.is_some() {
+                        GameMode::InGame
+                    } else {
+                        GameMode::Title
+                    };
+                }
+
+                next_frame().await;
+                continue;
+            }
             GameMode::InGame => {
                 // In-game logic follows
             }
@@ -440,6 +480,7 @@ async fn main() {
                         Ok(new_scenario) => {
                             state.reload_scenario(new_scenario);
                             last_index = None; // Force audio/transition update
+                            flowchart_state.dirty = true; // Invalidate flowchart cache
                             eprintln!("[Hot Reload] Scenario reloaded");
                         }
                         Err(e) => {
@@ -532,6 +573,12 @@ async fn main() {
         // Toggle debug console
         if settings.keybinds.is_pressed_with_gamepad(Action::Debug, &gamepad_state) {
             debug_state.toggle();
+        }
+
+        // Open flowchart with F key (debug feature)
+        if is_key_pressed(KeyCode::F) {
+            game_mode = GameMode::Flowchart;
+            flowchart_state.dirty = true;
         }
 
         // Handle rollback (keybind or mouse wheel up) - only when backlog is not shown
