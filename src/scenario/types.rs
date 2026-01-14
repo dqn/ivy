@@ -444,6 +444,42 @@ fn default_video_bgm_fade() -> f32 {
     0.5
 }
 
+/// Ambient audio track for layered soundscapes.
+#[derive(Debug, Clone, Deserialize)]
+pub struct AmbientTrack {
+    /// Unique identifier for this ambient track (used for stopping).
+    pub id: String,
+    /// Audio file path.
+    pub path: String,
+    /// Volume level (0.0 to 1.0).
+    #[serde(default = "default_ambient_volume")]
+    pub volume: f32,
+    /// Whether to loop the track.
+    #[serde(default = "default_ambient_loop")]
+    pub looped: bool,
+    /// Fade in duration in seconds.
+    #[serde(default)]
+    pub fade_in: f32,
+}
+
+fn default_ambient_volume() -> f32 {
+    0.5
+}
+
+fn default_ambient_loop() -> bool {
+    true
+}
+
+/// Stop an ambient track by ID.
+#[derive(Debug, Clone, Deserialize)]
+pub struct AmbientStop {
+    /// ID of the ambient track to stop.
+    pub id: String,
+    /// Fade out duration in seconds.
+    #[serde(default)]
+    pub fade_out: f32,
+}
+
 /// A single choice option that branches the story.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choice {
@@ -489,6 +525,12 @@ pub struct Command {
     pub se: Option<String>,
     /// Voice file path (plays once).
     pub voice: Option<String>,
+    /// Ambient audio tracks to start.
+    #[serde(default)]
+    pub ambient: Vec<AmbientTrack>,
+    /// Ambient audio tracks to stop.
+    #[serde(default)]
+    pub ambient_stop: Vec<AmbientStop>,
     /// Transition effect.
     pub transition: Option<Transition>,
     /// Shake effect.

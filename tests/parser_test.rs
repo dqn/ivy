@@ -580,3 +580,53 @@ script:
     assert_eq!(camera2.duration, 2.0);
     assert!(matches!(camera2.easing, Easing::EaseInOutCubic));
 }
+
+#[test]
+fn test_parse_ambient_audio() {
+    let yaml = r#"
+title: Ambient Test
+
+script:
+  - ambient:
+      - id: rain
+        path: "assets/audio/rain.ogg"
+        volume: 0.6
+        looped: true
+        fade_in: 0.5
+    text: "Rain starts..."
+
+  - ambient:
+      - id: wind
+        path: "assets/audio/wind.ogg"
+    text: "Wind joins in..."
+
+  - ambient_stop:
+      - id: rain
+        fade_out: 1.0
+    text: "Rain stops."
+"#;
+
+    let scenario = parse_scenario(yaml).unwrap();
+
+    // First command with ambient track
+    let ambient1 = &scenario.script[0].ambient;
+    assert_eq!(ambient1.len(), 1);
+    assert_eq!(ambient1[0].id, "rain");
+    assert_eq!(ambient1[0].path, "assets/audio/rain.ogg");
+    assert_eq!(ambient1[0].volume, 0.6);
+    assert!(ambient1[0].looped);
+    assert_eq!(ambient1[0].fade_in, 0.5);
+
+    // Second command with default values
+    let ambient2 = &scenario.script[1].ambient;
+    assert_eq!(ambient2.len(), 1);
+    assert_eq!(ambient2[0].id, "wind");
+    assert_eq!(ambient2[0].volume, 0.5); // default
+    assert!(ambient2[0].looped); // default true
+
+    // Third command with ambient stop
+    let ambient_stop = &scenario.script[2].ambient_stop;
+    assert_eq!(ambient_stop.len(), 1);
+    assert_eq!(ambient_stop[0].id, "rain");
+    assert_eq!(ambient_stop[0].fade_out, 1.0);
+}

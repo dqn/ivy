@@ -179,6 +179,30 @@ script:
       easing: ease_in_out_cubic
     text: "And smoothly returns to normal view."
 
+  # Layered audio demo
+  # Note: These paths are examples - actual files would need to exist
+  # - label: ambient_demo
+  #   background: "assets/bg_forest.png"
+  #   ambient:
+  #     - id: forest_ambiance
+  #       path: "assets/audio/forest.ogg"
+  #       volume: 0.5
+  #       looped: true
+  #   text: "The sounds of the forest surround you..."
+  #
+  # - ambient:
+  #     - id: rain
+  #       path: "assets/audio/rain.ogg"
+  #       volume: 0.7
+  #       looped: true
+  #       fade_in: 1.0
+  #   text: "It starts to rain..."
+  #
+  # - ambient_stop:
+  #     - id: rain
+  #       fade_out: 2.0
+  #   text: "The rain gradually fades away."
+
   # Modular character demo (layered sprite compositing)
   # Note: These paths are examples - actual files would need to exist
   # - label: modular_char_demo

@@ -1,0 +1,28 @@
+title: Ambient Audio Test
+
+script:
+  - label: start
+    text: "A quiet scene."
+
+  - ambient:
+      - id: rain
+        path: "assets/audio/rain.ogg"
+        volume: 0.6
+        looped: true
+    text: "It starts to rain..."
+
+  - ambient:
+      - id: thunder
+        path: "assets/audio/thunder.ogg"
+        volume: 0.4
+        looped: false
+    text: "Thunder rumbles in the distance."
+
+  - ambient_stop:
+      - id: rain
+        fade_out: 1.0
+    text: "The rain begins to fade..."
+
+  - ambient_stop:
+      - id: thunder
+    text: "All is quiet again."

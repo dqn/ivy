@@ -532,6 +532,24 @@ impl GameState {
             .and_then(|cmd| cmd.camera.as_ref())
     }
 
+    /// Get current ambient tracks to start.
+    pub fn current_ambient(&self) -> &[crate::scenario::types::AmbientTrack] {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .map(|cmd| cmd.ambient.as_slice())
+            .unwrap_or(&[])
+    }
+
+    /// Get current ambient tracks to stop.
+    pub fn current_ambient_stop(&self) -> &[crate::scenario::types::AmbientStop] {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .map(|cmd| cmd.ambient_stop.as_slice())
+            .unwrap_or(&[])
+    }
+
     /// Reload scenario while preserving state.
     ///
     /// Attempts to maintain the current position by finding the same label

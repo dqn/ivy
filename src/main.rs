@@ -717,6 +717,16 @@ async fn main() {
             // Play voice
             audio_manager.play_voice(state.current_voice()).await;
 
+            // Start ambient tracks
+            for track in state.current_ambient() {
+                audio_manager.start_ambient(track).await;
+            }
+
+            // Stop ambient tracks
+            for stop in state.current_ambient_stop() {
+                audio_manager.stop_ambient(stop);
+            }
+
             // Start transition if specified
             if let Some(transition) = state.current_transition() {
                 transition_state.start_with_config(

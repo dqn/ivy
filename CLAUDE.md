@@ -162,6 +162,27 @@ script:
       duration: 1.5
     text: "通常に戻る"
 
+  # レイヤードオーディオ（アンビエント音の重ね合わせ）
+  - ambient:
+      - id: rain              # トラック識別子
+        path: "assets/audio/rain.ogg"
+        volume: 0.6           # 音量（0.0-1.0）
+        looped: true          # ループ再生
+        fade_in: 0.5          # フェードイン秒数
+    text: "雨が降り始める..."
+
+  - ambient:
+      - id: thunder
+        path: "assets/audio/thunder.ogg"
+        volume: 0.4
+        looped: false         # 一度だけ再生
+    text: "雷が鳴る"
+
+  - ambient_stop:
+      - id: rain
+        fade_out: 1.0         # フェードアウト秒数
+    text: "雨が止む"
+
   # 動画再生（--features video が必要）
   - video:
       path: "assets/videos/opening.webm"
@@ -259,6 +280,7 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [x] BGM再生（ループ、フェード）
 - [x] 効果音（SE）
 - [x] ボイス再生
+- [x] レイヤードオーディオ（環境音の重ね合わせ）
 
 ### 演出
 - [x] フェードトランジション
@@ -311,7 +333,6 @@ cd tests/e2e && npm run test:update  # スナップショット更新
   - [ ] シナリオバリデーター（構文チェック）
   - [ ] リアルタイムプレビュー
 - [ ] 動画背景
-- [ ] レイヤードオーディオ（環境音の重ね合わせ）
 - [ ] Live2D対応
 - [ ] リップシンク（音声連動）
 

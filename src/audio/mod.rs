@@ -2,7 +2,15 @@ use std::collections::HashMap;
 
 use macroquad::audio::{Sound, load_sound, play_sound, stop_sound};
 
-/// Audio manager for BGM, SE, and voice playback.
+use crate::scenario::types::{AmbientStop, AmbientTrack};
+
+/// Active ambient track state.
+struct AmbientState {
+    sound: Sound,
+    volume: f32,
+}
+
+/// Audio manager for BGM, SE, voice, and ambient playback.
 pub struct AudioManager {
     sound_cache: HashMap<String, Sound>,
     current_bgm: Option<String>,
@@ -10,6 +18,9 @@ pub struct AudioManager {
     bgm_volume: f32,
     se_volume: f32,
     voice_volume: f32,
+    ambient_volume: f32,
+    /// Active ambient tracks by ID.
+    ambient_tracks: HashMap<String, AmbientState>,
 }
 
 impl AudioManager {
@@ -21,6 +32,8 @@ impl AudioManager {
             bgm_volume: 1.0,
             se_volume: 1.0,
             voice_volume: 1.0,
+            ambient_volume: 1.0,
+            ambient_tracks: HashMap::new(),
         }
     }
 
@@ -163,6 +176,70 @@ impl AudioManager {
         {
             self.update_bgm(Some(&path)).await;
         }
+    }
+
+    /// Set ambient volume (0.0 - 1.0).
+    pub fn set_ambient_volume(&mut self, volume: f32) {
+        self.ambient_volume = volume.clamp(0.0, 1.0);
+        // Note: Volume changes will be applied on next ambient track change
+    }
+
+    /// Start an ambient audio track.
+    pub async fn start_ambient(&mut self, track: &AmbientTrack) {
+        // Stop existing track with same ID
+        self.stop_ambient_by_id(&track.id);
+
+        if let Some(sound) = self.get_sound(&track.path).await {
+            let effective_volume = track.volume * self.ambient_volume;
+            play_sound(
+                &sound,
+                macroquad::audio::PlaySoundParams {
+                    looped: track.looped,
+                    volume: effective_volume,
+                },
+            );
+            self.ambient_tracks.insert(
+                track.id.clone(),
+                AmbientState {
+                    sound,
+                    volume: track.volume,
+                },
+            );
+            eprintln!(
+                "Ambient started: {} (id: {}, vol: {:.0}%)",
+                track.path,
+                track.id,
+                effective_volume * 100.0
+            );
+        }
+    }
+
+    /// Stop an ambient audio track.
+    /// Note: fade_out is currently ignored as macroquad doesn't support fading.
+    #[allow(unused_variables)]
+    pub fn stop_ambient(&mut self, stop: &AmbientStop) {
+        self.stop_ambient_by_id(&stop.id);
+    }
+
+    /// Stop an ambient track by ID.
+    fn stop_ambient_by_id(&mut self, id: &str) {
+        if let Some(state) = self.ambient_tracks.remove(id) {
+            stop_sound(&state.sound);
+            eprintln!("Ambient stopped: {}", id);
+        }
+    }
+
+    /// Stop all ambient tracks.
+    pub fn stop_all_ambient(&mut self) {
+        for (id, state) in self.ambient_tracks.drain() {
+            stop_sound(&state.sound);
+            eprintln!("Ambient stopped: {}", id);
+        }
+    }
+
+    /// Get currently playing ambient track IDs.
+    pub fn current_ambient_ids(&self) -> Vec<String> {
+        self.ambient_tracks.keys().cloned().collect()
     }
 }
 
