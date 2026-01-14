@@ -3,6 +3,25 @@ use macroquad::prelude::*;
 use crate::i18n::LanguageConfig;
 use crate::scenario::Choice;
 
+/// Input source for choice navigation.
+#[derive(Default, Clone, Copy, PartialEq)]
+pub enum InputSource {
+    #[default]
+    Mouse,
+    Gamepad,
+}
+
+/// State for choice navigation (gamepad/keyboard).
+#[derive(Default)]
+pub struct ChoiceNavState {
+    /// Currently focused choice index.
+    pub focus_index: Option<usize>,
+    /// Input source for visual feedback.
+    pub input_source: InputSource,
+    /// Debounce timer for analog stick.
+    pub stick_debounce: f32,
+}
+
 /// Configuration for choice button rendering.
 pub struct ChoiceButtonConfig {
     pub x: f32,
@@ -42,8 +61,9 @@ pub fn draw_choices(
     config: &ChoiceButtonConfig,
     choices: &[Choice],
     lang: &LanguageConfig,
+    nav_state: &ChoiceNavState,
 ) -> ChoiceResult {
-    draw_choices_with_timer(config, choices, None, None, lang)
+    draw_choices_with_timer(config, choices, None, None, lang, nav_state)
 }
 
 /// Draw choice buttons with optional timer display.
@@ -53,6 +73,7 @@ pub fn draw_choices_with_timer(
     remaining_time: Option<f32>,
     default_choice: Option<usize>,
     lang: &LanguageConfig,
+    nav_state: &ChoiceNavState,
 ) -> ChoiceResult {
     let mouse_pos = mouse_position();
     let mouse_clicked = is_mouse_button_pressed(MouseButton::Left);
@@ -107,11 +128,15 @@ pub fn draw_choices_with_timer(
             && mouse_pos.1 >= y
             && mouse_pos.1 <= y + config.height;
 
+        // Check if gamepad focus is on this choice
+        let is_focused = nav_state.input_source == InputSource::Gamepad
+            && nav_state.focus_index == Some(i);
+
         // Check if this is the default choice
         let is_default = default_choice == Some(i);
 
-        // Determine background color
-        let bg_color = if is_hover {
+        // Determine background color (hover or focus)
+        let bg_color = if is_hover || is_focused {
             config.hover_color
         } else if is_default && remaining_time.is_some() {
             // Highlight default choice when timer is active
@@ -123,8 +148,11 @@ pub fn draw_choices_with_timer(
         // Draw button background
         draw_rectangle(config.x, y, config.width, config.height, bg_color);
 
-        // Draw border (highlight default choice)
-        let border_color = if is_default && remaining_time.is_some() {
+        // Draw border (highlight focus, then default choice)
+        let border_color = if is_focused {
+            // Cyan border for gamepad focus
+            Color::new(0.4, 0.8, 1.0, 1.0)
+        } else if is_default && remaining_time.is_some() {
             YELLOW
         } else {
             WHITE

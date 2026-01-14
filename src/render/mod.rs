@@ -41,4 +41,6 @@ pub use text::{
 pub use title::{TitleConfig, TitleMenuItem, draw_title_screen};
 pub use transition::TransitionState;
 pub use typewriter::TypewriterState;
-pub use ui::{ChoiceButtonConfig, draw_choices, draw_choices_with_timer};
+pub use ui::{
+    ChoiceButtonConfig, ChoiceNavState, InputSource, draw_choices, draw_choices_with_timer,
+};

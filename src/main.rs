@@ -13,20 +13,20 @@ use macroquad::prelude::*;
 
 use cache::TextureCache;
 use i18n::LanguageConfig;
-use input::GamepadState;
+use input::{GamepadAxis, GamepadButton, GamepadState, STICK_THRESHOLD};
 
 use audio::AudioManager;
 use hotreload::HotReloader;
 use render::{
     AchievementConfig, BacklogConfig, BacklogState, ChapterSelectConfig, ChapterSelectState,
-    CharAnimationState, CharIdleState, ChoiceButtonConfig, CinematicState, DebugConfig, DebugState,
-    GalleryConfig, GalleryState, GameSettings, InputConfig, InputState, ParticleState, ParticleType,
-    SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
-    TypewriterState, count_visible_chars, draw_achievement, draw_background_with_offset,
-    draw_backlog, draw_chapter_select, draw_character_animated, draw_choices_with_timer,
-    draw_continue_indicator_with_font, draw_debug, draw_gallery, draw_input, draw_settings_screen,
-    draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen,
-    interpolate_variables,
+    CharAnimationState, CharIdleState, ChoiceButtonConfig, ChoiceNavState, CinematicState,
+    DebugConfig, DebugState, GalleryConfig, GalleryState, GameSettings, InputConfig, InputSource,
+    InputState, ParticleState, ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig,
+    TitleMenuItem, TransitionState, TypewriterState, count_visible_chars, draw_achievement,
+    draw_background_with_offset, draw_backlog, draw_chapter_select, draw_character_animated,
+    draw_choices_with_timer, draw_continue_indicator_with_font, draw_debug, draw_gallery,
+    draw_input, draw_settings_screen, draw_speaker_name, draw_text_box_typewriter,
+    draw_text_box_with_font, draw_title_screen, interpolate_variables,
 };
 use runtime::{
     AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
@@ -259,6 +259,8 @@ async fn main() {
     let mut cinematic_state = CinematicState::default();
     let mut choice_timer: Option<f32> = None;
     let mut choice_total_time: Option<f32> = None;
+    let mut choice_nav_state = ChoiceNavState::default();
+    let mut last_mouse_pos: (f32, f32) = (0.0, 0.0);
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
@@ -856,6 +858,8 @@ async fn main() {
                 } else {
                     // Only show choices when text is complete
                     if typewriter_state.is_complete() {
+                        let choice_count = choices.len();
+
                         // Update choice timer
                         if let Some(ref mut remaining) = choice_timer {
                             *remaining -= get_frame_time();
@@ -867,6 +871,50 @@ async fn main() {
                                     state.select_choice(idx);
                                     choice_timer = None;
                                     choice_total_time = None;
+                                    choice_nav_state = ChoiceNavState::default();
+                                }
+                            }
+                        }
+
+                        // --- Input mode switching ---
+                        let mouse_pos = mouse_position();
+                        if mouse_pos != last_mouse_pos {
+                            // Mouse moved, switch to mouse mode
+                            choice_nav_state.input_source = InputSource::Mouse;
+                            choice_nav_state.focus_index = None;
+                            last_mouse_pos = mouse_pos;
+                        }
+
+                        // --- Gamepad input ---
+                        let dpad_up = gamepad_state.is_button_pressed(GamepadButton::DPadUp);
+                        let dpad_down = gamepad_state.is_button_pressed(GamepadButton::DPadDown);
+                        let stick_y = gamepad_state.axis(GamepadAxis::LeftY);
+
+                        // Stick debounce processing
+                        choice_nav_state.stick_debounce -= get_frame_time();
+                        let stick_up =
+                            stick_y < -STICK_THRESHOLD && choice_nav_state.stick_debounce <= 0.0;
+                        let stick_down =
+                            stick_y > STICK_THRESHOLD && choice_nav_state.stick_debounce <= 0.0;
+
+                        if dpad_up || dpad_down || stick_up || stick_down {
+                            // Switch to gamepad mode
+                            choice_nav_state.input_source = InputSource::Gamepad;
+
+                            // Initialize focus if not set
+                            if choice_nav_state.focus_index.is_none() {
+                                choice_nav_state.focus_index = Some(0);
+                            }
+
+                            // Move focus
+                            if let Some(idx) = choice_nav_state.focus_index {
+                                if dpad_up || stick_up {
+                                    choice_nav_state.focus_index = Some(idx.saturating_sub(1));
+                                    choice_nav_state.stick_debounce = 0.2;
+                                } else if dpad_down || stick_down {
+                                    choice_nav_state.focus_index =
+                                        Some((idx + 1).min(choice_count - 1));
+                                    choice_nav_state.stick_debounce = 0.2;
                                 }
                             }
                         }
@@ -880,11 +928,26 @@ async fn main() {
                             remaining_time,
                             default_choice,
                             &language_config,
+                            &choice_nav_state,
                         );
+
+                        // --- Selection confirmation ---
+                        // Mouse click
                         if let Some(index) = result.selected {
                             state.select_choice(index);
                             choice_timer = None;
                             choice_total_time = None;
+                            choice_nav_state = ChoiceNavState::default();
+                        } else if choice_nav_state.input_source == InputSource::Gamepad {
+                            // Gamepad A button
+                            if gamepad_state.is_button_pressed(GamepadButton::A) {
+                                if let Some(idx) = choice_nav_state.focus_index {
+                                    state.select_choice(idx);
+                                    choice_timer = None;
+                                    choice_total_time = None;
+                                    choice_nav_state = ChoiceNavState::default();
+                                }
+                            }
                         }
                     } else {
                         // Click to complete text
