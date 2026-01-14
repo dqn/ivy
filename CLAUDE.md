@@ -227,6 +227,11 @@ cargo insta review     # スナップショット確認・承認
 # E2Eテスト
 cd tests/e2e && npm test           # E2Eテスト実行
 cd tests/e2e && npm run test:update  # スナップショット更新
+
+# シナリオバリデーション
+cargo run --bin ivy-validate -- scenario.yaml        # 単一ファイル検証
+cargo run --bin ivy-validate -- --all assets/        # ディレクトリ内全ファイル検証
+cargo run --bin ivy-validate -- --cycles scenario.yaml  # 循環パス検出も実行
 ```
 
 ## 操作
@@ -340,12 +345,19 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [x] フォントサイズ調整（50% - 200%）
 - [x] ハイコントラストモード
 
+### 開発ツール
+- [x] シナリオバリデーター（`ivy-validate` CLI）
+  - 未定義ラベルへの参照検出
+  - 重複ラベル検出
+  - 未使用ラベル警告
+  - 自己参照ジャンプ検出
+  - 循環パス検出
+
 ### 今後の予定
 
 #### 中優先度（開発体験・演出強化）
-- [ ] 開発ツール
+- [ ] 開発ツール（追加）
   - [ ] VSCode拡張（シンタックスハイライト、補完）
-  - [ ] シナリオバリデーター（構文チェック）
   - [ ] リアルタイムプレビュー
 - [ ] Live2D対応
 - [ ] リップシンク（音声連動）
