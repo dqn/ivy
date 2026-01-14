@@ -382,3 +382,75 @@ script: []
     let scenario = parse_scenario(yaml).unwrap();
     assert!(scenario.script.is_empty());
 }
+
+#[test]
+fn test_parse_char_idle() {
+    use ivy::scenario::{CharIdleType, Easing};
+
+    let yaml = r#"
+title: Char Idle Parse Test
+
+script:
+  - character: "char.png"
+    char_idle:
+      type: "sway"
+      duration: 3.0
+      intensity: 0.5
+      easing: ease_in_out
+    text: "Swaying"
+"#;
+
+    let scenario = parse_scenario(yaml).unwrap();
+    let idle = scenario.script[0].char_idle.as_ref().unwrap();
+
+    assert!(matches!(idle.idle_type, CharIdleType::Sway));
+    assert_eq!(idle.duration, 3.0);
+    assert_eq!(idle.intensity, 0.5);
+    assert!(matches!(idle.easing, Easing::EaseInOut));
+}
+
+#[test]
+fn test_parse_char_idle_all_types() {
+    use ivy::scenario::CharIdleType;
+
+    let yaml = r#"
+title: All Idle Types
+
+script:
+  - character: "char.png"
+    char_idle:
+      type: "breath"
+    text: "Breath"
+
+  - char_idle:
+      type: "bob"
+    text: "Bob"
+
+  - char_idle:
+      type: "sway"
+    text: "Sway"
+
+  - char_idle:
+      type: "pulse"
+    text: "Pulse"
+"#;
+
+    let scenario = parse_scenario(yaml).unwrap();
+
+    assert!(matches!(
+        scenario.script[0].char_idle.as_ref().unwrap().idle_type,
+        CharIdleType::Breath
+    ));
+    assert!(matches!(
+        scenario.script[1].char_idle.as_ref().unwrap().idle_type,
+        CharIdleType::Bob
+    ));
+    assert!(matches!(
+        scenario.script[2].char_idle.as_ref().unwrap().idle_type,
+        CharIdleType::Sway
+    ));
+    assert!(matches!(
+        scenario.script[3].char_idle.as_ref().unwrap().idle_type,
+        CharIdleType::Pulse
+    ));
+}

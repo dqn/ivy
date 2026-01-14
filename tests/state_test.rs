@@ -910,3 +910,85 @@ script:
     assert_eq!(a.name, "First Victory");
     assert_eq!(a.description, "Win your first battle");
 }
+
+#[test]
+fn test_char_idle_animation() {
+    use ivy::scenario::CharIdleType;
+
+    let yaml = r#"
+title: Char Idle Test
+
+script:
+  - character: "char.png"
+    char_idle:
+      type: "breath"
+      duration: 2.0
+      intensity: 0.3
+    text: "Breathing"
+"#;
+    let scenario = parse_scenario(yaml).unwrap();
+    let state = GameState::new(scenario);
+
+    let char_idle = state.current_char_idle();
+    assert!(char_idle.is_some());
+    let idle = char_idle.unwrap();
+    assert!(matches!(idle.idle_type, CharIdleType::Breath));
+    assert_eq!(idle.duration, 2.0);
+    assert_eq!(idle.intensity, 0.3);
+}
+
+#[test]
+fn test_char_idle_with_enter_animation() {
+    use ivy::scenario::{CharAnimationType, CharIdleType};
+
+    let yaml = r#"
+title: Enter + Idle Test
+
+script:
+  - character: "char.png"
+    char_enter:
+      type: "fade"
+      duration: 0.5
+    char_idle:
+      type: "bob"
+      duration: 1.5
+    text: "Enter then bob"
+"#;
+    let scenario = parse_scenario(yaml).unwrap();
+    let state = GameState::new(scenario);
+
+    let char_enter = state.current_char_enter();
+    assert!(char_enter.is_some());
+    assert!(matches!(
+        char_enter.unwrap().animation_type,
+        CharAnimationType::Fade
+    ));
+
+    let char_idle = state.current_char_idle();
+    assert!(char_idle.is_some());
+    assert!(matches!(char_idle.unwrap().idle_type, CharIdleType::Bob));
+}
+
+#[test]
+fn test_char_idle_default_values() {
+    use ivy::scenario::CharIdleType;
+
+    let yaml = r#"
+title: Idle Default Test
+
+script:
+  - character: "char.png"
+    char_idle:
+      type: "sway"
+    text: "Swaying with defaults"
+"#;
+    let scenario = parse_scenario(yaml).unwrap();
+    let state = GameState::new(scenario);
+
+    let char_idle = state.current_char_idle();
+    assert!(char_idle.is_some());
+    let idle = char_idle.unwrap();
+    assert!(matches!(idle.idle_type, CharIdleType::Sway));
+    assert_eq!(idle.duration, 2.0); // default
+    assert_eq!(idle.intensity, 0.3); // default
+}

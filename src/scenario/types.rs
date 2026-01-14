@@ -246,6 +246,8 @@ pub struct CharacterDisplay {
     pub enter: Option<CharAnimation>,
     /// Exit animation (optional).
     pub exit: Option<CharAnimation>,
+    /// Idle animation (optional).
+    pub idle: Option<CharIdleAnimation>,
 }
 
 /// Character animation type.
@@ -275,6 +277,46 @@ pub struct CharAnimation {
 }
 
 fn default_char_animation_duration() -> f32 {
+    0.3
+}
+
+/// Character idle animation type (looping animations).
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CharIdleType {
+    /// No idle animation.
+    #[default]
+    None,
+    /// Breathing animation (subtle vertical scale oscillation).
+    Breath,
+    /// Bobbing animation (vertical position oscillation).
+    Bob,
+    /// Swaying animation (horizontal position oscillation).
+    Sway,
+    /// Pulsing animation (uniform scale oscillation).
+    Pulse,
+}
+
+/// Character idle animation configuration.
+#[derive(Debug, Clone, Deserialize)]
+pub struct CharIdleAnimation {
+    #[serde(rename = "type", default)]
+    pub idle_type: CharIdleType,
+    /// Duration of one cycle in seconds (default: 2.0).
+    #[serde(default = "default_char_idle_duration")]
+    pub duration: f32,
+    /// Animation intensity/amplitude (0.0 to 1.0, default: 0.3).
+    #[serde(default = "default_char_idle_intensity")]
+    pub intensity: f32,
+    #[serde(default)]
+    pub easing: Easing,
+}
+
+fn default_char_idle_duration() -> f32 {
+    2.0
+}
+
+fn default_char_idle_intensity() -> f32 {
     0.3
 }
 
@@ -350,6 +392,8 @@ pub struct Command {
     pub char_enter: Option<CharAnimation>,
     /// Character exit animation.
     pub char_exit: Option<CharAnimation>,
+    /// Character idle animation (looping, applied after enter animation).
+    pub char_idle: Option<CharIdleAnimation>,
     /// Multiple characters to display.
     pub characters: Option<Vec<CharacterDisplay>>,
     /// BGM file path (None = keep previous, Some("") = stop).

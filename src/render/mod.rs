@@ -20,7 +20,7 @@ pub mod widgets;
 pub use achievement::{AchievementConfig, draw_achievement};
 pub use backlog::{BacklogConfig, BacklogState, draw_backlog};
 pub use chapter_select::{ChapterSelectConfig, ChapterSelectState, draw_chapter_select};
-pub use character::{CharAnimationState, draw_character_animated};
+pub use character::{CharAnimationState, CharIdleState, draw_character_animated};
 pub use cinematic::CinematicState;
 pub use debug::{DebugConfig, DebugState, draw_debug};
 pub use gallery::{

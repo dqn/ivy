@@ -19,8 +19,8 @@ use audio::AudioManager;
 use hotreload::HotReloader;
 use render::{
     AchievementConfig, BacklogConfig, BacklogState, ChapterSelectConfig, ChapterSelectState,
-    CharAnimationState, ChoiceButtonConfig, CinematicState, DebugConfig, DebugState, GalleryConfig,
-    GalleryState, GameSettings, InputConfig, InputState, ParticleState, ParticleType,
+    CharAnimationState, CharIdleState, ChoiceButtonConfig, CinematicState, DebugConfig, DebugState,
+    GalleryConfig, GalleryState, GameSettings, InputConfig, InputState, ParticleState, ParticleType,
     SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
     TypewriterState, count_visible_chars, draw_achievement, draw_background_with_offset,
     draw_backlog, draw_chapter_select, draw_character_animated, draw_choices_with_timer,
@@ -63,6 +63,7 @@ async fn draw_visual(
     cache: &mut TextureCache,
     offset: (f32, f32),
     char_anim: &CharAnimationState,
+    char_idle: &CharIdleState,
 ) {
     // Draw background
     if let Some(bg_path) = &visual.background {
@@ -75,16 +76,23 @@ async fn draw_visual(
     if !visual.characters.is_empty() {
         for char_state in &visual.characters {
             if let Some(texture) = cache.get(&char_state.path).await {
-                // Note: For multiple characters, we use a default animation state
+                // Note: For multiple characters, we use default animation states
                 // Full animation support for multiple characters would require per-character state
                 let default_anim = CharAnimationState::default();
-                draw_character_animated(&texture, char_state.position, offset, &default_anim);
+                let default_idle = CharIdleState::default();
+                draw_character_animated(
+                    &texture,
+                    char_state.position,
+                    offset,
+                    &default_anim,
+                    &default_idle,
+                );
             }
         }
     } else if let Some(char_path) = &visual.character {
         // Draw single character with animation
         if let Some(texture) = cache.get(char_path).await {
-            draw_character_animated(&texture, visual.char_pos, offset, char_anim);
+            draw_character_animated(&texture, visual.char_pos, offset, char_anim, char_idle);
         }
     }
 }
@@ -245,6 +253,8 @@ async fn main() {
     let mut wait_timer: f32 = 0.0;
     let mut in_wait: bool = false;
     let mut char_anim_state = CharAnimationState::default();
+    let mut char_idle_state = CharIdleState::default();
+    let mut pending_idle: Option<scenario::CharIdleAnimation> = None;
     let mut particle_state = ParticleState::default();
     let mut cinematic_state = CinematicState::default();
     let mut choice_timer: Option<f32> = None;
@@ -590,11 +600,33 @@ async fn main() {
             // Start character enter animation if specified
             if let Some(char_enter) = state.current_char_enter() {
                 char_anim_state.start_enter(char_enter);
+                // Store pending idle animation to start after enter completes
+                pending_idle = state.current_char_idle().cloned();
+                char_idle_state.stop(); // Stop current idle during enter animation
+            } else if let Some(char_idle) = state.current_char_idle() {
+                // No enter animation, start idle directly
+                char_idle_state.start(char_idle);
             }
 
             // Start character exit animation if specified
             if let Some(char_exit) = state.current_char_exit() {
                 char_anim_state.start_exit(char_exit);
+                char_idle_state.stop(); // Stop idle during exit animation
+                pending_idle = None;
+            }
+
+            // Stop idle animation when character is cleared
+            let display = state.display_state();
+            let visual = match &display {
+                DisplayState::Text { visual, .. } => Some(visual),
+                DisplayState::Choices { visual, .. } => Some(visual),
+                _ => None,
+            };
+            if let Some(visual) = visual {
+                if visual.character.is_none() {
+                    char_idle_state.stop();
+                    pending_idle = None;
+                }
             }
 
             // Update particles if specified
@@ -639,6 +671,19 @@ async fn main() {
         // Update character animation state
         char_anim_state.update();
 
+        // Check if enter animation just completed and start pending idle
+        if !char_anim_state.is_active()
+            && char_anim_state.direction()
+                == Some(render::character::AnimationDirection::Enter)
+        {
+            if let Some(idle) = pending_idle.take() {
+                char_idle_state.start(&idle);
+            }
+        }
+
+        // Update idle animation state
+        char_idle_state.update();
+
         // Get shake offset for visual rendering
         let shake_offset = shake_state.offset();
 
@@ -649,7 +694,7 @@ async fn main() {
                 visual,
             } => {
                 // Draw visuals first (background, then character) with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state).await;
 
                 // Resolve localized text
                 let resolved_text = language_config.resolve(&text);
@@ -767,7 +812,7 @@ async fn main() {
                 }
 
                 // Draw visuals first with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state).await;
 
                 // Resolve localized text
                 let resolved_text = language_config.resolve(&text);
@@ -855,7 +900,7 @@ async fn main() {
             }
             DisplayState::Wait { duration, visual } => {
                 // Draw visuals with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state).await;
 
                 // Reset wait timer if just started waiting
                 if !in_wait {
@@ -901,7 +946,7 @@ async fn main() {
             }
             DisplayState::Input { input, visual } => {
                 // Draw visuals with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
+                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state).await;
 
                 // Initialize input state if this is a new input command
                 if awaiting_input.as_ref() != Some(&input.var) {

@@ -447,6 +447,14 @@ impl GameState {
             .and_then(|cmd| cmd.char_exit.as_ref())
     }
 
+    /// Get current character idle animation.
+    pub fn current_char_idle(&self) -> Option<&crate::scenario::types::CharIdleAnimation> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.char_idle.as_ref())
+    }
+
     /// Get current particles command (None = keep, Some("") = stop, Some(type) = start).
     pub fn current_particles(&self) -> Option<(&String, f32)> {
         self.scenario
