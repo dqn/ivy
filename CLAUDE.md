@@ -24,10 +24,19 @@ src/
 │   └── parser.rs        # YAML読み込み
 ├── runtime/             # 実行エンジン
 │   └── state.rs         # GameState, DisplayState, VisualState, SaveData
-└── render/              # 描画
-    ├── image.rs         # 背景・スプライト描画
-    ├── text.rs          # テキストボックス
-    └── ui.rs            # 選択肢ボタン
+├── render/              # 描画
+│   ├── image.rs         # 背景・スプライト描画
+│   ├── text.rs          # テキストボックス
+│   ├── transition.rs    # トランジション効果
+│   └── ui.rs            # 選択肢ボタン
+├── hotreload/           # ホットリロード（開発用）
+│   └── mod.rs           # ファイル監視、シナリオ再読込
+├── i18n/                # 多言語対応
+│   ├── mod.rs           # 翻訳システム
+│   └── localized.rs     # LocalizedString型
+└── input/               # 入力処理
+    ├── mod.rs           # InputProviderトレイト
+    └── gamepad.rs       # ゲームパッド定義
 
 assets/                  # ゲームアセット
 ├── *.yaml               # シナリオファイル
@@ -132,6 +141,7 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 | serde + serde_yaml | YAMLパース |
 | serde_json | セーブデータ |
 | anyhow | エラー処理 |
+| notify | ファイル監視（ネイティブのみ、ホットリロード用） |
 
 ## 実装状況
 
@@ -163,6 +173,8 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [x] キャラクター入退場アニメーション
 - [x] パーティクルエフェクト（雪、雨、桜、etc.）
 - [x] シネマティックバー（レターボックス）
+- [x] イージング関数（14種類）
+- [x] トランジション拡張（Wipe, Slide, Pixelate, Iris, Blinds）
 
 ### テキスト機能
 - [x] 色付きテキスト `{color:red}text{/color}`
@@ -187,15 +199,17 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [x] WASM対応（platform抽象化）
 - [x] 日本語フォント対応
 
+### 開発者向け
+- [x] ホットリロード（YAMLシナリオ自動再読込）
+- [x] コントローラー対応（基盤実装、`gamepads`クレート追加で有効化）
+- [x] 多言語対応（LocalizedString型、Command型統合済み）
+
 ### 今後の予定
 
 #### 短期（優先度: 高）
-- [ ] イージング関数（全アニメーションの品質向上）
-- [ ] トランジション拡張（Wipe, Slide, Pixelate, Iris, Blinds）
-- [ ] コントローラー対応
+- [ ] コントローラー対応（`gamepads`クレート統合）
 
 #### 中期（優先度: 中）
-- [ ] 多言語対応（i18n）
 - [ ] フローチャート表示
 - [ ] モジュラーキャラクター（パーツ組み合わせ）
 
@@ -203,4 +217,3 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [ ] 動画再生
 - [ ] Live2D対応
 - [ ] リップシンク
-- [ ] ホットリロード

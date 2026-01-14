@@ -1,5 +1,6 @@
 use macroquad::prelude::*;
 
+use crate::i18n::LanguageConfig;
 use crate::scenario::Choice;
 
 /// Configuration for choice button rendering.
@@ -37,8 +38,12 @@ pub struct ChoiceResult {
 }
 
 /// Draw choice buttons and return which one was clicked.
-pub fn draw_choices(config: &ChoiceButtonConfig, choices: &[Choice]) -> ChoiceResult {
-    draw_choices_with_timer(config, choices, None, None)
+pub fn draw_choices(
+    config: &ChoiceButtonConfig,
+    choices: &[Choice],
+    lang: &LanguageConfig,
+) -> ChoiceResult {
+    draw_choices_with_timer(config, choices, None, None, lang)
 }
 
 /// Draw choice buttons with optional timer display.
@@ -47,6 +52,7 @@ pub fn draw_choices_with_timer(
     choices: &[Choice],
     remaining_time: Option<f32>,
     default_choice: Option<usize>,
+    lang: &LanguageConfig,
 ) -> ChoiceResult {
     let mouse_pos = mouse_position();
     let mouse_clicked = is_mouse_button_pressed(MouseButton::Left);
@@ -126,10 +132,11 @@ pub fn draw_choices_with_timer(
         draw_rectangle_lines(config.x, y, config.width, config.height, 2.0, border_color);
 
         // Draw button text (centered)
+        let resolved_label = lang.resolve(&choice.label);
         let label = if is_default && remaining_time.is_some() {
-            format!("{} [Default]", choice.label)
+            format!("{} [Default]", resolved_label)
         } else {
-            choice.label.clone()
+            resolved_label
         };
         let text_width = measure_text(&label, None, config.font_size as u16, 1.0).width;
         let text_x = config.x + (config.width - text_width) / 2.0;

@@ -82,6 +82,8 @@ impl GameState {
 
     /// Get the current display state.
     pub fn display_state(&mut self) -> DisplayState {
+        use crate::i18n::LocalizedString;
+
         self.skip_labels();
 
         if self.current_index >= self.scenario.script.len() {
@@ -93,7 +95,10 @@ impl GameState {
         let speaker = command.speaker.clone();
 
         if let Some(choices) = &command.choices {
-            let text = command.text.clone().unwrap_or_default();
+            let text = command
+                .text
+                .clone()
+                .unwrap_or_else(|| LocalizedString::default());
             // Find default choice index
             let default_choice = choices.iter().position(|c| c.default).or(Some(0)); // Default to first choice if none marked
             return DisplayState::Choices {
@@ -210,12 +215,14 @@ impl GameState {
 
     /// Push current state to history for rollback.
     fn push_history(&mut self) {
+        use crate::i18n::LocalizedString;
+
         let text = self
             .scenario
             .script
             .get(self.current_index)
             .and_then(|cmd| cmd.text.clone())
-            .unwrap_or_default();
+            .unwrap_or_else(|| LocalizedString::default());
 
         let entry = HistoryEntry {
             index: self.current_index,
@@ -462,5 +469,39 @@ impl GameState {
             .script
             .get(self.current_index)
             .and_then(|cmd| cmd.achievement.as_ref())
+    }
+
+    /// Get the label at current position (if any).
+    pub fn current_label(&self) -> Option<String> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.label.clone())
+    }
+
+    /// Reload scenario while preserving state.
+    ///
+    /// Attempts to maintain the current position by finding the same label
+    /// in the new scenario. If the label is not found, tries to use the
+    /// same index. Variables are preserved.
+    pub fn reload_scenario(&mut self, scenario: Scenario) {
+        let old_label = self.current_label();
+        let old_index = self.current_index;
+
+        self.label_index = build_label_index(&scenario);
+        self.scenario = scenario;
+
+        // Try to jump to the same label first
+        if let Some(label) = old_label {
+            if let Some(&index) = self.label_index.get(&label) {
+                self.current_index = index;
+                self.skip_labels();
+                return;
+            }
+        }
+
+        // Fall back to the same index (clamped to script length)
+        self.current_index = old_index.min(self.scenario.script.len().saturating_sub(1));
+        self.skip_labels();
     }
 }

@@ -1,5 +1,6 @@
 use serde::Serialize;
 
+use crate::i18n::LocalizedString;
 use crate::runtime::VisualState;
 use crate::scenario::{Choice, Input};
 
@@ -8,7 +9,7 @@ use crate::scenario::{Choice, Input};
 pub struct HistoryEntry {
     pub index: usize,
     pub visual: VisualState,
-    pub text: String,
+    pub text: LocalizedString,
 }
 
 /// Current display state of the game.
@@ -16,14 +17,14 @@ pub struct HistoryEntry {
 pub enum DisplayState {
     /// Showing text, waiting for player to advance.
     Text {
-        speaker: Option<String>,
-        text: String,
+        speaker: Option<LocalizedString>,
+        text: LocalizedString,
         visual: VisualState,
     },
     /// Showing choices, waiting for player to select.
     Choices {
-        speaker: Option<String>,
-        text: String,
+        speaker: Option<LocalizedString>,
+        text: LocalizedString,
         choices: Vec<Choice>,
         visual: VisualState,
         /// Optional timeout in seconds for timed choices.

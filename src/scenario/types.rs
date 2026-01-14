@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::i18n::LocalizedString;
+
 /// Easing functions for smooth animations.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -126,6 +128,47 @@ pub enum TransitionType {
     Fade,
     FadeWhite,
     Dissolve,
+    /// Wipe transition (reveals new scene by moving edge).
+    Wipe,
+    /// Slide transition (slides scenes in/out).
+    Slide,
+    /// Pixelate transition (pixelates then clears).
+    Pixelate,
+    /// Iris transition (circular reveal/close).
+    Iris,
+    /// Blinds transition (venetian blind effect).
+    Blinds,
+}
+
+/// Direction for directional transitions.
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TransitionDirection {
+    /// Left to right (default for Wipe).
+    #[default]
+    LeftToRight,
+    /// Right to left.
+    RightToLeft,
+    /// Top to bottom.
+    TopToBottom,
+    /// Bottom to top.
+    BottomToTop,
+    /// Left (for Slide).
+    Left,
+    /// Right (for Slide).
+    Right,
+    /// Up (for Slide).
+    Up,
+    /// Down (for Slide).
+    Down,
+    /// Open (for Iris - from center outward).
+    Open,
+    /// Close (for Iris - from edges to center).
+    Close,
+    /// Horizontal (for Blinds).
+    Horizontal,
+    /// Vertical (for Blinds).
+    Vertical,
 }
 
 /// Transition configuration.
@@ -137,6 +180,23 @@ pub struct Transition {
     pub duration: f32,
     #[serde(default)]
     pub easing: Easing,
+    /// Direction for directional transitions (Wipe, Slide, Iris, Blinds).
+    #[serde(default)]
+    pub direction: TransitionDirection,
+    /// Number of blinds for Blinds transition (default: 10).
+    #[serde(default = "default_blinds_count")]
+    pub blinds_count: u32,
+    /// Maximum pixel size for Pixelate transition (default: 32).
+    #[serde(default = "default_max_pixel_size")]
+    pub max_pixel_size: u32,
+}
+
+fn default_blinds_count() -> u32 {
+    10
+}
+
+fn default_max_pixel_size() -> u32 {
+    32
 }
 
 fn default_duration() -> f32 {
@@ -258,8 +318,8 @@ fn default_shake_duration() -> f32 {
 /// A single choice option that branches the story.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choice {
-    /// Display text for this choice.
-    pub label: String,
+    /// Display text for this choice (supports localization).
+    pub label: LocalizedString,
     /// Label to jump to when this choice is selected.
     pub jump: String,
     /// Whether this is the default choice when timeout expires.
@@ -272,10 +332,10 @@ pub struct Choice {
 pub struct Command {
     /// Optional label for this command (used as jump target).
     pub label: Option<String>,
-    /// Speaker name to display.
-    pub speaker: Option<String>,
-    /// Text to display (if any).
-    pub text: Option<String>,
+    /// Speaker name to display (supports localization).
+    pub speaker: Option<LocalizedString>,
+    /// Text to display (supports localization).
+    pub text: Option<LocalizedString>,
     /// Choices to present to the player (if any).
     pub choices: Option<Vec<Choice>>,
     /// Unconditional jump to another label.

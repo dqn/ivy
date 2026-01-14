@@ -1,5 +1,7 @@
 mod audio;
 mod cache;
+mod hotreload;
+mod i18n;
 mod input;
 mod platform;
 mod render;
@@ -10,8 +12,10 @@ mod types;
 use macroquad::prelude::*;
 
 use cache::TextureCache;
+use i18n::LanguageConfig;
 
 use audio::AudioManager;
+use hotreload::HotReloader;
 use render::{
     AchievementConfig, BacklogConfig, BacklogState, ChapterSelectConfig, ChapterSelectState,
     CharAnimationState, ChoiceButtonConfig, CinematicState, DebugConfig, DebugState, GalleryConfig,
@@ -148,6 +152,22 @@ async fn main() {
         }
     };
 
+    // Initialize hot reloader for development
+    let mut hot_reloader = match HotReloader::new() {
+        Ok(mut reloader) => {
+            if let Err(e) = reloader.watch(SCENARIO_PATH) {
+                eprintln!("Failed to watch scenario file: {}", e);
+            } else {
+                eprintln!("[Hot Reload] Watching {}", SCENARIO_PATH);
+            }
+            Some(reloader)
+        }
+        Err(e) => {
+            eprintln!("Hot reload disabled: {}", e);
+            None
+        }
+    };
+
     let scenario_title = scenario.title.clone();
     let scenario_chapters: Vec<Chapter> = scenario
         .chapters
@@ -208,6 +228,7 @@ async fn main() {
     let mut achievements = Achievements::load();
     let mut achievement_notifier = AchievementNotifier::default();
     let mut awaiting_input: Option<String> = None; // Variable name waiting for input
+    let language_config = LanguageConfig::default();
     let mut show_backlog = false;
     let mut texture_cache = TextureCache::new();
     let mut audio_manager = AudioManager::new();
@@ -395,6 +416,24 @@ async fn main() {
             }
         }
 
+        // Check for hot reload
+        if let Some(ref mut reloader) = hot_reloader {
+            if reloader.poll() {
+                if let Some(ref mut state) = game_state {
+                    match load_scenario(SCENARIO_PATH) {
+                        Ok(new_scenario) => {
+                            state.reload_scenario(new_scenario);
+                            last_index = None; // Force audio/transition update
+                            eprintln!("[Hot Reload] Scenario reloaded");
+                        }
+                        Err(e) => {
+                            eprintln!("[Hot Reload] Failed to reload: {}", e);
+                        }
+                    }
+                }
+            }
+        }
+
         // Get mutable reference to game state
         let state = match game_state.as_mut() {
             Some(s) => s,
@@ -526,10 +565,13 @@ async fn main() {
 
             // Start transition if specified
             if let Some(transition) = state.current_transition() {
-                transition_state.start(
+                transition_state.start_with_config(
                     transition.transition_type,
                     transition.duration,
                     transition.easing,
+                    transition.direction,
+                    transition.blinds_count,
+                    transition.max_pixel_size,
                 );
             }
 
@@ -602,12 +644,17 @@ async fn main() {
                 // Draw visuals first (background, then character) with shake offset
                 draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
 
+                // Resolve localized text
+                let resolved_text = language_config.resolve(&text);
+
                 // Interpolate variables in text
-                let interpolated_text = interpolate_variables(&text, state.variables());
+                let interpolated_text = interpolate_variables(&resolved_text, state.variables());
 
                 // Draw speaker name if present (also interpolate variables)
                 if let Some(ref name) = speaker {
-                    let interpolated_name = interpolate_variables(name, state.variables());
+                    let resolved_name = language_config.resolve(name);
+                    let interpolated_name =
+                        interpolate_variables(&resolved_name, state.variables());
                     draw_speaker_name(&text_config, &interpolated_name, font_ref);
                 }
 
@@ -633,7 +680,12 @@ async fn main() {
                 // Draw backlog overlay if enabled
                 if show_backlog {
                     let history: Vec<_> = state.history().iter().cloned().collect();
-                    draw_backlog(&backlog_config, &mut backlog_state, &history);
+                    draw_backlog(
+                        &backlog_config,
+                        &mut backlog_state,
+                        &history,
+                        &language_config,
+                    );
                 } else {
                     // Skip mode: S key toggle or Ctrl key held down
                     let skip_active = skip_mode
@@ -646,7 +698,7 @@ async fn main() {
                         auto_timer += get_frame_time() as f64;
                         // Wait time based on text length, adjusted by auto speed setting
                         // Higher speed = shorter wait time
-                        let base_wait = 2.0 + text.len() as f64 * 0.05;
+                        let base_wait = 2.0 + resolved_text.len() as f64 * 0.05;
                         let wait_time = base_wait / settings.auto_speed as f64;
                         if auto_timer >= wait_time {
                             auto_advance = true;
@@ -708,12 +760,17 @@ async fn main() {
                 // Draw visuals first with shake offset
                 draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state).await;
 
+                // Resolve localized text
+                let resolved_text = language_config.resolve(&text);
+
                 // Interpolate variables in text
-                let interpolated_text = interpolate_variables(&text, state.variables());
+                let interpolated_text = interpolate_variables(&resolved_text, state.variables());
 
                 // Draw speaker name if present (also interpolate variables)
                 if let Some(ref name) = speaker {
-                    let interpolated_name = interpolate_variables(name, state.variables());
+                    let resolved_name = language_config.resolve(name);
+                    let interpolated_name =
+                        interpolate_variables(&resolved_name, state.variables());
                     draw_speaker_name(&text_config, &interpolated_name, font_ref);
                 }
 
@@ -736,7 +793,12 @@ async fn main() {
                 // Draw backlog overlay if enabled
                 if show_backlog {
                     let history: Vec<_> = state.history().iter().cloned().collect();
-                    draw_backlog(&backlog_config, &mut backlog_state, &history);
+                    draw_backlog(
+                        &backlog_config,
+                        &mut backlog_state,
+                        &history,
+                        &language_config,
+                    );
                 } else {
                     // Only show choices when text is complete
                     if typewriter_state.is_complete() {
@@ -763,6 +825,7 @@ async fn main() {
                             &choices,
                             remaining_time,
                             default_choice,
+                            &language_config,
                         );
                         if let Some(index) = result.selected {
                             state.select_choice(index);
@@ -862,7 +925,12 @@ async fn main() {
                 // Draw backlog overlay if enabled
                 if show_backlog {
                     let history: Vec<_> = state.history().iter().cloned().collect();
-                    draw_backlog(&backlog_config, &mut backlog_state, &history);
+                    draw_backlog(
+                        &backlog_config,
+                        &mut backlog_state,
+                        &history,
+                        &language_config,
+                    );
                 }
 
                 // Return to title on click or Advance, or exit on Escape

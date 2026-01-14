@@ -1,5 +1,6 @@
 use macroquad::prelude::*;
 
+use crate::i18n::LanguageConfig;
 use crate::runtime::HistoryEntry;
 
 /// Configuration for backlog display.
@@ -56,7 +57,12 @@ impl BacklogState {
 }
 
 /// Draw the backlog overlay.
-pub fn draw_backlog(config: &BacklogConfig, state: &mut BacklogState, history: &[HistoryEntry]) {
+pub fn draw_backlog(
+    config: &BacklogConfig,
+    state: &mut BacklogState,
+    history: &[HistoryEntry],
+    lang: &LanguageConfig,
+) {
     // Handle scroll
     state.handle_scroll(history.len(), config);
 
@@ -90,7 +96,8 @@ pub fn draw_backlog(config: &BacklogConfig, state: &mut BacklogState, history: &
     let total_height = entries.len() as f32 * config.line_height;
 
     for (i, entry) in entries.iter().enumerate() {
-        if entry.text.is_empty() {
+        let resolved_text = lang.resolve(&entry.text);
+        if resolved_text.is_empty() {
             continue;
         }
 
@@ -104,10 +111,10 @@ pub fn draw_backlog(config: &BacklogConfig, state: &mut BacklogState, history: &
         }
 
         // Truncate long text
-        let display_text = if entry.text.len() > 60 {
-            format!("{}...", &entry.text[..60])
+        let display_text = if resolved_text.len() > 60 {
+            format!("{}...", &resolved_text[..60])
         } else {
-            entry.text.clone()
+            resolved_text
         };
 
         draw_text(

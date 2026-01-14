@@ -1,4 +1,8 @@
+pub mod gamepad;
+
 use macroquad::prelude::{KeyCode, MouseButton};
+
+pub use gamepad::{GamepadAxis, GamepadBindings, GamepadButton, STICK_THRESHOLD};
 
 /// Input provider trait for abstracting input handling.
 ///
@@ -22,6 +26,18 @@ pub trait InputProvider {
 
     /// Get the next character pressed (for text input).
     fn get_char_pressed(&self) -> Option<char>;
+
+    /// Check if a gamepad button was just pressed this frame.
+    fn is_gamepad_button_pressed(&self, button: GamepadButton) -> bool;
+
+    /// Check if a gamepad button is currently held down.
+    fn is_gamepad_button_down(&self, button: GamepadButton) -> bool;
+
+    /// Get the value of a gamepad axis (-1.0 to 1.0).
+    fn gamepad_axis(&self, axis: GamepadAxis) -> f32;
+
+    /// Check if any gamepad is connected.
+    fn is_any_gamepad_connected(&self) -> bool;
 }
 
 /// Real input provider using macroquad.
@@ -51,6 +67,26 @@ impl InputProvider for MacroquadInput {
     fn get_char_pressed(&self) -> Option<char> {
         macroquad::prelude::get_char_pressed()
     }
+
+    // Gamepad support is not yet available in macroquad 0.4.
+    // These are stub implementations that return false/0.0.
+    // TODO: Add `gamepads` crate for gamepad support.
+
+    fn is_gamepad_button_pressed(&self, _button: GamepadButton) -> bool {
+        false
+    }
+
+    fn is_gamepad_button_down(&self, _button: GamepadButton) -> bool {
+        false
+    }
+
+    fn gamepad_axis(&self, _axis: GamepadAxis) -> f32 {
+        0.0
+    }
+
+    fn is_any_gamepad_connected(&self) -> bool {
+        false
+    }
 }
 
 /// Test input provider with queued events.
@@ -67,6 +103,10 @@ pub mod test {
         mouse_buttons: HashSet<MouseButton>,
         mouse_wheel_delta: (f32, f32),
         char_queue: Vec<char>,
+        pressed_gamepad_buttons: HashSet<GamepadButton>,
+        down_gamepad_buttons: HashSet<GamepadButton>,
+        gamepad_axes: std::collections::HashMap<GamepadAxis, f32>,
+        gamepad_connected: bool,
     }
 
     impl TestInput {
@@ -117,11 +157,28 @@ pub mod test {
             self.char_queue.push(ch);
         }
 
+        /// Simulate a gamepad button press.
+        pub fn press_gamepad_button(&mut self, button: GamepadButton) {
+            self.pressed_gamepad_buttons.insert(button);
+            self.down_gamepad_buttons.insert(button);
+        }
+
+        /// Set gamepad axis value.
+        pub fn set_gamepad_axis(&mut self, axis: GamepadAxis, value: f32) {
+            self.gamepad_axes.insert(axis, value);
+        }
+
+        /// Set gamepad connected state.
+        pub fn set_gamepad_connected(&mut self, connected: bool) {
+            self.gamepad_connected = connected;
+        }
+
         /// Clear frame-based input state (call between frames).
         pub fn clear_frame(&mut self) {
             self.pressed_keys.clear();
             self.mouse_buttons.clear();
             self.mouse_wheel_delta = (0.0, 0.0);
+            self.pressed_gamepad_buttons.clear();
         }
     }
 
@@ -149,6 +206,22 @@ pub mod test {
         fn get_char_pressed(&self) -> Option<char> {
             // Pop from front of queue
             None // Simplified for now
+        }
+
+        fn is_gamepad_button_pressed(&self, button: GamepadButton) -> bool {
+            self.pressed_gamepad_buttons.contains(&button)
+        }
+
+        fn is_gamepad_button_down(&self, button: GamepadButton) -> bool {
+            self.down_gamepad_buttons.contains(&button)
+        }
+
+        fn gamepad_axis(&self, axis: GamepadAxis) -> f32 {
+            self.gamepad_axes.get(&axis).copied().unwrap_or(0.0)
+        }
+
+        fn is_any_gamepad_connected(&self) -> bool {
+            self.gamepad_connected
         }
     }
 }
