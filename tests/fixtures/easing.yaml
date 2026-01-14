@@ -1,0 +1,27 @@
+title: Easing Test
+
+script:
+  - background: "assets/bg.png"
+    transition:
+      type: fade
+      duration: 1.0
+      easing: ease_out_cubic
+    text: "Smooth fade with easing"
+
+  - character: "assets/char.png"
+    char_enter:
+      type: slide_left
+      duration: 0.5
+      easing: ease_out_back
+    text: "Character enters with bounce"
+
+  - shake:
+      type: horizontal
+      intensity: 10.0
+      duration: 0.3
+      easing: ease_out
+    text: "Decaying shake"
+
+  - transition:
+      type: fade
+    text: "Default easing (linear)"

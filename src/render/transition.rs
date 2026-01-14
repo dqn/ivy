@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 
-use crate::scenario::TransitionType;
+use crate::scenario::{Easing, TransitionType};
 
 /// State for managing transition effects.
 pub struct TransitionState {
@@ -10,6 +10,7 @@ pub struct TransitionState {
     duration: f32,
     /// Phase: 0 = fade out (to color), 1 = fade in (from color)
     phase: u8,
+    easing: Easing,
 }
 
 impl Default for TransitionState {
@@ -20,13 +21,14 @@ impl Default for TransitionState {
             start_time: 0.0,
             duration: 0.5,
             phase: 0,
+            easing: Easing::Linear,
         }
     }
 }
 
 impl TransitionState {
     /// Start a new transition.
-    pub fn start(&mut self, transition_type: TransitionType, duration: f32) {
+    pub fn start(&mut self, transition_type: TransitionType, duration: f32, easing: Easing) {
         if matches!(transition_type, TransitionType::None) {
             return;
         }
@@ -35,6 +37,7 @@ impl TransitionState {
         self.start_time = get_time();
         self.duration = duration;
         self.phase = 0;
+        self.easing = easing;
     }
 
     /// Check if transition is active.
@@ -72,7 +75,8 @@ impl TransitionState {
 
         let elapsed = (get_time() - self.start_time) as f32;
         let half_duration = self.duration / 2.0;
-        let progress = (elapsed / half_duration).clamp(0.0, 1.0);
+        let raw_progress = (elapsed / half_duration).clamp(0.0, 1.0);
+        let progress = self.easing.apply(raw_progress);
 
         let alpha = if self.phase == 0 {
             // Fade out: 0 -> 1

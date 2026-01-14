@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 
-use crate::scenario::{CharAnimation, CharAnimationType, CharPosition};
+use crate::scenario::{CharAnimation, CharAnimationType, CharPosition, Easing};
 
 /// Character animation direction.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -17,6 +17,7 @@ pub struct CharAnimationState {
     animation_type: CharAnimationType,
     duration: f32,
     elapsed: f32,
+    easing: Easing,
 }
 
 impl CharAnimationState {
@@ -27,6 +28,7 @@ impl CharAnimationState {
         self.animation_type = anim.animation_type;
         self.duration = anim.duration;
         self.elapsed = 0.0;
+        self.easing = anim.easing;
     }
 
     /// Start an exit animation.
@@ -36,6 +38,7 @@ impl CharAnimationState {
         self.animation_type = anim.animation_type;
         self.duration = anim.duration;
         self.elapsed = 0.0;
+        self.easing = anim.easing;
     }
 
     /// Update the animation state.
@@ -61,12 +64,13 @@ impl CharAnimationState {
         self.active
     }
 
-    /// Get the current animation progress (0.0 to 1.0).
+    /// Get the current animation progress (0.0 to 1.0) with easing applied.
     fn progress(&self) -> f32 {
         if self.duration <= 0.0 {
             return 1.0;
         }
-        (self.elapsed / self.duration).clamp(0.0, 1.0)
+        let raw_progress = (self.elapsed / self.duration).clamp(0.0, 1.0);
+        self.easing.apply(raw_progress)
     }
 
     /// Get the current alpha value for fade animations.

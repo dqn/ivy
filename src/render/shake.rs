@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 
-use crate::scenario::{Shake, ShakeType};
+use crate::scenario::{Easing, Shake, ShakeType};
 
 /// Manages screen shake effect state.
 #[derive(Default)]
@@ -10,6 +10,7 @@ pub struct ShakeState {
     intensity: f32,
     duration: f32,
     elapsed: f32,
+    easing: Easing,
 }
 
 impl ShakeState {
@@ -20,6 +21,7 @@ impl ShakeState {
         self.intensity = shake.intensity;
         self.duration = shake.duration;
         self.elapsed = 0.0;
+        self.easing = shake.easing;
     }
 
     /// Update the shake state.
@@ -40,8 +42,9 @@ impl ShakeState {
             return (0.0, 0.0);
         }
 
-        // Calculate shake progress (0.0 to 1.0)
-        let progress = self.elapsed / self.duration;
+        // Calculate shake progress (0.0 to 1.0) with easing
+        let raw_progress = (self.elapsed / self.duration).clamp(0.0, 1.0);
+        let progress = self.easing.apply(raw_progress);
 
         // Decay intensity over time
         let decay = 1.0 - progress;
@@ -50,15 +53,11 @@ impl ShakeState {
         // Generate pseudo-random offset using sine waves at different frequencies
         let time = get_time() as f32;
         let x_offset = match self.shake_type {
-            ShakeType::Horizontal | ShakeType::Both => {
-                (time * 50.0).sin() * current_intensity
-            }
+            ShakeType::Horizontal | ShakeType::Both => (time * 50.0).sin() * current_intensity,
             ShakeType::Vertical => 0.0,
         };
         let y_offset = match self.shake_type {
-            ShakeType::Vertical | ShakeType::Both => {
-                (time * 60.0).cos() * current_intensity
-            }
+            ShakeType::Vertical | ShakeType::Both => (time * 60.0).cos() * current_intensity,
             ShakeType::Horizontal => 0.0,
         };
 

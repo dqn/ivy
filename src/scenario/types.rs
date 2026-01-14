@@ -1,5 +1,112 @@
 use serde::{Deserialize, Serialize};
 
+/// Easing functions for smooth animations.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Easing {
+    /// Linear interpolation (no easing).
+    #[default]
+    Linear,
+    /// Ease in (slow start).
+    EaseIn,
+    /// Ease out (slow end).
+    EaseOut,
+    /// Ease in and out (slow start and end).
+    EaseInOut,
+    /// Quadratic ease in.
+    EaseInQuad,
+    /// Quadratic ease out.
+    EaseOutQuad,
+    /// Quadratic ease in and out.
+    EaseInOutQuad,
+    /// Cubic ease in.
+    EaseInCubic,
+    /// Cubic ease out.
+    EaseOutCubic,
+    /// Cubic ease in and out.
+    EaseInOutCubic,
+    /// Back ease in (slight overshoot at start).
+    EaseInBack,
+    /// Back ease out (slight overshoot at end).
+    EaseOutBack,
+    /// Back ease in and out.
+    EaseInOutBack,
+    /// Bounce ease out.
+    EaseOutBounce,
+}
+
+impl Easing {
+    /// Apply the easing function to a value t in the range [0, 1].
+    pub fn apply(&self, t: f32) -> f32 {
+        let t = t.clamp(0.0, 1.0);
+        match self {
+            Easing::Linear => t,
+            Easing::EaseIn => t * t * t,
+            Easing::EaseOut => 1.0 - (1.0 - t).powi(3),
+            Easing::EaseInOut => {
+                if t < 0.5 {
+                    4.0 * t * t * t
+                } else {
+                    1.0 - (-2.0 * t + 2.0).powi(3) / 2.0
+                }
+            }
+            Easing::EaseInQuad => t * t,
+            Easing::EaseOutQuad => 1.0 - (1.0 - t) * (1.0 - t),
+            Easing::EaseInOutQuad => {
+                if t < 0.5 {
+                    2.0 * t * t
+                } else {
+                    1.0 - (-2.0 * t + 2.0).powi(2) / 2.0
+                }
+            }
+            Easing::EaseInCubic => t * t * t,
+            Easing::EaseOutCubic => 1.0 - (1.0 - t).powi(3),
+            Easing::EaseInOutCubic => {
+                if t < 0.5 {
+                    4.0 * t * t * t
+                } else {
+                    1.0 - (-2.0 * t + 2.0).powi(3) / 2.0
+                }
+            }
+            Easing::EaseInBack => {
+                let c1 = 1.70158;
+                let c3 = c1 + 1.0;
+                c3 * t * t * t - c1 * t * t
+            }
+            Easing::EaseOutBack => {
+                let c1 = 1.70158;
+                let c3 = c1 + 1.0;
+                1.0 + c3 * (t - 1.0).powi(3) + c1 * (t - 1.0).powi(2)
+            }
+            Easing::EaseInOutBack => {
+                let c1 = 1.70158;
+                let c2 = c1 * 1.525;
+                if t < 0.5 {
+                    ((2.0 * t).powi(2) * ((c2 + 1.0) * 2.0 * t - c2)) / 2.0
+                } else {
+                    ((2.0 * t - 2.0).powi(2) * ((c2 + 1.0) * (t * 2.0 - 2.0) + c2) + 2.0) / 2.0
+                }
+            }
+            Easing::EaseOutBounce => {
+                let n1 = 7.5625;
+                let d1 = 2.75;
+                if t < 1.0 / d1 {
+                    n1 * t * t
+                } else if t < 2.0 / d1 {
+                    let t = t - 1.5 / d1;
+                    n1 * t * t + 0.75
+                } else if t < 2.5 / d1 {
+                    let t = t - 2.25 / d1;
+                    n1 * t * t + 0.9375
+                } else {
+                    let t = t - 2.625 / d1;
+                    n1 * t * t + 0.984375
+                }
+            }
+        }
+    }
+}
+
 /// Character sprite position on screen.
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -28,6 +135,8 @@ pub struct Transition {
     pub transition_type: TransitionType,
     #[serde(default = "default_duration")]
     pub duration: f32,
+    #[serde(default)]
+    pub easing: Easing,
 }
 
 fn default_duration() -> f32 {
@@ -101,6 +210,8 @@ pub struct CharAnimation {
     pub animation_type: CharAnimationType,
     #[serde(default = "default_char_animation_duration")]
     pub duration: f32,
+    #[serde(default)]
+    pub easing: Easing,
 }
 
 fn default_char_animation_duration() -> f32 {
@@ -132,6 +243,8 @@ pub struct Shake {
     /// Duration in seconds.
     #[serde(default = "default_shake_duration")]
     pub duration: f32,
+    #[serde(default)]
+    pub easing: Easing,
 }
 
 fn default_shake_intensity() -> f32 {

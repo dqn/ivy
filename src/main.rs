@@ -13,15 +13,15 @@ use cache::TextureCache;
 
 use audio::AudioManager;
 use render::{
-    count_visible_chars, draw_achievement, draw_backlog, draw_background_with_offset,
-    draw_chapter_select, draw_character_animated, draw_choices_with_timer,
+    AchievementConfig, BacklogConfig, BacklogState, ChapterSelectConfig, ChapterSelectState,
+    CharAnimationState, ChoiceButtonConfig, CinematicState, DebugConfig, DebugState, GalleryConfig,
+    GalleryState, GameSettings, InputConfig, InputState, ParticleState, ParticleType,
+    SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
+    TypewriterState, count_visible_chars, draw_achievement, draw_background_with_offset,
+    draw_backlog, draw_chapter_select, draw_character_animated, draw_choices_with_timer,
     draw_continue_indicator_with_font, draw_debug, draw_gallery, draw_input, draw_settings_screen,
     draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen,
-    interpolate_variables, AchievementConfig, BacklogConfig, BacklogState, CharAnimationState,
-    ChapterSelectConfig, ChapterSelectState, CinematicState, ChoiceButtonConfig, DebugConfig,
-    DebugState, GalleryConfig, GalleryState, GameSettings, InputConfig, InputState, ParticleState,
-    ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem,
-    TransitionState, TypewriterState,
+    interpolate_variables,
 };
 use runtime::{
     AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
@@ -176,11 +176,13 @@ async fn main() {
 
     // Load settings
     let mut settings = GameSettings::load();
-    eprintln!("Loaded settings: BGM={:.0}%, SE={:.0}%, Voice={:.0}%, Auto={:.1}x",
+    eprintln!(
+        "Loaded settings: BGM={:.0}%, SE={:.0}%, Voice={:.0}%, Auto={:.1}x",
         settings.bgm_volume * 100.0,
         settings.se_volume * 100.0,
         settings.voice_volume * 100.0,
-        settings.auto_speed);
+        settings.auto_speed
+    );
 
     // Start with title screen
     let mut game_mode = GameMode::Title;
@@ -242,7 +244,14 @@ async fn main() {
                 // Check if chapters are defined
                 let has_chapters = chapter_manager.has_chapters();
 
-                let result = draw_title_screen(&title_config, &scenario_title, has_save, has_chapters, has_gallery, font_ref);
+                let result = draw_title_screen(
+                    &title_config,
+                    &scenario_title,
+                    has_save,
+                    has_chapters,
+                    has_gallery,
+                    font_ref,
+                );
 
                 if let Some(item) = result.selected {
                     match item {
@@ -507,9 +516,7 @@ async fn main() {
             }
 
             // Update BGM
-            audio_manager
-                .update_bgm(state.current_bgm())
-                .await;
+            audio_manager.update_bgm(state.current_bgm()).await;
 
             // Play SE
             audio_manager.play_se(state.current_se()).await;
@@ -519,7 +526,11 @@ async fn main() {
 
             // Start transition if specified
             if let Some(transition) = state.current_transition() {
-                transition_state.start(transition.transition_type, transition.duration);
+                transition_state.start(
+                    transition.transition_type,
+                    transition.duration,
+                    transition.easing,
+                );
             }
 
             // Start shake if specified
@@ -667,7 +678,13 @@ async fn main() {
                 // Draw mode indicators
                 let mut indicator_y = 20.0;
                 if skip_mode {
-                    draw_text("SKIP", 750.0, indicator_y, 20.0, Color::new(1.0, 0.5, 0.5, 1.0));
+                    draw_text(
+                        "SKIP",
+                        750.0,
+                        indicator_y,
+                        20.0,
+                        Color::new(1.0, 0.5, 0.5, 1.0),
+                    );
                     indicator_y += 22.0;
                 }
                 if auto_mode {
@@ -793,7 +810,13 @@ async fn main() {
                 // Draw mode indicators
                 let mut indicator_y = 20.0;
                 if skip_mode {
-                    draw_text("SKIP", 750.0, indicator_y, 20.0, Color::new(1.0, 0.5, 0.5, 1.0));
+                    draw_text(
+                        "SKIP",
+                        750.0,
+                        indicator_y,
+                        20.0,
+                        Color::new(1.0, 0.5, 0.5, 1.0),
+                    );
                     indicator_y += 22.0;
                 }
                 if auto_mode {
