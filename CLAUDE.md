@@ -34,6 +34,9 @@ src/
 ├── i18n/                # 多言語対応
 │   ├── mod.rs           # 翻訳システム
 │   └── localized.rs     # LocalizedString型
+├── modding/             # コミュニティMod対応
+│   ├── mod.rs           # モジュールエントリ
+│   └── types.rs         # ModInfo, ModLoader
 └── input/               # 入力処理
     ├── mod.rs           # InputProviderトレイト
     └── gamepad.rs       # ゲームパッド定義
@@ -362,6 +365,14 @@ cargo run --bin ivy-validate -- --cycles scenario.yaml  # 循環パス検出も�
   - シンタックスハイライト（`.ivy.yaml`, `.ivy.yml`）
   - コードスニペット（40+ パターン）
 
+### コミュニティModding
+- [x] Modローダー（`src/modding`）
+  - Mod発見・読み込み（`mods/` ディレクトリ）
+  - Modメタデータ（`mod.yaml`）
+  - Mod種別（scenario, characters, translation, assets, patch）
+  - 優先度によるロード順管理
+  - 有効/無効の切り替え
+
 ### 今後の予定
 
 #### 中優先度（開発体験・演出強化）
@@ -374,5 +385,4 @@ cargo run --bin ivy-validate -- --cycles scenario.yaml  # 循環パス検出も�
 - [ ] アクセシビリティ機能（追加）
   - [ ] スクリーンリーダー対応
 - [ ] Spine対応
-- [ ] コミュニティModding機能
 - [ ] クラウドセーブ
