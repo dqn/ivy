@@ -35,7 +35,10 @@ impl Default for LayoutConfig {
 }
 
 /// Calculate layout for all nodes using a layered approach.
-pub fn calculate_layout(flowchart: &Flowchart, config: &LayoutConfig) -> HashMap<NodeId, NodeLayout> {
+pub fn calculate_layout(
+    flowchart: &Flowchart,
+    config: &LayoutConfig,
+) -> HashMap<NodeId, NodeLayout> {
     let mut layouts = HashMap::new();
 
     if flowchart.nodes.is_empty() {

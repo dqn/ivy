@@ -41,7 +41,6 @@ pub struct GalleryState {
     pub viewing_image: bool,
 }
 
-
 /// Result of drawing gallery.
 pub struct GalleryResult {
     /// True if user wants to go back.
@@ -249,9 +248,10 @@ pub fn draw_gallery(
             && mouse.0 <= x + config.thumbnail_width
             && mouse.1 >= y
             && mouse.1 <= y + config.thumbnail_height
-            && is_mouse_button_pressed(MouseButton::Left) {
-                state.selected_index = i;
-            }
+            && is_mouse_button_pressed(MouseButton::Left)
+        {
+            state.selected_index = i;
+        }
     }
 
     // Draw scrollbar if needed

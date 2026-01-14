@@ -78,16 +78,18 @@ impl Translations {
     pub fn get(&self, lang: &str, key: &str) -> String {
         // Try the requested language first
         if let Some(lang_data) = self.data.get(lang)
-            && let Some(text) = lang_data.get(key) {
-                return text.clone();
-            }
+            && let Some(text) = lang_data.get(key)
+        {
+            return text.clone();
+        }
 
         // Try fallback language
         if lang != self.fallback
             && let Some(fallback_data) = self.data.get(&self.fallback)
-            && let Some(text) = fallback_data.get(key) {
-                return text.clone();
-            }
+            && let Some(text) = fallback_data.get(key)
+        {
+            return text.clone();
+        }
 
         // Return the key itself as a last resort
         key.to_string()

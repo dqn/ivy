@@ -159,9 +159,10 @@ impl AudioManager {
     /// Restore BGM from save data.
     pub async fn restore_bgm(&mut self, bgm: Option<String>) {
         if let Some(path) = bgm
-            && !path.is_empty() {
-                self.update_bgm(Some(&path)).await;
-            }
+            && !path.is_empty()
+        {
+            self.update_bgm(Some(&path)).await;
+        }
     }
 }
 

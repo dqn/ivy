@@ -307,7 +307,13 @@ pub fn draw_settings_screen(
             Color::new(0.2, 0.2, 0.25, 0.8)
         };
 
-        draw_rectangle(btn_x, preset_y, preset_button_width, preset_button_height, bg_color);
+        draw_rectangle(
+            btn_x,
+            preset_y,
+            preset_button_width,
+            preset_button_height,
+            bg_color,
+        );
         draw_rectangle_lines(
             btn_x,
             preset_y,
@@ -328,13 +334,21 @@ pub fn draw_settings_screen(
             TextParams {
                 font: Some(f),
                 font_size: (config.label_font_size * 0.8) as u16,
-                color: if is_selected || is_hovered { WHITE } else { LIGHTGRAY },
+                color: if is_selected || is_hovered {
+                    WHITE
+                } else {
+                    LIGHTGRAY
+                },
                 ..Default::default()
             }
         } else {
             TextParams {
                 font_size: (config.label_font_size * 0.8) as u16,
-                color: if is_selected || is_hovered { WHITE } else { LIGHTGRAY },
+                color: if is_selected || is_hovered {
+                    WHITE
+                } else {
+                    LIGHTGRAY
+                },
                 ..Default::default()
             }
         };
@@ -342,7 +356,8 @@ pub fn draw_settings_screen(
         let label = preset.display_name();
         let text_dim = measure_text(label, font, (config.label_font_size * 0.8) as u16, 1.0);
         let text_x = btn_x + (preset_button_width - text_dim.width) / 2.0;
-        let text_y = preset_y + (preset_button_height + text_dim.height) / 2.0 - text_dim.offset_y / 2.0;
+        let text_y =
+            preset_y + (preset_button_height + text_dim.height) / 2.0 - text_dim.offset_y / 2.0;
         draw_text_ex(label, text_x, text_y, text_params);
 
         // Handle click

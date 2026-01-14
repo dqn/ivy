@@ -129,8 +129,8 @@ pub fn draw_choices_with_timer(
             && mouse_pos.1 <= y + config.height;
 
         // Check if gamepad focus is on this choice
-        let is_focused = nav_state.input_source == InputSource::Gamepad
-            && nav_state.focus_index == Some(i);
+        let is_focused =
+            nav_state.input_source == InputSource::Gamepad && nav_state.focus_index == Some(i);
 
         // Check if this is the default choice
         let is_default = default_choice == Some(i);

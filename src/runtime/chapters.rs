@@ -141,9 +141,10 @@ impl ChapterManager {
 
         // Find the current chapter index and unlock the next one
         if let Some(idx) = self.chapters.iter().position(|c| c.id == id)
-            && let Some(next) = self.chapters.get(idx + 1) {
+            && let Some(next) = self.chapters.get(idx + 1)
+        {
             self.progress.unlock(&next.id);
-            }
+        }
     }
 
     /// Check if chapters are defined.

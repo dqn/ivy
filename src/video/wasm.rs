@@ -33,8 +33,7 @@ impl WasmVideoPlayer {
     }
 
     fn create_hidden_video(&mut self, path: &str) -> anyhow::Result<()> {
-        let window =
-            web_sys::window().ok_or_else(|| anyhow::anyhow!("Failed to get window"))?;
+        let window = web_sys::window().ok_or_else(|| anyhow::anyhow!("Failed to get window"))?;
         let document = window
             .document()
             .ok_or_else(|| anyhow::anyhow!("Failed to get document"))?;
@@ -66,8 +65,7 @@ impl WasmVideoPlayer {
     }
 
     fn create_canvas(&mut self, width: u32, height: u32) -> anyhow::Result<()> {
-        let window =
-            web_sys::window().ok_or_else(|| anyhow::anyhow!("Failed to get window"))?;
+        let window = web_sys::window().ok_or_else(|| anyhow::anyhow!("Failed to get window"))?;
         let document = window
             .document()
             .ok_or_else(|| anyhow::anyhow!("Failed to get document"))?;

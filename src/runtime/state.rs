@@ -93,10 +93,7 @@ impl GameState {
         let speaker = command.speaker.clone();
 
         if let Some(choices) = &command.choices {
-            let text = command
-                .text
-                .clone()
-                .unwrap_or_default();
+            let text = command.text.clone().unwrap_or_default();
             // Find default choice index
             let default_choice = choices.iter().position(|c| c.default).or(Some(0)); // Default to first choice if none marked
             return DisplayState::Choices {
@@ -510,11 +507,12 @@ impl GameState {
 
         // Try to jump to the same label first
         if let Some(label) = old_label
-            && let Some(&index) = self.label_index.get(&label) {
+            && let Some(&index) = self.label_index.get(&label)
+        {
             self.current_index = index;
             self.skip_labels();
             return;
-            }
+        }
 
         // Fall back to the same index (clamped to script length)
         self.current_index = old_index.min(self.scenario.script.len().saturating_sub(1));

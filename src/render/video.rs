@@ -2,7 +2,7 @@
 
 use macroquad::prelude::*;
 
-use crate::video::{create_video_player, PlatformVideoPlayer, VideoPlayer};
+use crate::video::{PlatformVideoPlayer, VideoPlayer, create_video_player};
 
 /// Video playback state for rendering.
 pub struct VideoState {

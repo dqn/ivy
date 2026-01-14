@@ -122,7 +122,11 @@ pub fn draw_flowchart(
     }
 
     // Draw node count info
-    let info = format!("{} nodes, {} edges", flowchart.nodes.len(), flowchart.edges.len());
+    let info = format!(
+        "{} nodes, {} edges",
+        flowchart.nodes.len(),
+        flowchart.edges.len()
+    );
     if let Some(f) = font {
         draw_text_ex(
             &info,
@@ -222,21 +226,17 @@ pub fn draw_flowchart(
             from_layout.x + from_layout.width / 2.0,
             from_layout.y + from_layout.height,
         );
-        let (to_x, to_y) = transform(
-            to_layout.x + to_layout.width / 2.0,
-            to_layout.y,
-        );
+        let (to_x, to_y) = transform(to_layout.x + to_layout.width / 2.0, to_layout.y);
 
         // Choose edge color based on type
         let edge_color = match edge.edge_type {
             EdgeType::Sequential => config.edge_color,
             EdgeType::Jump => config.jump_edge_color,
-            EdgeType::Choice(idx) => {
-                config.choice_edge_colors
-                    .get(idx % config.choice_edge_colors.len())
-                    .copied()
-                    .unwrap_or(config.edge_color)
-            }
+            EdgeType::Choice(idx) => config
+                .choice_edge_colors
+                .get(idx % config.choice_edge_colors.len())
+                .copied()
+                .unwrap_or(config.edge_color),
             EdgeType::Conditional => config.conditional_edge_color,
         };
 
@@ -314,10 +314,7 @@ pub fn draw_flowchart(
         let (bg_color, border_color) = match &node.node_type {
             NodeType::Start => (config.start_node_color, config.start_node_color),
             NodeType::End => (config.end_node_color, config.end_node_color),
-            _ if is_current => (
-                Color::new(0.3, 0.3, 0.1, 0.9),
-                config.current_node_color,
-            ),
+            _ if is_current => (Color::new(0.3, 0.3, 0.1, 0.9), config.current_node_color),
             _ => (config.node_bg_color, config.node_border_color),
         };
 

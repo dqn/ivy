@@ -44,9 +44,7 @@ impl NativeVideoPlayer {
 
         match decoder.decode() {
             Ok((_time, frame)) => {
-                let rgb_frame = frame
-                    .slice(ndarray::s![.., .., 0..3])
-                    .to_owned();
+                let rgb_frame = frame.slice(ndarray::s![.., .., 0..3]).to_owned();
 
                 let (height, width, _) = rgb_frame.dim();
                 self.width = width as u32;

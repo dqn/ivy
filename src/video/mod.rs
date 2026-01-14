@@ -2,17 +2,17 @@
 
 #[cfg(all(not(target_arch = "wasm32"), feature = "video"))]
 mod native;
-#[cfg(target_arch = "wasm32")]
-mod wasm;
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "video")))]
 mod stub;
+#[cfg(target_arch = "wasm32")]
+mod wasm;
 
 #[cfg(all(not(target_arch = "wasm32"), feature = "video"))]
 pub use native::NativeVideoPlayer as PlatformVideoPlayer;
-#[cfg(target_arch = "wasm32")]
-pub use wasm::WasmVideoPlayer as PlatformVideoPlayer;
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "video")))]
 pub use stub::StubVideoPlayer as PlatformVideoPlayer;
+#[cfg(target_arch = "wasm32")]
+pub use wasm::WasmVideoPlayer as PlatformVideoPlayer;
 
 /// Video playback trait for platform abstraction.
 pub trait VideoPlayer {

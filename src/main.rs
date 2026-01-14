@@ -23,25 +23,25 @@ use i18n::LanguageConfig;
 use input::{GamepadAxis, GamepadButton, GamepadState, STICK_THRESHOLD};
 
 use audio::AudioManager;
+use flowchart::{Flowchart, LayoutConfig, NodeId, NodeLayout, build_flowchart, calculate_layout};
 use hotreload::HotReloader;
-use flowchart::{build_flowchart, calculate_layout, Flowchart, LayoutConfig, NodeId, NodeLayout};
 use render::{
     AchievementConfig, BacklogConfig, BacklogState, ChapterSelectConfig, ChapterSelectState,
     CharAnimationState, CharIdleState, ChoiceButtonConfig, ChoiceNavState, CinematicState,
     DebugConfig, DebugState, FlowchartConfig, FlowchartState, GalleryConfig, GalleryState,
-    GameSettings, InputConfig, InputSource, InputState, ParticleState, ParticleType, SettingsConfig,
-    ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState, TypewriterState,
-    count_visible_chars, draw_achievement, draw_background_with_offset, draw_backlog,
-    draw_chapter_select, draw_character_animated, draw_choices_with_timer,
-    draw_continue_indicator_with_font, draw_debug, draw_flowchart, draw_gallery, draw_input,
-    draw_settings_screen, draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font,
-    draw_title_screen, interpolate_variables, VideoState,
+    GameSettings, InputConfig, InputSource, InputState, ParticleState, ParticleType,
+    SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
+    TypewriterState, VideoState, count_visible_chars, draw_achievement,
+    draw_background_with_offset, draw_backlog, draw_chapter_select, draw_character_animated,
+    draw_choices_with_timer, draw_continue_indicator_with_font, draw_debug, draw_flowchart,
+    draw_gallery, draw_input, draw_settings_screen, draw_speaker_name, draw_text_box_typewriter,
+    draw_text_box_with_font, draw_title_screen, interpolate_variables,
 };
 use runtime::{
     AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
     ReadState, SaveData, Unlocks, VisualState,
 };
-use scenario::{load_scenario, CharPosition};
+use scenario::{CharPosition, load_scenario};
 
 /// Game mode: title screen, settings, gallery, chapters, flowchart, or in-game.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -79,9 +79,10 @@ async fn draw_visual(
 ) {
     // Draw background
     if let Some(bg_path) = &visual.background
-        && let Some(texture) = cache.get(bg_path).await {
-            draw_background_with_offset(&texture, offset);
-        }
+        && let Some(texture) = cache.get(bg_path).await
+    {
+        draw_background_with_offset(&texture, offset);
+    }
 
     // Draw multiple characters (if specified)
     if !visual.characters.is_empty() {
@@ -435,10 +436,11 @@ async fn main() {
                 // Load textures for gallery images (async)
                 for path in &images {
                     if !texture_cache.contains(path)
-                        && let Ok(texture) = load_texture(path).await {
-                            texture.set_filter(FilterMode::Linear);
-                            texture_cache.insert(path.clone(), texture);
-                        }
+                        && let Ok(texture) = load_texture(path).await
+                    {
+                        texture.set_filter(FilterMode::Linear);
+                        texture_cache.insert(path.clone(), texture);
+                    }
                 }
 
                 // Screenshot
@@ -530,19 +532,20 @@ async fn main() {
         // Check for hot reload
         if let Some(ref mut reloader) = hot_reloader
             && reloader.poll()
-                && let Some(ref mut state) = game_state {
-                    match load_scenario(SCENARIO_PATH) {
-                        Ok(new_scenario) => {
-                            state.reload_scenario(new_scenario);
-                            last_index = None; // Force audio/transition update
-                            flowchart_state.dirty = true; // Invalidate flowchart cache
-                            eprintln!("[Hot Reload] Scenario reloaded");
-                        }
-                        Err(e) => {
-                            eprintln!("[Hot Reload] Failed to reload: {}", e);
-                        }
-                    }
+            && let Some(ref mut state) = game_state
+        {
+            match load_scenario(SCENARIO_PATH) {
+                Ok(new_scenario) => {
+                    state.reload_scenario(new_scenario);
+                    last_index = None; // Force audio/transition update
+                    flowchart_state.dirty = true; // Invalidate flowchart cache
+                    eprintln!("[Hot Reload] Scenario reloaded");
                 }
+                Err(e) => {
+                    eprintln!("[Hot Reload] Failed to reload: {}", e);
+                }
+            }
+        }
 
         // Get mutable reference to game state
         let state = match game_state.as_mut() {
@@ -559,14 +562,20 @@ async fn main() {
         // Handle save/load
         // QuickSave / QuickLoad keybinds
         // Shift+1-0 = save to slot, 1-0 = load from slot
-        if settings.keybinds.is_pressed_with_gamepad(Action::QuickSave, &gamepad_state) {
+        if settings
+            .keybinds
+            .is_pressed_with_gamepad(Action::QuickSave, &gamepad_state)
+        {
             save_game(state);
         }
-        if settings.keybinds.is_pressed_with_gamepad(Action::QuickLoad, &gamepad_state)
-            && let Some(loaded_state) = load_game() {
-                *state = loaded_state;
-                last_index = None; // Force audio/transition update
-            }
+        if settings
+            .keybinds
+            .is_pressed_with_gamepad(Action::QuickLoad, &gamepad_state)
+            && let Some(loaded_state) = load_game()
+        {
+            *state = loaded_state;
+            last_index = None; // Force audio/transition update
+        }
 
         // Slot save/load (1-9, 0=10)
         let shift_held = is_key_down(KeyCode::LeftShift) || is_key_down(KeyCode::RightShift);
@@ -599,13 +608,19 @@ async fn main() {
         }
 
         // Toggle backlog
-        if settings.keybinds.is_pressed_with_gamepad(Action::Backlog, &gamepad_state) {
+        if settings
+            .keybinds
+            .is_pressed_with_gamepad(Action::Backlog, &gamepad_state)
+        {
             show_backlog = !show_backlog;
             backlog_state = BacklogState::default();
         }
 
         // Toggle auto mode
-        if settings.keybinds.is_pressed_with_gamepad(Action::AutoMode, &gamepad_state) {
+        if settings
+            .keybinds
+            .is_pressed_with_gamepad(Action::AutoMode, &gamepad_state)
+        {
             auto_mode = !auto_mode;
             auto_timer = 0.0;
             if auto_mode {
@@ -616,7 +631,10 @@ async fn main() {
         }
 
         // Toggle skip mode
-        if settings.keybinds.is_pressed_with_gamepad(Action::SkipMode, &gamepad_state) {
+        if settings
+            .keybinds
+            .is_pressed_with_gamepad(Action::SkipMode, &gamepad_state)
+        {
             skip_mode = !skip_mode;
             if skip_mode {
                 eprintln!("Skip mode ON");
@@ -626,7 +644,10 @@ async fn main() {
         }
 
         // Toggle debug console
-        if settings.keybinds.is_pressed_with_gamepad(Action::Debug, &gamepad_state) {
+        if settings
+            .keybinds
+            .is_pressed_with_gamepad(Action::Debug, &gamepad_state)
+        {
             debug_state.toggle();
         }
 
@@ -639,11 +660,14 @@ async fn main() {
         // Handle rollback (keybind or mouse wheel up) - only when backlog is not shown
         if !show_backlog {
             let wheel = mouse_wheel();
-            if (settings.keybinds.is_pressed_with_gamepad(Action::Rollback, &gamepad_state)
+            if (settings
+                .keybinds
+                .is_pressed_with_gamepad(Action::Rollback, &gamepad_state)
                 || wheel.1 > 0.0)
-                && state.can_rollback() {
-                    state.rollback();
-                }
+                && state.can_rollback()
+            {
+                state.rollback();
+            }
         }
 
         // Update audio, transition, and unlock images when command changes
@@ -722,10 +746,11 @@ async fn main() {
                 _ => None,
             };
             if let Some(visual) = visual
-                && visual.character.is_none() {
-                    char_idle_state.stop();
-                    pending_idle = None;
-                }
+                && visual.character.is_none()
+            {
+                char_idle_state.stop();
+                pending_idle = None;
+            }
 
             // Handle multiple character animations
             if let Some(visual) = visual {
@@ -734,7 +759,11 @@ async fn main() {
                     visual.characters.iter().map(|c| c.position).collect();
 
                 // Clear animations for positions no longer in use
-                for pos in [CharPosition::Left, CharPosition::Center, CharPosition::Right] {
+                for pos in [
+                    CharPosition::Left,
+                    CharPosition::Center,
+                    CharPosition::Right,
+                ] {
                     if !active_positions.contains(&pos) {
                         if let Some(anim) = char_anim_states.get_mut(&pos) {
                             anim.reset();
@@ -793,14 +822,15 @@ async fn main() {
 
             // Unlock achievement if specified
             if let Some(achievement) = state.current_achievement()
-                && achievements.unlock(&achievement.id) {
-                    achievement_notifier.notify(
-                        &achievement.id,
-                        &achievement.name,
-                        &achievement.description,
-                    );
-                    eprintln!("Achievement unlocked: {}", achievement.name);
-                }
+                && achievements.unlock(&achievement.id)
+            {
+                achievement_notifier.notify(
+                    &achievement.id,
+                    &achievement.name,
+                    &achievement.description,
+                );
+                eprintln!("Achievement unlocked: {}", achievement.name);
+            }
 
             // Reset auto timer on command change
             auto_timer = 0.0;
@@ -819,11 +849,11 @@ async fn main() {
 
         // Check if enter animation just completed and start pending idle
         if !char_anim_state.is_active()
-            && char_anim_state.direction()
-                == Some(render::character::AnimationDirection::Enter)
-            && let Some(idle) = pending_idle.take() {
-                char_idle_state.start(&idle);
-            }
+            && char_anim_state.direction() == Some(render::character::AnimationDirection::Enter)
+            && let Some(idle) = pending_idle.take()
+        {
+            char_idle_state.start(&idle);
+        }
 
         // Update idle animation state
         char_idle_state.update();
@@ -838,8 +868,7 @@ async fn main() {
             .iter()
             .filter(|(_, anim_state)| {
                 !anim_state.is_active()
-                    && anim_state.direction()
-                        == Some(render::character::AnimationDirection::Enter)
+                    && anim_state.direction() == Some(render::character::AnimationDirection::Enter)
             })
             .map(|(pos, _)| *pos)
             .collect();
@@ -867,7 +896,16 @@ async fn main() {
                 visual,
             } => {
                 // Draw visuals first (background, then character) with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state, &char_anim_states, &char_idle_states).await;
+                draw_visual(
+                    &visual,
+                    &mut texture_cache,
+                    shake_offset,
+                    &char_anim_state,
+                    &char_idle_state,
+                    &char_anim_states,
+                    &char_idle_states,
+                )
+                .await;
 
                 // Resolve localized text
                 let resolved_text = language_config.resolve(&text);
@@ -997,7 +1035,16 @@ async fn main() {
                 }
 
                 // Draw visuals first with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state, &char_anim_states, &char_idle_states).await;
+                draw_visual(
+                    &visual,
+                    &mut texture_cache,
+                    shake_offset,
+                    &char_anim_state,
+                    &char_idle_state,
+                    &char_anim_states,
+                    &char_idle_states,
+                )
+                .await;
 
                 // Resolve localized text
                 let resolved_text = language_config.resolve(&text);
@@ -1127,13 +1174,14 @@ async fn main() {
                         } else if choice_nav_state.input_source == InputSource::Gamepad {
                             // Gamepad A button
                             if gamepad_state.is_button_pressed(GamepadButton::A)
-                                && let Some(idx) = choice_nav_state.focus_index {
-                                    read_state.mark_read(SCENARIO_PATH, state.current_index());
-                                    state.select_choice(idx);
-                                    choice_timer = None;
-                                    _choice_total_time = None;
-                                    choice_nav_state = ChoiceNavState::default();
-                                }
+                                && let Some(idx) = choice_nav_state.focus_index
+                            {
+                                read_state.mark_read(SCENARIO_PATH, state.current_index());
+                                state.select_choice(idx);
+                                choice_timer = None;
+                                _choice_total_time = None;
+                                choice_nav_state = ChoiceNavState::default();
+                            }
                         }
                     } else {
                         // Click to complete text
@@ -1149,7 +1197,16 @@ async fn main() {
             }
             DisplayState::Wait { duration, visual } => {
                 // Draw visuals with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state, &char_anim_states, &char_idle_states).await;
+                draw_visual(
+                    &visual,
+                    &mut texture_cache,
+                    shake_offset,
+                    &char_anim_state,
+                    &char_idle_state,
+                    &char_anim_states,
+                    &char_idle_states,
+                )
+                .await;
 
                 // Reset wait timer if just started waiting
                 if !in_wait {
@@ -1196,7 +1253,16 @@ async fn main() {
             }
             DisplayState::Input { input, visual } => {
                 // Draw visuals with shake offset
-                draw_visual(&visual, &mut texture_cache, shake_offset, &char_anim_state, &char_idle_state, &char_anim_states, &char_idle_states).await;
+                draw_visual(
+                    &visual,
+                    &mut texture_cache,
+                    shake_offset,
+                    &char_anim_state,
+                    &char_idle_state,
+                    &char_anim_states,
+                    &char_idle_states,
+                )
+                .await;
 
                 // Initialize input state if this is a new input command
                 if awaiting_input.as_ref() != Some(&input.var) {

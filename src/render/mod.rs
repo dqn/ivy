@@ -25,24 +25,19 @@ pub use chapter_select::{ChapterSelectConfig, ChapterSelectState, draw_chapter_s
 pub use character::{CharAnimationState, CharIdleState, draw_character_animated};
 pub use cinematic::CinematicState;
 pub use debug::{DebugConfig, DebugState, draw_debug};
-pub use gallery::{
-    GalleryConfig, GalleryState, draw_gallery,
-};
+pub use flowchart::{FlowchartConfig, FlowchartState, draw_flowchart};
+pub use gallery::{GalleryConfig, GalleryState, draw_gallery};
 pub use image::draw_background_with_offset;
 pub use input::{InputConfig, InputState, draw_input};
 pub use particles::{ParticleState, ParticleType};
 pub use settings::{GameSettings, SettingsConfig, draw_settings_screen};
 pub use shake::ShakeState;
 pub use text::{
-    TextBoxConfig, count_visible_chars, draw_continue_indicator_with_font,
-    draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font,
-    interpolate_variables,
+    TextBoxConfig, count_visible_chars, draw_continue_indicator_with_font, draw_speaker_name,
+    draw_text_box_typewriter, draw_text_box_with_font, interpolate_variables,
 };
 pub use title::{TitleConfig, TitleMenuItem, draw_title_screen};
 pub use transition::TransitionState;
 pub use typewriter::TypewriterState;
-pub use ui::{
-    ChoiceButtonConfig, ChoiceNavState, InputSource, draw_choices_with_timer,
-};
-pub use flowchart::{FlowchartConfig, FlowchartState, draw_flowchart};
+pub use ui::{ChoiceButtonConfig, ChoiceNavState, InputSource, draw_choices_with_timer};
 pub use video::VideoState;

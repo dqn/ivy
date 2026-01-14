@@ -580,10 +580,11 @@ fn draw_colored_line(
 
     for (ch, color) in chars {
         if let Some((text, last_color)) = segments.last_mut()
-            && last_color == color {
-                text.push(*ch);
-                continue;
-            }
+            && last_color == color
+        {
+            text.push(*ch);
+            continue;
+        }
         segments.push((ch.to_string(), *color));
     }
 

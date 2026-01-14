@@ -55,9 +55,10 @@ mod native {
                     && matches!(
                         event.kind,
                         notify::EventKind::Modify(_) | notify::EventKind::Create(_)
-                    ) {
-                        changed = true;
-                    }
+                    )
+                {
+                    changed = true;
+                }
             }
             changed
         }
