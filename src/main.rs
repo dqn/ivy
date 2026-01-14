@@ -260,7 +260,7 @@ async fn main() {
     let mut game_state: Option<GameState> = None;
     let title_config = TitleConfig::default();
     let settings_config = SettingsConfig::default();
-    let text_config = TextBoxConfig::default();
+    let base_text_config = TextBoxConfig::default();
     let choice_config = ChoiceButtonConfig::default();
     let backlog_config = BacklogConfig::default();
     let input_config = InputConfig::default();
@@ -321,6 +321,13 @@ async fn main() {
 
     loop {
         clear_background(Color::new(0.1, 0.1, 0.15, 1.0));
+
+        // Apply accessibility settings to text config
+        let text_config = base_text_config.with_accessibility(
+            settings.accessibility.font_scale_multiplier(),
+            settings.accessibility.line_spacing,
+            settings.accessibility.high_contrast,
+        );
 
         // Poll gamepad events at the start of each frame
         gamepad_state.poll();

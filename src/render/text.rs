@@ -270,6 +270,33 @@ impl Default for TextBoxConfig {
     }
 }
 
+impl TextBoxConfig {
+    /// Apply accessibility settings to the config.
+    pub fn with_accessibility(
+        &self,
+        font_scale: f32,
+        line_spacing: f32,
+        high_contrast: bool,
+    ) -> Self {
+        let font_size = self.font_size * font_scale;
+        let line_height = self.line_height * font_scale * line_spacing;
+
+        let (bg_color, text_color) = if high_contrast {
+            (BLACK, WHITE)
+        } else {
+            (self.bg_color, self.text_color)
+        };
+
+        Self {
+            font_size,
+            line_height,
+            bg_color,
+            text_color,
+            ..*self
+        }
+    }
+}
+
 /// Draw a text box with the given text.
 pub fn draw_text_box(config: &TextBoxConfig, text: &str) {
     draw_text_box_with_font(config, text, None);

@@ -55,6 +55,45 @@ impl TextSpeedPreset {
     }
 }
 
+/// Accessibility settings.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AccessibilitySettings {
+    /// Font size scale (50% - 200%).
+    #[serde(default = "default_font_scale")]
+    pub font_scale: f32,
+    /// High contrast mode for improved readability.
+    #[serde(default)]
+    pub high_contrast: bool,
+    /// Line spacing multiplier (1.0 - 2.0).
+    #[serde(default = "default_line_spacing")]
+    pub line_spacing: f32,
+}
+
+fn default_font_scale() -> f32 {
+    100.0 // 100%
+}
+
+fn default_line_spacing() -> f32 {
+    1.0
+}
+
+impl Default for AccessibilitySettings {
+    fn default() -> Self {
+        Self {
+            font_scale: 100.0,
+            high_contrast: false,
+            line_spacing: 1.0,
+        }
+    }
+}
+
+impl AccessibilitySettings {
+    /// Get font scale as a multiplier (0.5 - 2.0).
+    pub fn font_scale_multiplier(&self) -> f32 {
+        self.font_scale / 100.0
+    }
+}
+
 /// Game settings that can be adjusted by the player.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameSettings {
@@ -79,6 +118,9 @@ pub struct GameSettings {
     /// Key bindings.
     #[serde(default)]
     pub keybinds: KeyBindings,
+    /// Accessibility settings.
+    #[serde(default)]
+    pub accessibility: AccessibilitySettings,
 }
 
 fn default_skip_unread() -> bool {
@@ -107,6 +149,7 @@ impl Default for GameSettings {
             text_speed: 30.0,
             skip_unread: true,
             keybinds: KeyBindings::default(),
+            accessibility: AccessibilitySettings::default(),
         }
     }
 }
@@ -150,11 +193,11 @@ impl Default for SettingsConfig {
             title_font_size: 36.0,
             title_y: 80.0,
             label_font_size: 20.0,
-            slider_start_y: 150.0,
-            slider_spacing: 70.0,
+            slider_start_y: 120.0,
+            slider_spacing: 55.0,
             slider_width: 300.0,
             slider_height: 20.0,
-            back_button_y: 500.0,
+            back_button_y: 550.0,
         }
     }
 }
@@ -373,6 +416,41 @@ pub fn draw_settings_screen(
         y,
         settings.skip_unread,
         "Skip Unread Text",
+        font,
+        config.label_font_size,
+    );
+
+    // Accessibility section
+    y += config.slider_spacing;
+
+    // Font Size
+    let old_font_scale = settings.accessibility.font_scale;
+    settings.accessibility.font_scale = draw_slider_ex(
+        slider_x,
+        y,
+        config.slider_width,
+        config.slider_height,
+        settings.accessibility.font_scale,
+        50.0,
+        200.0,
+        "Font Size",
+        SliderFormat::Value("%"),
+        font,
+        config.label_font_size,
+    );
+    // Round to 10
+    if (settings.accessibility.font_scale - old_font_scale).abs() > 0.001 {
+        settings.accessibility.font_scale =
+            (settings.accessibility.font_scale / 10.0).round() * 10.0;
+    }
+
+    // High Contrast checkbox
+    y += config.slider_spacing;
+    settings.accessibility.high_contrast = draw_checkbox(
+        slider_x,
+        y,
+        settings.accessibility.high_contrast,
+        "High Contrast Mode",
         font,
         config.label_font_size,
     );
