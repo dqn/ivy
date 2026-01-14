@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display3
+---
+Text:
+  speaker: ~
+  text: "Character cleared, background persists"
+  visual:
+    background: assets/bg.png
+    character: ~
+    char_pos: center
+    characters: []

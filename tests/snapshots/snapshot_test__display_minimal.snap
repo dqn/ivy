@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display
+---
+Text:
+  speaker: ~
+  text: "Hello, world!"
+  visual:
+    background: ~
+    character: ~
+    char_pos: center
+    characters: []

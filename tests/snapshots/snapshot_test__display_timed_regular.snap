@@ -1,0 +1,21 @@
+---
+source: tests/snapshot_test.rs
+expression: display1
+---
+Choices:
+  speaker: ~
+  text: "Normal choice:"
+  choices:
+    - label: Option A
+      jump: path_a
+      default: false
+    - label: Option B
+      jump: path_b
+      default: false
+  visual:
+    background: ~
+    character: ~
+    char_pos: center
+    characters: []
+  timeout: ~
+  default_choice: 0

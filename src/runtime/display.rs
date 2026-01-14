@@ -1,8 +1,10 @@
+use serde::Serialize;
+
 use crate::runtime::VisualState;
 use crate::scenario::{Choice, Input};
 
 /// History entry for rollback functionality.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct HistoryEntry {
     pub index: usize,
     pub visual: VisualState,
@@ -10,7 +12,7 @@ pub struct HistoryEntry {
 }
 
 /// Current display state of the game.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum DisplayState {
     /// Showing text, waiting for player to advance.
     Text {

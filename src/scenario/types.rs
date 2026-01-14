@@ -42,7 +42,7 @@ pub struct SetVar {
 }
 
 /// Text input command for player input.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Input {
     /// Variable name to store the input.
     pub var: String,
@@ -143,7 +143,7 @@ fn default_shake_duration() -> f32 {
 }
 
 /// A single choice option that branches the story.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choice {
     /// Display text for this choice.
     pub label: String,

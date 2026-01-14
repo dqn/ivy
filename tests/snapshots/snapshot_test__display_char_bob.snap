@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display4
+---
+Text:
+  speaker: ~
+  text: Bob replaces Alice.
+  visual:
+    background: ~
+    character: assets/char_bob.png
+    char_pos: center
+    characters: []

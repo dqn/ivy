@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display1
+---
+Text:
+  speaker: ~
+  text: Fade in effect
+  visual:
+    background: assets/bg.png
+    character: ~
+    char_pos: center
+    characters: []

@@ -1,0 +1,21 @@
+---
+source: tests/snapshot_test.rs
+expression: display2
+---
+Choices:
+  speaker: ~
+  text: Quick! Choose now!
+  choices:
+    - label: Fight
+      jump: fight
+      default: false
+    - label: Run
+      jump: run
+      default: true
+  visual:
+    background: ~
+    character: ~
+    char_pos: center
+    characters: []
+  timeout: 5
+  default_choice: 1

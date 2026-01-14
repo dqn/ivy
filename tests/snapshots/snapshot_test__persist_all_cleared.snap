@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display4
+---
+Text:
+  speaker: ~
+  text: All cleared
+  visual:
+    background: ~
+    character: ~
+    char_pos: center
+    characters: []

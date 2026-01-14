@@ -1,0 +1,14 @@
+---
+source: tests/snapshot_test.rs
+expression: display2
+---
+Input:
+  input:
+    var: player_name
+    prompt: "Enter your name:"
+    default: Hero
+  visual:
+    background: assets/bg_room.png
+    character: ~
+    char_pos: center
+    characters: []

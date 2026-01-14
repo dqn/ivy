@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display1
+---
+Text:
+  speaker: ~
+  text: Alice appears in the center.
+  visual:
+    background: ~
+    character: assets/char_alice.png
+    char_pos: center
+    characters: []

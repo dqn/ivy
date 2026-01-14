@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display3
+---
+Text:
+  speaker: ~
+  text: Bob appears on the left.
+  visual:
+    background: assets/bg_forest.png
+    character: assets/char_bob.png
+    char_pos: left
+    characters: []

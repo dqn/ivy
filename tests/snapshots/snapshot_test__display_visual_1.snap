@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display1
+---
+Text:
+  speaker: ~
+  text: You are in the forest.
+  visual:
+    background: assets/bg_forest.png
+    character: ~
+    char_pos: center
+    characters: []

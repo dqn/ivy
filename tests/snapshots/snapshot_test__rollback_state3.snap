@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display2
+---
+Text:
+  speaker: ~
+  text: State 3
+  visual:
+    background: assets/bg3.png
+    character: ~
+    char_pos: center
+    characters: []

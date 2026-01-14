@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display3
+---
+Text:
+  speaker: ~
+  text: Alice moves to the right.
+  visual:
+    background: ~
+    character: assets/char_alice.png
+    char_pos: right
+    characters: []

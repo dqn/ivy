@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display2
+---
+Text:
+  speaker: ~
+  text: "{color:red}Outer {color:yellow}inner{/color} outer{/color}"
+  visual:
+    background: ~
+    character: ~
+    char_pos: center
+    characters: []

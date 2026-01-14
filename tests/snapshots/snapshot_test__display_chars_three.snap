@@ -1,0 +1,18 @@
+---
+source: tests/snapshot_test.rs
+expression: display6
+---
+Text:
+  speaker: ~
+  text: All three characters appear.
+  visual:
+    background: ~
+    character: ~
+    char_pos: center
+    characters:
+      - path: assets/char_alice.png
+        position: left
+      - path: assets/char_charlie.png
+        position: center
+      - path: assets/char_bob.png
+        position: right

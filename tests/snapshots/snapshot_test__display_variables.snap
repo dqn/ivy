@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display
+---
+Text:
+  speaker: ~
+  text: "Your name is {var:player_name}."
+  visual:
+    background: ~
+    character: ~
+    char_pos: center
+    characters: []

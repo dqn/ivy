@@ -1,0 +1,5 @@
+---
+source: tests/snapshot_test.rs
+expression: bgm1
+---
+assets/bgm_main.mp3

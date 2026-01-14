@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display3
+---
+Text:
+  speaker: ~
+  text: "{ruby:漢字:かんじ} test"
+  visual:
+    background: ~
+    character: ~
+    char_pos: center
+    characters: []

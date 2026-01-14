@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_test.rs
+expression: display2
+---
+Text:
+  speaker: ~
+  text: No visual changes (should persist)
+  visual:
+    background: assets/bg.png
+    character: assets/char.png
+    char_pos: center
+    characters: []

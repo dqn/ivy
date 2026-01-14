@@ -1,0 +1,16 @@
+---
+source: tests/snapshot_test.rs
+expression: display5
+---
+Text:
+  speaker: ~
+  text: Both Alice and Bob appear.
+  visual:
+    background: ~
+    character: ~
+    char_pos: center
+    characters:
+      - path: assets/char_alice.png
+        position: left
+      - path: assets/char_bob.png
+        position: right
