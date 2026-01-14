@@ -132,3 +132,19 @@ fn test_restore() {
     assert!(vars.get("original").is_none());
     assert_eq!(vars.get("restored").unwrap().as_int(), Some(42));
 }
+
+#[test]
+fn test_serialization_roundtrip() {
+    let mut vars = Variables::new();
+    vars.set("name", Value::String("test".to_string()));
+    vars.set("count", Value::Int(42));
+
+    let json = serde_json::to_string(&vars).unwrap();
+    let restored: Variables = serde_json::from_str(&json).unwrap();
+
+    assert_eq!(
+        restored.get("name"),
+        Some(&Value::String("test".to_string()))
+    );
+    assert_eq!(restored.get("count"), Some(&Value::Int(42)));
+}
