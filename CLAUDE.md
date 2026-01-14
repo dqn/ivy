@@ -353,6 +353,9 @@ cargo run --bin ivy-validate -- --cycles scenario.yaml  # 循環パス検出も�
 ### アクセシビリティ
 - [x] フォントサイズ調整（50% - 200%）
 - [x] ハイコントラストモード
+- [x] 行間調整（1.0x - 2.0x）
+- [x] 字間調整（-2.0px - 5.0px）
+- [x] ディスレクシアフォント対応（OpenDyslexic）
 
 ### 開発ツール
 - [x] シナリオバリデーター（`ivy-validate` CLI）

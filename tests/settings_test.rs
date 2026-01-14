@@ -1,5 +1,14 @@
 use serde::{Deserialize, Serialize};
 
+/// Font type for accessibility (mirror of render::settings::FontType).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum FontType {
+    #[default]
+    Default,
+    OpenDyslexic,
+}
+
 /// Accessibility settings (mirror of render::settings::AccessibilitySettings).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct AccessibilitySettings {
@@ -9,6 +18,10 @@ struct AccessibilitySettings {
     high_contrast: bool,
     #[serde(default = "default_line_spacing")]
     line_spacing: f32,
+    #[serde(default)]
+    font_type: FontType,
+    #[serde(default)]
+    letter_spacing: f32,
 }
 
 fn default_font_scale() -> f32 {
@@ -25,6 +38,8 @@ impl Default for AccessibilitySettings {
             font_scale: 100.0,
             high_contrast: false,
             line_spacing: 1.0,
+            font_type: FontType::Default,
+            letter_spacing: 0.0,
         }
     }
 }
@@ -137,4 +152,56 @@ fn test_settings_backward_compatibility() {
     assert_eq!(settings.bgm_volume, 0.8);
     assert_eq!(settings.accessibility.font_scale, 100.0);
     assert!(!settings.accessibility.high_contrast);
+}
+
+#[test]
+fn test_accessibility_font_type_default() {
+    let settings = GameSettings::default();
+    assert_eq!(settings.accessibility.font_type, FontType::Default);
+    assert_eq!(settings.accessibility.letter_spacing, 0.0);
+}
+
+#[test]
+fn test_accessibility_font_type_serialization() {
+    let mut settings = GameSettings::default();
+    settings.accessibility.font_type = FontType::OpenDyslexic;
+    settings.accessibility.letter_spacing = 2.5;
+
+    let json = serde_json::to_string(&settings).unwrap();
+    let deserialized: GameSettings = serde_json::from_str(&json).unwrap();
+
+    assert_eq!(deserialized.accessibility.font_type, FontType::OpenDyslexic);
+    assert_eq!(deserialized.accessibility.letter_spacing, 2.5);
+}
+
+#[test]
+fn test_font_type_deserialize() {
+    let json = r#""default""#;
+    let font_type: FontType = serde_json::from_str(json).unwrap();
+    assert_eq!(font_type, FontType::Default);
+
+    let json = r#""open_dyslexic""#;
+    let font_type: FontType = serde_json::from_str(json).unwrap();
+    assert_eq!(font_type, FontType::OpenDyslexic);
+}
+
+#[test]
+fn test_accessibility_backward_compatibility_extended() {
+    // Settings with old accessibility format should work
+    let old_json = r#"{
+        "bgm_volume": 1.0,
+        "accessibility": {
+            "font_scale": 120.0,
+            "high_contrast": true,
+            "line_spacing": 1.5
+        }
+    }"#;
+
+    let settings: GameSettings = serde_json::from_str(old_json).unwrap();
+    assert_eq!(settings.accessibility.font_scale, 120.0);
+    assert!(settings.accessibility.high_contrast);
+    assert_eq!(settings.accessibility.line_spacing, 1.5);
+    // New fields should use defaults
+    assert_eq!(settings.accessibility.font_type, FontType::Default);
+    assert_eq!(settings.accessibility.letter_spacing, 0.0);
 }

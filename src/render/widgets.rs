@@ -4,6 +4,8 @@ use macroquad::prelude::*;
 pub enum SliderFormat {
     Percent,
     Value(&'static str),
+    /// Display as multiplier (e.g., "1.5x")
+    Multiplier,
 }
 
 /// Draw a checkbox and return the new value if toggled.
@@ -123,6 +125,7 @@ pub fn draw_slider_ex(
                 format!("{:.0}{}", value, unit)
             }
         }
+        SliderFormat::Multiplier => format!("{:.1}x", value),
     };
     let value_params = if let Some(f) = font {
         TextParams {

@@ -55,6 +55,32 @@ impl TextSpeedPreset {
     }
 }
 
+/// Font type for accessibility.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum FontType {
+    /// Default font.
+    #[default]
+    Default,
+    /// OpenDyslexic font for dyslexia support.
+    OpenDyslexic,
+}
+
+impl FontType {
+    /// Get display name.
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            Self::Default => "Default",
+            Self::OpenDyslexic => "OpenDyslexic",
+        }
+    }
+
+    /// Get all font types.
+    pub fn all() -> &'static [Self] {
+        &[Self::Default, Self::OpenDyslexic]
+    }
+}
+
 /// Accessibility settings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessibilitySettings {
@@ -67,6 +93,12 @@ pub struct AccessibilitySettings {
     /// Line spacing multiplier (1.0 - 2.0).
     #[serde(default = "default_line_spacing")]
     pub line_spacing: f32,
+    /// Font type (default or dyslexia-friendly).
+    #[serde(default)]
+    pub font_type: FontType,
+    /// Letter spacing adjustment (-2.0 to 5.0 pixels).
+    #[serde(default)]
+    pub letter_spacing: f32,
 }
 
 fn default_font_scale() -> f32 {
@@ -83,6 +115,8 @@ impl Default for AccessibilitySettings {
             font_scale: 100.0,
             high_contrast: false,
             line_spacing: 1.0,
+            font_type: FontType::Default,
+            letter_spacing: 0.0,
         }
     }
 }
@@ -454,6 +488,147 @@ pub fn draw_settings_screen(
         font,
         config.label_font_size,
     );
+
+    // Line Spacing
+    y += config.slider_spacing;
+    let old_line_spacing = settings.accessibility.line_spacing;
+    settings.accessibility.line_spacing = draw_slider_ex(
+        slider_x,
+        y,
+        config.slider_width,
+        config.slider_height,
+        settings.accessibility.line_spacing,
+        1.0,
+        2.0,
+        "Line Spacing",
+        SliderFormat::Multiplier,
+        font,
+        config.label_font_size,
+    );
+    // Round to 0.1
+    if (settings.accessibility.line_spacing - old_line_spacing).abs() > 0.001 {
+        settings.accessibility.line_spacing =
+            (settings.accessibility.line_spacing * 10.0).round() / 10.0;
+    }
+
+    // Letter Spacing
+    y += config.slider_spacing;
+    let old_letter_spacing = settings.accessibility.letter_spacing;
+    settings.accessibility.letter_spacing = draw_slider_ex(
+        slider_x,
+        y,
+        config.slider_width,
+        config.slider_height,
+        settings.accessibility.letter_spacing,
+        -2.0,
+        5.0,
+        "Letter Spacing",
+        SliderFormat::Value("px"),
+        font,
+        config.label_font_size,
+    );
+    // Round to 0.5
+    if (settings.accessibility.letter_spacing - old_letter_spacing).abs() > 0.001 {
+        settings.accessibility.letter_spacing =
+            (settings.accessibility.letter_spacing * 2.0).round() / 2.0;
+    }
+
+    // Font Type selector
+    y += config.slider_spacing;
+    let font_button_width = 120.0;
+    let font_button_height = 30.0;
+    let font_spacing = 10.0;
+
+    // Draw label
+    let label_params = if let Some(f) = font {
+        TextParams {
+            font: Some(f),
+            font_size: config.label_font_size as u16,
+            color: WHITE,
+            ..Default::default()
+        }
+    } else {
+        TextParams {
+            font_size: config.label_font_size as u16,
+            color: WHITE,
+            ..Default::default()
+        }
+    };
+    draw_text_ex("Font Type", slider_x, y + config.label_font_size, label_params);
+
+    let font_btn_y = y + 5.0;
+    for (i, font_type) in FontType::all().iter().enumerate() {
+        let btn_x = slider_x + 120.0 + (font_button_width + font_spacing) * i as f32;
+        let is_selected = settings.accessibility.font_type == *font_type;
+
+        let mouse_pos = mouse_position();
+        let button_rect = Rect::new(btn_x, font_btn_y, font_button_width, font_button_height);
+        let is_hovered = button_rect.contains(Vec2::new(mouse_pos.0, mouse_pos.1));
+
+        let bg_color = if is_selected {
+            Color::new(0.3, 0.6, 0.3, 0.9)
+        } else if is_hovered {
+            Color::new(0.3, 0.3, 0.4, 0.9)
+        } else {
+            Color::new(0.2, 0.2, 0.25, 0.8)
+        };
+
+        draw_rectangle(
+            btn_x,
+            font_btn_y,
+            font_button_width,
+            font_button_height,
+            bg_color,
+        );
+        draw_rectangle_lines(
+            btn_x,
+            font_btn_y,
+            font_button_width,
+            font_button_height,
+            2.0,
+            if is_selected {
+                Color::new(0.3, 0.8, 0.3, 1.0)
+            } else if is_hovered {
+                YELLOW
+            } else {
+                GRAY
+            },
+        );
+
+        let text_params = if let Some(f) = font {
+            TextParams {
+                font: Some(f),
+                font_size: (config.label_font_size * 0.8) as u16,
+                color: if is_selected || is_hovered {
+                    WHITE
+                } else {
+                    LIGHTGRAY
+                },
+                ..Default::default()
+            }
+        } else {
+            TextParams {
+                font_size: (config.label_font_size * 0.8) as u16,
+                color: if is_selected || is_hovered {
+                    WHITE
+                } else {
+                    LIGHTGRAY
+                },
+                ..Default::default()
+            }
+        };
+
+        let label = font_type.display_name();
+        let text_dim = measure_text(label, font, (config.label_font_size * 0.8) as u16, 1.0);
+        let text_x = btn_x + (font_button_width - text_dim.width) / 2.0;
+        let text_y =
+            font_btn_y + (font_button_height + text_dim.height) / 2.0 - text_dim.offset_y / 2.0;
+        draw_text_ex(label, text_x, text_y, text_params);
+
+        if is_hovered && is_mouse_button_pressed(MouseButton::Left) {
+            settings.accessibility.font_type = *font_type;
+        }
+    }
 
     // Back button
     let button_width = 150.0;
