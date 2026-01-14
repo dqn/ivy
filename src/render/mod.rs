@@ -43,7 +43,7 @@ pub use title::{TitleConfig, TitleMenuItem, draw_title_screen};
 pub use transition::TransitionState;
 pub use typewriter::TypewriterState;
 pub use ui::{ChoiceButtonConfig, ChoiceNavState, InputSource, draw_choices_with_timer};
-pub use video::VideoState;
+pub use video::{VideoBackgroundState, VideoState};
 pub use nvl::{NvlConfig, NvlState, count_nvl_chars, draw_nvl_text_box};
 pub use modular_char::draw_modular_char;
 pub use camera::{calculate_camera_transform, pop_camera_transform, push_camera_transform};

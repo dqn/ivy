@@ -550,6 +550,14 @@ impl GameState {
             .unwrap_or(&[])
     }
 
+    /// Get current video background command.
+    pub fn current_video_bg(&self) -> Option<&crate::scenario::types::VideoBackground> {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .and_then(|cmd| cmd.video_bg.as_ref())
+    }
+
     /// Reload scenario while preserving state.
     ///
     /// Attempts to maintain the current position by finding the same label

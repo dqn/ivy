@@ -31,9 +31,9 @@ use render::{
     DebugConfig, DebugState, FlowchartConfig, FlowchartState, GalleryConfig, GalleryState,
     GameSettings, InputConfig, InputSource, InputState, NvlConfig, NvlState, ParticleState,
     ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem,
-    TransitionState, TypewriterState, VideoState, calculate_camera_transform, count_nvl_chars,
-    count_visible_chars, draw_achievement, draw_background_with_offset, draw_backlog,
-    draw_chapter_select, draw_character_animated, draw_choices_with_timer,
+    TransitionState, TypewriterState, VideoBackgroundState, VideoState, calculate_camera_transform,
+    count_nvl_chars, count_visible_chars, draw_achievement, draw_background_with_offset,
+    draw_backlog, draw_chapter_select, draw_character_animated, draw_choices_with_timer,
     draw_continue_indicator_with_font, draw_debug, draw_flowchart, draw_gallery, draw_input,
     draw_modular_char, draw_nvl_text_box, draw_settings_screen, draw_speaker_name,
     draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen, interpolate_variables,
@@ -79,11 +79,15 @@ async fn draw_visual(
     char_anim_states: &HashMap<CharPosition, CharAnimationState>,
     char_idle_states: &HashMap<CharPosition, CharIdleState>,
     modular_char_defs: &HashMap<String, ModularCharDef>,
+    video_bg_state: &VideoBackgroundState,
 ) {
-    // Draw background
-    if let Some(bg_path) = &visual.background
+    // Draw video background if active
+    if video_bg_state.is_playing() {
+        video_bg_state.draw();
+    } else if let Some(bg_path) = &visual.background
         && let Some(texture) = cache.get(bg_path).await
     {
+        // Draw static background if no video background
         draw_background_with_offset(&texture, offset);
     }
 
@@ -305,6 +309,7 @@ async fn main() {
     let mut particle_state = ParticleState::default();
     let mut cinematic_state = CinematicState::default();
     let mut video_state = VideoState::new();
+    let mut video_bg_state = VideoBackgroundState::new();
     let mut nvl_state = NvlState::new();
     let nvl_config = NvlConfig::default();
     let mut choice_timer: Option<f32> = None;
@@ -873,6 +878,15 @@ async fn main() {
                 );
             }
 
+            // Start or stop video background
+            if let Some(video_bg) = state.current_video_bg() {
+                if video_bg.path.is_empty() {
+                    video_bg_state.stop();
+                } else if let Err(e) = video_bg_state.start(&video_bg.path, video_bg.looped) {
+                    eprintln!("Failed to start video background: {}", e);
+                }
+            }
+
             // Reset auto timer on command change
             auto_timer = 0.0;
 
@@ -931,6 +945,9 @@ async fn main() {
         camera_anim_state.update(get_frame_time());
         camera_state = camera_anim_state.current();
 
+        // Update video background state
+        video_bg_state.update();
+
         // Get shake offset for visual rendering
         let shake_offset = shake_state.offset();
 
@@ -969,6 +986,7 @@ async fn main() {
                     &char_anim_states,
                     &char_idle_states,
                     &modular_char_defs,
+                    &video_bg_state,
                 )
                 .await;
                 pop_camera_transform(&camera_transform);
@@ -1142,6 +1160,7 @@ async fn main() {
                     &char_anim_states,
                     &char_idle_states,
                     &modular_char_defs,
+                    &video_bg_state,
                 )
                 .await;
                 pop_camera_transform(&camera_transform);
@@ -1307,6 +1326,7 @@ async fn main() {
                     &char_anim_states,
                     &char_idle_states,
                     &modular_char_defs,
+                    &video_bg_state,
                 )
                 .await;
                 pop_camera_transform(&camera_transform);
@@ -1366,6 +1386,7 @@ async fn main() {
                     &char_anim_states,
                     &char_idle_states,
                     &modular_char_defs,
+                    &video_bg_state,
                 )
                 .await;
                 pop_camera_transform(&camera_transform);

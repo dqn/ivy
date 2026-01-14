@@ -1,0 +1,25 @@
+title: Video Background Test
+
+script:
+  - label: start
+    text: "A static background scene."
+
+  - video_bg:
+      path: "assets/videos/forest_loop.webm"
+      looped: true
+    text: "Now with a video background!"
+
+  - text: "The video continues playing behind this text."
+
+  - video_bg:
+      path: "assets/videos/sunset.webm"
+      looped: false
+      on_end: ending
+    text: "This video will end and jump to the ending."
+
+  - video_bg:
+      path: ""
+    text: "Video background stopped."
+
+  - label: ending
+    text: "The end."

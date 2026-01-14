@@ -217,3 +217,17 @@ script:
   #     name: sakura
   #     expression: 1
   #   text: "Change expressions without loading entirely new sprites!"
+
+  # Video background demo
+  # Note: These paths are examples - actual files would need to exist
+  # - label: video_bg_demo
+  #   video_bg:
+  #     path: "assets/videos/forest_loop.webm"
+  #     looped: true
+  #   text: "A looping video plays as the background..."
+  #
+  # - text: "The video continues behind the text."
+  #
+  # - video_bg:
+  #     path: ""
+  #   text: "Video background stopped."

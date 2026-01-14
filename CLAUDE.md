@@ -188,6 +188,16 @@ script:
       path: "assets/videos/opening.webm"
       skippable: false        # スキップ不可
       bgm_fade_out: 1.0       # BGMフェードアウト秒数
+
+  # 動画背景（--features video が必要）
+  - video_bg:
+      path: "assets/videos/forest_loop.webm"
+      looped: true            # ループ再生（デフォルト: true）
+    text: "動画が背景として再生"
+
+  - video_bg:
+      path: ""                # 空文字 → 動画背景を停止
+    text: "静止画背景に戻る"
 ```
 
 ### 画像状態の継続ルール
@@ -324,6 +334,7 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 
 ### 演出（追加）
 - [x] 動画再生（ネイティブ: FFmpeg、WASM: HTML5 video）※ `--features video` で有効化
+- [x] 動画背景（ループ動画を背景として表示）※ `--features video` で有効化
 
 ### 今後の予定
 
@@ -332,7 +343,6 @@ cd tests/e2e && npm run test:update  # スナップショット更新
   - [ ] VSCode拡張（シンタックスハイライト、補完）
   - [ ] シナリオバリデーター（構文チェック）
   - [ ] リアルタイムプレビュー
-- [ ] 動画背景
 - [ ] Live2D対応
 - [ ] リップシンク（音声連動）
 

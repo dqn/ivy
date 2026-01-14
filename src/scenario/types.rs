@@ -480,6 +480,22 @@ pub struct AmbientStop {
     pub fade_out: f32,
 }
 
+/// Video background configuration.
+#[derive(Debug, Clone, Deserialize)]
+pub struct VideoBackground {
+    /// Video file path.
+    pub path: String,
+    /// Whether to loop the video.
+    #[serde(default = "default_video_bg_loop")]
+    pub looped: bool,
+    /// Fallback image to show when video ends (non-looping).
+    pub on_end: Option<String>,
+}
+
+fn default_video_bg_loop() -> bool {
+    true
+}
+
 /// A single choice option that branches the story.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choice {
@@ -507,6 +523,8 @@ pub struct Command {
     pub jump: Option<String>,
     /// Background image path (None = keep previous, Some("") = clear).
     pub background: Option<String>,
+    /// Video background (replaces static background with looping video).
+    pub video_bg: Option<VideoBackground>,
     /// Character sprite image path (None = keep previous, Some("") = clear).
     pub character: Option<String>,
     /// Character sprite position.

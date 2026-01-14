@@ -630,3 +630,44 @@ script:
     assert_eq!(ambient_stop[0].id, "rain");
     assert_eq!(ambient_stop[0].fade_out, 1.0);
 }
+
+#[test]
+fn test_parse_video_background() {
+    let yaml = r#"
+title: Video Background Test
+
+script:
+  - video_bg:
+      path: "assets/videos/forest.webm"
+      looped: true
+    text: "Video background plays..."
+
+  - video_bg:
+      path: "assets/videos/sunset.webm"
+      looped: false
+      on_end: ending
+    text: "Non-looped video"
+
+  - video_bg:
+      path: ""
+    text: "Video stopped"
+"#;
+
+    let scenario = parse_scenario(yaml).unwrap();
+
+    // First command with looped video background
+    let video_bg1 = scenario.script[0].video_bg.as_ref().unwrap();
+    assert_eq!(video_bg1.path, "assets/videos/forest.webm");
+    assert!(video_bg1.looped);
+    assert!(video_bg1.on_end.is_none());
+
+    // Second command with non-looped video and on_end jump
+    let video_bg2 = scenario.script[1].video_bg.as_ref().unwrap();
+    assert_eq!(video_bg2.path, "assets/videos/sunset.webm");
+    assert!(!video_bg2.looped);
+    assert_eq!(video_bg2.on_end.as_ref().unwrap(), "ending");
+
+    // Third command stops video (empty path)
+    let video_bg3 = scenario.script[2].video_bg.as_ref().unwrap();
+    assert!(video_bg3.path.is_empty());
+}
