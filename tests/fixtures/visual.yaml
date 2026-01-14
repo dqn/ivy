@@ -1,0 +1,17 @@
+title: Visual Test
+
+script:
+  - background: "assets/bg_forest.png"
+    text: "You are in the forest."
+
+  - character: "assets/char_alice.png"
+    char_pos: center
+    text: "Alice appears."
+
+  - character: "assets/char_bob.png"
+    char_pos: left
+    text: "Bob appears on the left."
+
+  - background: ""
+    character: ""
+    text: "Everything disappears."

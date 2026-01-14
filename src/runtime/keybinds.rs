@@ -326,7 +326,7 @@ impl KeyBindings {
         }
     }
 
-    /// Check if an action is triggered.
+    /// Check if an action is triggered (using macroquad directly).
     pub fn is_pressed(&self, action: Action) -> bool {
         use macroquad::prelude::*;
 
@@ -345,5 +345,30 @@ impl KeyBindings {
         };
 
         modifier_ok && is_key_pressed(binding.key.0)
+    }
+
+    /// Check if an action is triggered (using InputProvider).
+    pub fn is_pressed_with<I: crate::input::InputProvider>(
+        &self,
+        action: Action,
+        input: &I,
+    ) -> bool {
+        let binding = self.get(action);
+
+        // Check modifier
+        let modifier_ok = match binding.modifier {
+            Some(Modifier::Shift) => {
+                input.is_key_down(KeyCode::LeftShift) || input.is_key_down(KeyCode::RightShift)
+            }
+            Some(Modifier::Ctrl) => {
+                input.is_key_down(KeyCode::LeftControl) || input.is_key_down(KeyCode::RightControl)
+            }
+            Some(Modifier::Alt) => {
+                input.is_key_down(KeyCode::LeftAlt) || input.is_key_down(KeyCode::RightAlt)
+            }
+            None => true,
+        };
+
+        modifier_ok && input.is_key_pressed(binding.key.0)
     }
 }

@@ -1,0 +1,6 @@
+title: Minimal Test
+
+script:
+  - text: "Hello, world!"
+  - text: "This is the second line."
+  - text: "This is the end."

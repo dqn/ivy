@@ -11,7 +11,7 @@ pub mod visual;
 pub use achievements::{AchievementNotifier, Achievements};
 pub use chapters::{Chapter, ChapterManager, ChapterProgress};
 pub use display::{DisplayState, HistoryEntry};
-pub use keybinds::{Action, KeyBindings};
+pub use keybinds::{Action, KeyBinding, KeyBindings, Modifier, SerializableKeyCode};
 pub use save::SaveData;
 pub use state::GameState;
 pub use unlocks::Unlocks;

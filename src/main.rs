@@ -1,5 +1,6 @@
 mod audio;
 mod cache;
+mod input;
 mod platform;
 mod render;
 mod runtime;
