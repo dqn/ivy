@@ -38,7 +38,7 @@ fn default_duration() -> f32 {
 #[derive(Debug, Clone, Deserialize)]
 pub struct SetVar {
     pub name: String,
-    pub value: crate::runtime::Value,
+    pub value: crate::types::Value,
 }
 
 /// Text input command for player input.
@@ -60,7 +60,7 @@ pub struct IfCondition {
     /// Variable name to check.
     pub var: String,
     /// Expected value.
-    pub is: crate::runtime::Value,
+    pub is: crate::types::Value,
     /// Label to jump to if condition is true.
     pub jump: String,
 }

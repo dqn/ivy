@@ -1,123 +1,14 @@
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
+use std::time::{SystemTime, UNIX_EPOCH};
 
-use anyhow::Result;
-use serde::{Deserialize, Serialize};
-
-use crate::platform;
-use crate::runtime::Variables;
-use crate::scenario::{CharPosition, Choice, Input, Scenario};
+use crate::runtime::display::{DisplayState, HistoryEntry};
+use crate::runtime::save::SaveData;
+use crate::runtime::variables::Variables;
+use crate::runtime::visual::{CharacterState, VisualState};
+use crate::scenario::Scenario;
 
 /// Maximum number of history entries for rollback.
 const MAX_HISTORY_SIZE: usize = 50;
-
-/// Single character state for multi-character support.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct CharacterState {
-    pub path: String,
-    pub position: CharPosition,
-}
-
-/// Visual state (background and character sprite).
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct VisualState {
-    pub background: Option<String>,
-    pub character: Option<String>,
-    pub char_pos: CharPosition,
-    /// Multiple characters (used when `characters` field is set in command).
-    #[serde(default)]
-    pub characters: Vec<CharacterState>,
-}
-
-/// Save data format.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SaveData {
-    pub scenario_path: String,
-    pub current_index: usize,
-    pub visual: VisualState,
-    #[serde(default)]
-    pub timestamp: i64,
-    #[serde(default)]
-    pub variables: Variables,
-}
-
-impl SaveData {
-    /// Save to a JSON file (or localStorage on WASM).
-    pub fn save(&self, path: &str) -> Result<()> {
-        let json = serde_json::to_string_pretty(self)?;
-        platform::write_file(path, &json)?;
-        Ok(())
-    }
-
-    /// Load from a JSON file (or localStorage on WASM).
-    pub fn load(path: &str) -> Result<Self> {
-        let content = platform::read_file(path)?;
-        let save: SaveData = serde_json::from_str(&content)?;
-        Ok(save)
-    }
-
-    /// Get the path for a specific save slot.
-    pub fn slot_path(slot: u8) -> String {
-        format!("saves/slot_{}.json", slot)
-    }
-
-    /// Check if a save slot exists.
-    pub fn slot_exists(slot: u8) -> bool {
-        platform::file_exists(&Self::slot_path(slot))
-    }
-
-    /// List all existing save slots with their timestamps.
-    pub fn list_slots() -> Vec<(u8, i64)> {
-        (1..=10)
-            .filter_map(|slot| {
-                Self::load(&Self::slot_path(slot))
-                    .ok()
-                    .map(|save| (slot, save.timestamp))
-            })
-            .collect()
-    }
-}
-
-/// History entry for rollback functionality.
-#[derive(Debug, Clone)]
-pub struct HistoryEntry {
-    pub index: usize,
-    pub visual: VisualState,
-    pub text: String,
-}
-
-/// Current display state of the game.
-#[derive(Debug, Clone)]
-pub enum DisplayState {
-    /// Showing text, waiting for player to advance.
-    Text {
-        speaker: Option<String>,
-        text: String,
-        visual: VisualState,
-    },
-    /// Showing choices, waiting for player to select.
-    Choices {
-        speaker: Option<String>,
-        text: String,
-        choices: Vec<Choice>,
-        visual: VisualState,
-        /// Optional timeout in seconds for timed choices.
-        timeout: Option<f32>,
-        /// Index of the default choice (selected on timeout).
-        default_choice: Option<usize>,
-    },
-    /// Waiting for a specified duration.
-    Wait {
-        duration: f32,
-        visual: VisualState,
-    },
-    /// Waiting for player text input.
-    Input {
-        input: Input,
-        visual: VisualState,
-    },
-    /// Scenario has ended.
-    End,
-}
 
 /// Runtime state for the visual novel engine.
 #[derive(Debug)]
@@ -127,17 +18,31 @@ pub struct GameState {
     visual: VisualState,
     history: VecDeque<HistoryEntry>,
     variables: Variables,
+    /// Label to index mapping for O(1) lookup.
+    label_index: HashMap<String, usize>,
+}
+
+/// Build label index from scenario.
+fn build_label_index(scenario: &Scenario) -> HashMap<String, usize> {
+    scenario
+        .script
+        .iter()
+        .enumerate()
+        .filter_map(|(i, cmd)| cmd.label.as_ref().map(|label| (label.clone(), i)))
+        .collect()
 }
 
 impl GameState {
     /// Create a new game state from a scenario.
     pub fn new(scenario: Scenario) -> Self {
+        let label_index = build_label_index(&scenario);
         let mut state = Self {
             scenario,
             current_index: 0,
             visual: VisualState::default(),
             history: VecDeque::new(),
             variables: Variables::new(),
+            label_index,
         };
         state.skip_labels();
         state
@@ -145,7 +50,6 @@ impl GameState {
 
     /// Create a save data snapshot.
     pub fn to_save_data(&self, scenario_path: &str) -> SaveData {
-        use std::time::{SystemTime, UNIX_EPOCH};
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_secs() as i64)
@@ -163,12 +67,14 @@ impl GameState {
     /// Restore from save data.
     pub fn from_save_data(save: &SaveData, scenario: Scenario) -> Self {
         let current_index = save.current_index.min(scenario.script.len());
+        let label_index = build_label_index(&scenario);
         let mut state = Self {
             scenario,
             current_index,
             visual: save.visual.clone(),
             history: VecDeque::new(),
             variables: save.variables.clone(),
+            label_index,
         };
         state.skip_labels();
         state
@@ -379,17 +285,15 @@ impl GameState {
         self.jump_to(label);
     }
 
-    /// Jump to a labeled command (internal).
+    /// Jump to a labeled command (internal). O(1) lookup using label index.
     fn jump_to(&mut self, label: &str) {
-        for (i, cmd) in self.scenario.script.iter().enumerate() {
-            if cmd.label.as_deref() == Some(label) {
-                self.current_index = i;
-                self.skip_labels();
-                return;
-            }
+        if let Some(&index) = self.label_index.get(label) {
+            self.current_index = index;
+            self.skip_labels();
+        } else {
+            // Label not found, go to end
+            self.current_index = self.scenario.script.len();
         }
-        // Label not found, go to end
-        self.current_index = self.scenario.script.len();
     }
 
     /// Skip commands that only have labels (no content).
@@ -500,7 +404,7 @@ impl GameState {
     }
 
     /// Set a variable value.
-    pub fn set_variable(&mut self, name: impl Into<String>, value: crate::runtime::Value) {
+    pub fn set_variable(&mut self, name: impl Into<String>, value: crate::types::Value) {
         self.variables.set(name, value);
     }
 

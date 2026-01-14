@@ -1,24 +1,26 @@
 mod audio;
+mod cache;
 mod platform;
 mod render;
 mod runtime;
 mod scenario;
-
-use std::collections::HashMap;
+mod types;
 
 use macroquad::prelude::*;
 
+use cache::TextureCache;
+
 use audio::AudioManager;
 use render::{
-    draw_achievement, draw_backlog, draw_background_with_offset, draw_chapter_select,
-    draw_character_animated, draw_choices_with_timer, draw_continue_indicator_with_font,
-    draw_debug, draw_gallery, draw_input, draw_settings_screen, draw_speaker_name,
-    draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen, interpolate_variables,
-    AchievementConfig, BacklogConfig, BacklogState, CharAnimationState, ChapterSelectConfig,
-    ChapterSelectState, CinematicState, ChoiceButtonConfig, DebugConfig, DebugState, GalleryConfig,
-    GalleryState, GameSettings, InputConfig, InputState, ParticleState, ParticleType,
-    SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
-    TypewriterState,
+    count_visible_chars, draw_achievement, draw_backlog, draw_background_with_offset,
+    draw_chapter_select, draw_character_animated, draw_choices_with_timer,
+    draw_continue_indicator_with_font, draw_debug, draw_gallery, draw_input, draw_settings_screen,
+    draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen,
+    interpolate_variables, AchievementConfig, BacklogConfig, BacklogState, CharAnimationState,
+    ChapterSelectConfig, ChapterSelectState, CinematicState, ChoiceButtonConfig, DebugConfig,
+    DebugState, GalleryConfig, GalleryState, GameSettings, InputConfig, InputState, ParticleState,
+    ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem,
+    TransitionState, TypewriterState,
 };
 use runtime::{
     AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
@@ -40,36 +42,6 @@ const SCENARIO_PATH: &str = "assets/sample.yaml";
 const QUICK_SAVE_PATH: &str = "saves/save.json";
 const FONT_PATH: &str = "assets/fonts/NotoSansJP-Regular.ttf";
 
-/// Count visible characters in text (excluding color tags).
-fn count_visible_chars(text: &str) -> usize {
-    let mut count = 0;
-    let mut chars = text.chars().peekable();
-
-    while let Some(ch) = chars.next() {
-        if ch == '{' {
-            // Check for color tag
-            let mut tag = String::new();
-            while let Some(&next_ch) = chars.peek() {
-                if next_ch == '}' {
-                    chars.next();
-                    break;
-                }
-                tag.push(chars.next().unwrap());
-            }
-
-            // Only skip recognized tags
-            if !tag.starts_with("color:") && tag != "/color" {
-                // Not a color tag, count the braces and content
-                count += 2 + tag.chars().count();
-            }
-        } else {
-            count += 1;
-        }
-    }
-
-    count
-}
-
 fn window_conf() -> Conf {
     Conf {
         window_title: "ivy".to_string(),
@@ -79,35 +51,16 @@ fn window_conf() -> Conf {
     }
 }
 
-/// Load a texture, using cache if available.
-async fn get_texture(path: &str, cache: &mut HashMap<String, Texture2D>) -> Option<Texture2D> {
-    if let Some(texture) = cache.get(path) {
-        return Some(texture.clone());
-    }
-
-    match load_texture(path).await {
-        Ok(texture) => {
-            texture.set_filter(FilterMode::Linear);
-            cache.insert(path.to_string(), texture.clone());
-            Some(texture)
-        }
-        Err(e) => {
-            eprintln!("Failed to load texture '{}': {}", path, e);
-            None
-        }
-    }
-}
-
 /// Draw visual elements (background and character) with shake offset and character animation.
 async fn draw_visual(
     visual: &VisualState,
-    cache: &mut HashMap<String, Texture2D>,
+    cache: &mut TextureCache,
     offset: (f32, f32),
     char_anim: &CharAnimationState,
 ) {
     // Draw background
     if let Some(bg_path) = &visual.background {
-        if let Some(texture) = get_texture(bg_path, cache).await {
+        if let Some(texture) = cache.get(bg_path).await {
             draw_background_with_offset(&texture, offset);
         }
     }
@@ -115,7 +68,7 @@ async fn draw_visual(
     // Draw multiple characters (if specified)
     if !visual.characters.is_empty() {
         for char_state in &visual.characters {
-            if let Some(texture) = get_texture(&char_state.path, cache).await {
+            if let Some(texture) = cache.get(&char_state.path).await {
                 // Note: For multiple characters, we use a default animation state
                 // Full animation support for multiple characters would require per-character state
                 let default_anim = CharAnimationState::default();
@@ -124,7 +77,7 @@ async fn draw_visual(
         }
     } else if let Some(char_path) = &visual.character {
         // Draw single character with animation
-        if let Some(texture) = get_texture(char_path, cache).await {
+        if let Some(texture) = cache.get(char_path).await {
             draw_character_animated(&texture, visual.char_pos, offset, char_anim);
         }
     }
@@ -253,7 +206,7 @@ async fn main() {
     let mut achievement_notifier = AchievementNotifier::default();
     let mut awaiting_input: Option<String> = None; // Variable name waiting for input
     let mut show_backlog = false;
-    let mut texture_cache: HashMap<String, Texture2D> = HashMap::new();
+    let mut texture_cache = TextureCache::new();
     let mut audio_manager = AudioManager::new();
     let mut last_index: Option<usize> = None;
     let mut auto_mode = false;
@@ -375,7 +328,7 @@ async fn main() {
                     &gallery_config,
                     &mut gallery_state,
                     &images,
-                    &texture_cache,
+                    texture_cache.as_map(),
                     font_ref,
                 );
 
@@ -385,7 +338,7 @@ async fn main() {
 
                 // Load textures for gallery images (async)
                 for path in &images {
-                    if !texture_cache.contains_key(path) {
+                    if !texture_cache.contains(path) {
                         if let Ok(texture) = load_texture(path).await {
                             texture.set_filter(FilterMode::Linear);
                             texture_cache.insert(path.clone(), texture);

@@ -2,6 +2,36 @@ use macroquad::prelude::*;
 
 use crate::runtime::Variables;
 
+/// Count visible characters in text (excluding color tags).
+pub fn count_visible_chars(text: &str) -> usize {
+    let mut count = 0;
+    let mut chars = text.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == '{' {
+            // Check for color tag
+            let mut tag = String::new();
+            while let Some(&next_ch) = chars.peek() {
+                if next_ch == '}' {
+                    chars.next();
+                    break;
+                }
+                tag.push(chars.next().unwrap());
+            }
+
+            // Only skip recognized tags
+            if !tag.starts_with("color:") && tag != "/color" {
+                // Not a color tag, count the braces and content
+                count += 2 + tag.chars().count();
+            }
+        } else {
+            count += 1;
+        }
+    }
+
+    count
+}
+
 /// A segment of text with color and ruby information.
 #[derive(Debug, Clone)]
 struct TextSegment {
@@ -652,5 +682,67 @@ pub fn draw_continue_indicator_with_font(config: &TextBoxConfig, font: Option<&F
         );
     } else {
         draw_text(indicator, x, y, 20.0, color);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_count_visible_chars_plain_text() {
+        assert_eq!(count_visible_chars("hello"), 5);
+        assert_eq!(count_visible_chars("hello world"), 11);
+        assert_eq!(count_visible_chars(""), 0);
+    }
+
+    #[test]
+    fn test_count_visible_chars_with_color_tags() {
+        // Color tags should not be counted
+        assert_eq!(count_visible_chars("{color:red}hello{/color}"), 5);
+        assert_eq!(count_visible_chars("{color:#ff0000}test{/color}"), 4);
+        assert_eq!(
+            count_visible_chars("{color:blue}hello{/color} world"),
+            11
+        );
+    }
+
+    #[test]
+    fn test_count_visible_chars_nested_colors() {
+        assert_eq!(
+            count_visible_chars("{color:red}a{color:blue}b{/color}c{/color}"),
+            3
+        );
+    }
+
+    #[test]
+    fn test_count_visible_chars_unrecognized_tags() {
+        // Unrecognized tags should be counted (braces + content)
+        assert_eq!(count_visible_chars("{unknown}text"), 13);
+    }
+
+    #[test]
+    fn test_interpolate_variables() {
+        let mut vars = Variables::new();
+        vars.set("name", crate::types::Value::String("Alice".to_string()));
+        vars.set("count", crate::types::Value::Int(42));
+        vars.set("flag", crate::types::Value::Bool(true));
+
+        assert_eq!(interpolate_variables("Hello {var:name}!", &vars), "Hello Alice!");
+        assert_eq!(interpolate_variables("Count: {var:count}", &vars), "Count: 42");
+        assert_eq!(interpolate_variables("Flag: {var:flag}", &vars), "Flag: true");
+        assert_eq!(
+            interpolate_variables("{var:unknown}", &vars),
+            "{var:unknown}"
+        );
+    }
+
+    #[test]
+    fn test_interpolate_variables_preserves_other_tags() {
+        let vars = Variables::new();
+        assert_eq!(
+            interpolate_variables("{color:red}text{/color}", &vars),
+            "{color:red}text{/color}"
+        );
     }
 }
