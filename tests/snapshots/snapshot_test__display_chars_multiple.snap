@@ -14,3 +14,4 @@ Text:
         position: left
       - path: assets/char_bob.png
         position: right
+    nvl_mode: false

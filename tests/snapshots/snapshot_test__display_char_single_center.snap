@@ -10,3 +10,4 @@ Text:
     character: assets/char_alice.png
     char_pos: center
     characters: []
+    nvl_mode: false

@@ -10,3 +10,4 @@ Text:
     character: assets/char_bob.png
     char_pos: left
     characters: []
+    nvl_mode: false

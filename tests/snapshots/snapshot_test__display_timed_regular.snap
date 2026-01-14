@@ -17,5 +17,6 @@ Choices:
     character: ~
     char_pos: center
     characters: []
+    nvl_mode: false
   timeout: ~
   default_choice: 0

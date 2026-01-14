@@ -125,3 +125,23 @@ script:
       - image: "assets/char_merchant.png"
         pos: "right"
     text: "Two characters appear on screen!"
+
+  # NVL mode demo
+  - label: nvl_demo
+    background: ""
+    character: ""
+    nvl: true
+    text: "This is NVL mode - full-screen text display."
+
+  - speaker: "Narrator"
+    text: "In NVL mode, text accumulates on the screen."
+
+  - text: "Each new line adds to the existing text, creating a more novel-like reading experience."
+
+  - nvl_clear: true
+    text: "This is a new page. Previous text has been cleared."
+
+  - text: "NVL mode is perfect for prose-heavy scenes or introspective moments."
+
+  - nvl: false
+    text: "And now we're back to ADV mode with the text box at the bottom."

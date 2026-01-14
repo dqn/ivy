@@ -54,6 +54,7 @@ fn test_save_data_with_visual_state() {
         character: Some("char.png".to_string()),
         char_pos: CharPosition::Center,
         characters: vec![],
+        nvl_mode: false,
     };
 
     let save = SaveData {
@@ -96,6 +97,7 @@ fn test_save_data_with_characters() {
                 idle: None,
             },
         ],
+        nvl_mode: false,
     };
 
     let save = SaveData {

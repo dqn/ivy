@@ -12,3 +12,4 @@ Input:
     character: ~
     char_pos: center
     characters: []
+    nvl_mode: false

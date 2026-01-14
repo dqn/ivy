@@ -191,6 +191,11 @@ impl GameState {
             }
         }
 
+        // Apply NVL mode override
+        if let Some(nvl) = command.nvl {
+            visual.nvl_mode = nvl;
+        }
+
         visual
     }
 
@@ -491,6 +496,15 @@ impl GameState {
             .script
             .get(self.current_index)
             .and_then(|cmd| cmd.label.clone())
+    }
+
+    /// Check if current command requests NVL text buffer clear.
+    pub fn current_nvl_clear(&self) -> bool {
+        self.scenario
+            .script
+            .get(self.current_index)
+            .map(|cmd| cmd.nvl_clear)
+            .unwrap_or(false)
     }
 
     /// Reload scenario while preserving state.

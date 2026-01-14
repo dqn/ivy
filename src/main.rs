@@ -29,13 +29,14 @@ use render::{
     AchievementConfig, BacklogConfig, BacklogState, ChapterSelectConfig, ChapterSelectState,
     CharAnimationState, CharIdleState, ChoiceButtonConfig, ChoiceNavState, CinematicState,
     DebugConfig, DebugState, FlowchartConfig, FlowchartState, GalleryConfig, GalleryState,
-    GameSettings, InputConfig, InputSource, InputState, ParticleState, ParticleType,
-    SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem, TransitionState,
-    TypewriterState, VideoState, count_visible_chars, draw_achievement,
-    draw_background_with_offset, draw_backlog, draw_chapter_select, draw_character_animated,
-    draw_choices_with_timer, draw_continue_indicator_with_font, draw_debug, draw_flowchart,
-    draw_gallery, draw_input, draw_settings_screen, draw_speaker_name, draw_text_box_typewriter,
-    draw_text_box_with_font, draw_title_screen, interpolate_variables,
+    GameSettings, InputConfig, InputSource, InputState, NvlConfig, NvlState, ParticleState,
+    ParticleType, SettingsConfig, ShakeState, TextBoxConfig, TitleConfig, TitleMenuItem,
+    TransitionState, TypewriterState, VideoState, count_nvl_chars, count_visible_chars,
+    draw_achievement, draw_background_with_offset, draw_backlog, draw_chapter_select,
+    draw_character_animated, draw_choices_with_timer, draw_continue_indicator_with_font,
+    draw_debug, draw_flowchart, draw_gallery, draw_input, draw_nvl_text_box, draw_settings_screen,
+    draw_speaker_name, draw_text_box_typewriter, draw_text_box_with_font, draw_title_screen,
+    interpolate_variables,
 };
 use runtime::{
     AchievementNotifier, Achievements, Action, Chapter, ChapterManager, DisplayState, GameState,
@@ -296,6 +297,8 @@ async fn main() {
     let mut particle_state = ParticleState::default();
     let mut cinematic_state = CinematicState::default();
     let mut video_state = VideoState::new();
+    let mut nvl_state = NvlState::new();
+    let nvl_config = NvlConfig::default();
     let mut choice_timer: Option<f32> = None;
     let mut _choice_total_time: Option<f32> = None;
     let mut choice_nav_state = ChoiceNavState::default();
@@ -895,6 +898,17 @@ async fn main() {
                 text,
                 visual,
             } => {
+                // Update NVL state based on visual state
+                let is_nvl_mode = visual.nvl_mode;
+                if nvl_state.active != is_nvl_mode {
+                    nvl_state.set_active(is_nvl_mode);
+                }
+
+                // Check for NVL clear command
+                if is_nvl_mode && state.current_nvl_clear() {
+                    nvl_state.clear();
+                }
+
                 // Draw visuals first (background, then character) with shake offset
                 draw_visual(
                     &visual,
@@ -913,31 +927,51 @@ async fn main() {
                 // Interpolate variables in text
                 let interpolated_text = interpolate_variables(&resolved_text, state.variables());
 
-                // Draw speaker name if present (also interpolate variables)
-                if let Some(ref name) = speaker {
-                    let resolved_name = language_config.resolve(name);
-                    let interpolated_name =
-                        interpolate_variables(&resolved_name, state.variables());
-                    draw_speaker_name(&text_config, &interpolated_name, font_ref);
-                }
+                // Resolve speaker name
+                let resolved_speaker = speaker
+                    .as_ref()
+                    .map(|name| interpolate_variables(&language_config.resolve(name), state.variables()));
 
                 // Reset typewriter if text changed
                 if last_text.as_ref() != Some(&interpolated_text) {
-                    // Count visible characters (excluding color tags)
-                    let total_chars = count_visible_chars(&interpolated_text);
-                    typewriter_state.reset(total_chars);
+                    if is_nvl_mode {
+                        // In NVL mode, count all accumulated chars plus current text
+                        let total_chars = count_nvl_chars(&nvl_state, &interpolated_text);
+                        typewriter_state.reset(total_chars);
+                    } else {
+                        // In ADV mode, count visible characters (excluding color tags)
+                        let total_chars = count_visible_chars(&interpolated_text);
+                        typewriter_state.reset(total_chars);
+                    }
                     last_text = Some(interpolated_text.clone());
                 }
 
                 // Update typewriter state
                 let char_limit = typewriter_state.update(settings.text_speed);
 
-                // Draw text box with typewriter effect
-                draw_text_box_typewriter(&text_config, &interpolated_text, font_ref, char_limit);
+                if is_nvl_mode {
+                    // NVL mode: draw full-screen text box
+                    draw_nvl_text_box(
+                        &nvl_config,
+                        &nvl_state,
+                        resolved_speaker.as_deref(),
+                        &interpolated_text,
+                        font_ref,
+                        char_limit,
+                    );
+                } else {
+                    // ADV mode: draw speaker name if present
+                    if let Some(ref name) = resolved_speaker {
+                        draw_speaker_name(&text_config, name, font_ref);
+                    }
 
-                // Only show continue indicator when text is complete
-                if typewriter_state.is_complete() {
-                    draw_continue_indicator_with_font(&text_config, font_ref);
+                    // Draw text box with typewriter effect
+                    draw_text_box_typewriter(&text_config, &interpolated_text, font_ref, char_limit);
+
+                    // Only show continue indicator when text is complete
+                    if typewriter_state.is_complete() {
+                        draw_continue_indicator_with_font(&text_config, font_ref);
+                    }
                 }
 
                 // Draw backlog overlay if enabled
@@ -983,6 +1017,10 @@ async fn main() {
                         if can_skip || auto_advance {
                             // Skip mode and auto mode bypass typewriter
                             typewriter_state.complete();
+                            // In NVL mode, add completed text to buffer before advancing
+                            if is_nvl_mode {
+                                nvl_state.push(resolved_speaker.clone(), interpolated_text.clone());
+                            }
                             read_state.mark_read(SCENARIO_PATH, state.current_index());
                             state.advance();
                             auto_timer = 0.0;
@@ -994,6 +1032,10 @@ async fn main() {
                     } else if input_pressed {
                         if typewriter_state.is_complete() {
                             // Text is complete, advance to next
+                            // In NVL mode, add completed text to buffer before advancing
+                            if is_nvl_mode {
+                                nvl_state.push(resolved_speaker.clone(), interpolated_text.clone());
+                            }
                             read_state.mark_read(SCENARIO_PATH, state.current_index());
                             state.advance();
                             auto_timer = 0.0;
@@ -1018,6 +1060,9 @@ async fn main() {
                 }
                 if auto_mode {
                     draw_text("AUTO", 750.0, indicator_y, 20.0, YELLOW);
+                }
+                if is_nvl_mode {
+                    draw_text("NVL", 750.0, indicator_y + 22.0, 20.0, Color::new(0.5, 1.0, 0.5, 1.0));
                 }
             }
             DisplayState::Choices {

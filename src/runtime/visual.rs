@@ -28,4 +28,7 @@ pub struct VisualState {
     /// Multiple characters (used when `characters` field is set in command).
     #[serde(default)]
     pub characters: Vec<CharacterState>,
+    /// NVL mode (full-screen text display).
+    #[serde(default)]
+    pub nvl_mode: bool,
 }

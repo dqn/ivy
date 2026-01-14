@@ -458,6 +458,11 @@ pub struct Command {
     pub achievement: Option<Achievement>,
     /// Video playback command.
     pub video: Option<VideoCommand>,
+    /// NVL mode toggle. true = switch to NVL mode, false = switch to ADV mode.
+    pub nvl: Option<bool>,
+    /// Clear NVL text buffer and start fresh page.
+    #[serde(default)]
+    pub nvl_clear: bool,
 }
 
 /// Achievement unlock command.

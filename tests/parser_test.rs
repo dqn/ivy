@@ -454,3 +454,40 @@ script:
         CharIdleType::Pulse
     ));
 }
+
+#[test]
+fn test_parse_nvl_mode() {
+    let yaml = r#"
+title: NVL Mode Test
+
+script:
+  - text: "ADV mode text"
+
+  - nvl: true
+    text: "NVL mode text"
+
+  - nvl_clear: true
+    text: "New page in NVL"
+
+  - nvl: false
+    text: "Back to ADV"
+"#;
+
+    let scenario = parse_scenario(yaml).unwrap();
+
+    // First command has no NVL setting
+    assert!(scenario.script[0].nvl.is_none());
+    assert!(!scenario.script[0].nvl_clear);
+
+    // Second command switches to NVL mode
+    assert_eq!(scenario.script[1].nvl, Some(true));
+    assert!(!scenario.script[1].nvl_clear);
+
+    // Third command clears NVL buffer
+    assert!(scenario.script[2].nvl.is_none());
+    assert!(scenario.script[2].nvl_clear);
+
+    // Fourth command switches back to ADV
+    assert_eq!(scenario.script[3].nvl, Some(false));
+    assert!(!scenario.script[3].nvl_clear);
+}

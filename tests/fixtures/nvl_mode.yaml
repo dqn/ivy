@@ -1,0 +1,26 @@
+title: NVL Mode Test
+
+script:
+  # Start in ADV mode (default)
+  - text: "This is ADV mode text."
+
+  # Switch to NVL mode
+  - nvl: true
+    text: "Now in NVL mode. This text will be displayed on a full-screen overlay."
+
+  - speaker: "Narrator"
+    text: "In NVL mode, text accumulates on the screen."
+
+  - text: "Each new line adds to the existing text."
+
+  # Clear the NVL buffer and start fresh
+  - nvl_clear: true
+    text: "This is a new page. Previous text is cleared."
+
+  - text: "More NVL text on this page."
+
+  # Switch back to ADV mode
+  - nvl: false
+    text: "Back to ADV mode. The NVL buffer is cleared."
+
+  - text: "Normal ADV mode continues."

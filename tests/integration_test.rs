@@ -697,6 +697,7 @@ script:
                 idle: None,
             },
         ],
+        nvl_mode: false,
     };
 
     let save = SaveData {

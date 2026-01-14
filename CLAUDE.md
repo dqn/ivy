@@ -92,6 +92,18 @@ script:
 
   - jump: ending              # 無条件ジャンプ
 
+  # NVLモード（全画面テキスト表示）
+  - nvl: true                   # NVLモードに切り替え
+    text: "NVLモードのテキスト"
+
+  - text: "テキストが画面に累積表示される"
+
+  - nvl_clear: true             # NVLバッファをクリア（新しいページ）
+    text: "新しいページのテキスト"
+
+  - nvl: false                  # ADVモードに戻る
+    text: "通常のテキストボックス表示"
+
   # 動画再生（--features video が必要）
   - video:
       path: "assets/videos/opening.webm"
@@ -203,6 +215,7 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 - [x] ルビ（振り仮名） `{ruby:漢字:かんじ}`
 - [x] 変数展開 `{var:name}`
 - [x] プレイヤー名入力
+- [x] NVLモード（全画面テキスト表示）
 
 ### ゲームシステム
 - [x] タイトル画面
@@ -233,7 +246,6 @@ cd tests/e2e && npm run test:update  # スナップショット更新
 ### 今後の予定
 
 #### 高優先度（コア機能拡張）
-- [ ] NVLモード（全画面テキスト表示）
 - [ ] モジュラーキャラクター（パーツ組み合わせ）
 
 #### 中優先度（開発体験・演出強化）
