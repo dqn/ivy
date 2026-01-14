@@ -1,0 +1,42 @@
+title: Chapter Test
+
+chapters:
+  - id: prologue
+    title: "Prologue"
+    start_label: prologue_start
+    description: "Where it all begins"
+  - id: chapter1
+    title: "Chapter 1: The Journey"
+    start_label: ch1_start
+  - id: chapter2
+    title: "Chapter 2: The Challenge"
+    start_label: ch2_start
+
+script:
+  - label: prologue_start
+    background: "assets/intro.png"
+    text: "The story begins on a quiet morning..."
+
+  - text: "You wake up in your room."
+    choices:
+      - label: "Get up"
+        jump: ch1_start
+      - label: "Sleep more"
+        jump: sleep
+
+  - label: sleep
+    text: "You fall back asleep..."
+    jump: ch1_start
+
+  - label: ch1_start
+    background: "assets/town.png"
+    text: "Chapter 1 begins. The town is bustling."
+
+  - text: "You see a mysterious figure."
+    jump: ch2_start
+
+  - label: ch2_start
+    background: "assets/forest.png"
+    text: "Chapter 2 begins. The forest awaits."
+
+  - text: "To be continued..."

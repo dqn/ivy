@@ -1,0 +1,18 @@
+title: Achievement Test
+
+script:
+  - text: "Starting your adventure..."
+
+  - achievement:
+      id: first_steps
+      name: "First Steps"
+      description: "Begin your journey"
+    text: "You took your first steps!"
+
+  - text: "Continue exploring..."
+
+  - achievement:
+      id: explorer
+      name: "Explorer"
+      description: "Discover a new area"
+    text: "You found a hidden path!"

@@ -1,0 +1,30 @@
+title: Timed Choice Test
+
+script:
+  - text: "A dangerous situation!"
+
+  - text: "Quick! What do you do?"
+    timeout: 5.0
+    choices:
+      - label: "Fight"
+        jump: fight
+      - label: "Run"
+        jump: run
+        default: true
+      - label: "Hide"
+        jump: hide
+
+  - label: fight
+    text: "You bravely stand your ground!"
+    jump: end
+
+  - label: run
+    text: "You escaped safely."
+    jump: end
+
+  - label: hide
+    text: "You found a hiding spot."
+    jump: end
+
+  - label: end
+    text: "The encounter is over."

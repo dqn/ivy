@@ -1,0 +1,17 @@
+title: Multi Character Test
+
+script:
+  - background: "assets/bg.png"
+    characters:
+      - image: "assets/char_a.png"
+        pos: left
+      - image: "assets/char_b.png"
+        pos: center
+      - image: "assets/char_c.png"
+        pos: right
+    text: "Three characters appear."
+
+  - text: "They all persist."
+
+  - characters: []
+    text: "All characters cleared."

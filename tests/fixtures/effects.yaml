@@ -1,0 +1,41 @@
+title: Effects Test
+
+script:
+  - background: "assets/bg.png"
+    transition:
+      type: fade
+      duration: 1.0
+    text: "Fade in effect"
+
+  - shake:
+      type: both
+      intensity: 10.0
+      duration: 0.5
+    text: "Earthquake!"
+
+  - particles: snow
+    particle_intensity: 0.8
+    text: "It's snowing..."
+
+  - particles: rain
+    particle_intensity: 1.0
+    text: "Now it's raining."
+
+  - cinematic: true
+    cinematic_duration: 0.5
+    text: "A dramatic moment."
+
+  - cinematic: false
+    text: "Back to normal."
+
+  - character: "assets/char.png"
+    char_enter:
+      animation: fade_in
+      duration: 0.5
+    text: "A character appears."
+
+  - character: ""
+    char_exit:
+      animation: slide_out
+      duration: 0.3
+    text: "The character leaves."

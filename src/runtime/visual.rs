@@ -14,6 +14,7 @@ pub struct CharacterState {
 pub struct VisualState {
     pub background: Option<String>,
     pub character: Option<String>,
+    #[serde(default)]
     pub char_pos: CharPosition,
     /// Multiple characters (used when `characters` field is set in command).
     #[serde(default)]
