@@ -1,0 +1,193 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Ivy Scenario",
+  "scopeName": "source.ivy",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#booleans" },
+    { "include": "#keys" },
+    { "include": "#special-values" },
+    { "include": "#inline-tags" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.ivy",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.ivy",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            { "include": "#inline-tags" },
+            { "include": "#escape-sequences" }
+          ]
+        },
+        {
+          "name": "string.quoted.single.ivy",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            { "include": "#escape-sequences" }
+          ]
+        }
+      ]
+    },
+    "escape-sequences": {
+      "patterns": [
+        {
+          "name": "constant.character.escape.ivy",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.ivy",
+          "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+        }
+      ]
+    },
+    "booleans": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.ivy",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
+    },
+    "keys": {
+      "patterns": [
+        {
+          "name": "keyword.control.flow.ivy",
+          "match": "^\\s*(label|jump|if|choices):"
+        },
+        {
+          "name": "keyword.other.scenario.ivy",
+          "match": "^\\s*(title|script|chapters):"
+        },
+        {
+          "name": "entity.name.tag.display.ivy",
+          "match": "^\\s*(text|speaker):"
+        },
+        {
+          "name": "entity.name.tag.media.ivy",
+          "match": "^\\s*(background|character|characters|bgm|se|voice|video|video_bg|ambient|ambient_stop|particles):"
+        },
+        {
+          "name": "entity.name.tag.animation.ivy",
+          "match": "^\\s*(transition|shake|camera|char_enter|char_exit|char_idle|char_pos|modular_char):"
+        },
+        {
+          "name": "entity.name.tag.system.ivy",
+          "match": "^\\s*(set|input|wait|timeout|achievement|cinematic|nvl|nvl_clear):"
+        },
+        {
+          "name": "entity.name.tag.choice.ivy",
+          "match": "^\\s+- (label|default):"
+        },
+        {
+          "name": "entity.name.tag.transition.ivy",
+          "match": "^\\s+(type|duration|easing|direction|blinds_count|max_pixel_size):"
+        },
+        {
+          "name": "entity.name.tag.condition.ivy",
+          "match": "^\\s+(var|is):"
+        },
+        {
+          "name": "entity.name.tag.camera.ivy",
+          "match": "^\\s+(pan|zoom|tilt|focus|x|y):"
+        },
+        {
+          "name": "entity.name.tag.video.ivy",
+          "match": "^\\s+(path|skippable|loop_video|looped|bgm_fade_out|bgm_fade_in|on_end):"
+        },
+        {
+          "name": "entity.name.tag.ambient.ivy",
+          "match": "^\\s+(id|volume|fade_in|fade_out):"
+        },
+        {
+          "name": "entity.name.tag.char.ivy",
+          "match": "^\\s+(image|pos|enter|exit|idle|intensity):"
+        },
+        {
+          "name": "entity.name.tag.achievement.ivy",
+          "match": "^\\s+(name|description|icon|points):"
+        },
+        {
+          "name": "entity.name.tag.chapter.ivy",
+          "match": "^\\s+(start_label):"
+        },
+        {
+          "name": "entity.name.tag.modular.ivy",
+          "match": "^\\s+(ref|base|layers|layer):"
+        }
+      ]
+    },
+    "special-values": {
+      "patterns": [
+        {
+          "name": "support.constant.position.ivy",
+          "match": "\\b(left|center|right)\\b"
+        },
+        {
+          "name": "support.constant.transition.ivy",
+          "match": "\\b(none|fade|fade_white|dissolve|wipe|slide|pixelate|iris|blinds)\\b"
+        },
+        {
+          "name": "support.constant.direction.ivy",
+          "match": "\\b(left_to_right|right_to_left|top_to_bottom|bottom_to_top|up|down|open|close|horizontal|vertical)\\b"
+        },
+        {
+          "name": "support.constant.easing.ivy",
+          "match": "\\b(linear|ease_in|ease_out|ease_in_out|ease_in_quad|ease_out_quad|ease_in_out_quad|ease_in_cubic|ease_out_cubic|ease_in_out_cubic|ease_in_back|ease_out_back|ease_in_out_back|ease_out_bounce)\\b"
+        },
+        {
+          "name": "support.constant.shake.ivy",
+          "match": "\\b(horizontal|vertical|both)\\b"
+        },
+        {
+          "name": "support.constant.anim.ivy",
+          "match": "\\b(slide_left|slide_right|breath|bob|sway|pulse)\\b"
+        },
+        {
+          "name": "support.constant.particles.ivy",
+          "match": "\\b(snow|rain|sakura|sparkle|leaves)\\b"
+        },
+        {
+          "name": "support.constant.focus.ivy",
+          "match": "\\b(top_left|top_center|top_right|bottom_left|bottom_center|bottom_right)\\b"
+        }
+      ]
+    },
+    "inline-tags": {
+      "patterns": [
+        {
+          "name": "entity.other.attribute-name.color.ivy",
+          "match": "\\{color:(\\w+)\\}"
+        },
+        {
+          "name": "entity.other.attribute-name.color-end.ivy",
+          "match": "\\{/color\\}"
+        },
+        {
+          "name": "entity.other.attribute-name.ruby.ivy",
+          "match": "\\{ruby:([^:]+):([^}]+)\\}"
+        },
+        {
+          "name": "variable.other.ivy",
+          "match": "\\{var:(\\w+)\\}"
+        }
+      ]
+    }
+  }
+}

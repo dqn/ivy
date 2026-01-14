@@ -1,0 +1,344 @@
+{
+  "Ivy Scenario Template": {
+    "prefix": "ivy-scenario",
+    "body": [
+      "title: ${1:My Scenario}",
+      "",
+      "script:",
+      "  - label: start",
+      "    text: \"${2:Hello, world!}\"",
+      ""
+    ],
+    "description": "Create a new ivy scenario file"
+  },
+  "Text Command": {
+    "prefix": "ivy-text",
+    "body": [
+      "- text: \"${1:dialogue text}\""
+    ],
+    "description": "Add a text dialogue command"
+  },
+  "Text with Speaker": {
+    "prefix": "ivy-speaker",
+    "body": [
+      "- speaker: ${1:Character}",
+      "  text: \"${2:dialogue text}\""
+    ],
+    "description": "Add dialogue with a speaker name"
+  },
+  "Label Definition": {
+    "prefix": "ivy-label",
+    "body": [
+      "- label: ${1:label_name}",
+      "  text: \"${2:text}\""
+    ],
+    "description": "Define a label for jumping"
+  },
+  "Jump Command": {
+    "prefix": "ivy-jump",
+    "body": [
+      "- jump: ${1:label_name}"
+    ],
+    "description": "Jump to a label"
+  },
+  "Choices": {
+    "prefix": "ivy-choices",
+    "body": [
+      "- text: \"${1:What will you do?}\"",
+      "  choices:",
+      "    - label: \"${2:Option A}\"",
+      "      jump: ${3:label_a}",
+      "    - label: \"${4:Option B}\"",
+      "      jump: ${5:label_b}"
+    ],
+    "description": "Add choice options"
+  },
+  "Choices with Timeout": {
+    "prefix": "ivy-choices-timeout",
+    "body": [
+      "- text: \"${1:Choose quickly!}\"",
+      "  timeout: ${2:10}",
+      "  choices:",
+      "    - label: \"${3:Option A}\"",
+      "      jump: ${4:label_a}",
+      "    - label: \"${5:Option B}\"",
+      "      jump: ${6:label_b}",
+      "      default: true"
+    ],
+    "description": "Add timed choice options"
+  },
+  "Background Change": {
+    "prefix": "ivy-bg",
+    "body": [
+      "- background: \"${1:assets/backgrounds/scene.png}\"",
+      "  text: \"${2:text}\""
+    ],
+    "description": "Change background image"
+  },
+  "Character Display": {
+    "prefix": "ivy-char",
+    "body": [
+      "- character: \"${1:assets/characters/char.png}\"",
+      "  char_pos: ${2|center,left,right|}",
+      "  text: \"${3:text}\""
+    ],
+    "description": "Display a character sprite"
+  },
+  "Character with Animation": {
+    "prefix": "ivy-char-anim",
+    "body": [
+      "- character: \"${1:assets/characters/char.png}\"",
+      "  char_pos: ${2|center,left,right|}",
+      "  char_enter:",
+      "    type: ${3|fade,slide_left,slide_right|}",
+      "    duration: ${4:0.3}",
+      "  text: \"${5:text}\""
+    ],
+    "description": "Display character with entrance animation"
+  },
+  "Multiple Characters": {
+    "prefix": "ivy-chars",
+    "body": [
+      "- characters:",
+      "    - image: \"${1:assets/characters/char1.png}\"",
+      "      pos: left",
+      "    - image: \"${2:assets/characters/char2.png}\"",
+      "      pos: right",
+      "  text: \"${3:text}\""
+    ],
+    "description": "Display multiple characters"
+  },
+  "BGM": {
+    "prefix": "ivy-bgm",
+    "body": [
+      "- bgm: \"${1:assets/bgm/music.ogg}\"",
+      "  text: \"${2:text}\""
+    ],
+    "description": "Play background music"
+  },
+  "Sound Effect": {
+    "prefix": "ivy-se",
+    "body": [
+      "- se: \"${1:assets/se/sound.ogg}\"",
+      "  text: \"${2:text}\""
+    ],
+    "description": "Play a sound effect"
+  },
+  "Voice": {
+    "prefix": "ivy-voice",
+    "body": [
+      "- voice: \"${1:assets/voice/line.ogg}\"",
+      "  speaker: ${2:Character}",
+      "  text: \"${3:text}\""
+    ],
+    "description": "Play voice with dialogue"
+  },
+  "Transition": {
+    "prefix": "ivy-transition",
+    "body": [
+      "- transition:",
+      "    type: ${1|fade,fade_white,dissolve,wipe,slide,pixelate,iris,blinds|}",
+      "    duration: ${2:0.5}",
+      "  text: \"${3:text}\""
+    ],
+    "description": "Add a transition effect"
+  },
+  "Shake Effect": {
+    "prefix": "ivy-shake",
+    "body": [
+      "- shake:",
+      "    type: ${1|horizontal,vertical,both|}",
+      "    intensity: ${2:10}",
+      "    duration: ${3:0.5}",
+      "  text: \"${4:text}\""
+    ],
+    "description": "Add a screen shake effect"
+  },
+  "Variable Set": {
+    "prefix": "ivy-set",
+    "body": [
+      "- set:",
+      "    name: ${1:variable_name}",
+      "    value: ${2:value}"
+    ],
+    "description": "Set a variable"
+  },
+  "Conditional Jump": {
+    "prefix": "ivy-if",
+    "body": [
+      "- if:",
+      "    var: ${1:variable_name}",
+      "    is: ${2:value}",
+      "    jump: ${3:label_name}"
+    ],
+    "description": "Conditional jump based on variable"
+  },
+  "Text Input": {
+    "prefix": "ivy-input",
+    "body": [
+      "- input:",
+      "    var: ${1:player_name}",
+      "    prompt: \"${2:Enter your name:}\"",
+      "    default: \"${3:Player}\""
+    ],
+    "description": "Get text input from player"
+  },
+  "Wait": {
+    "prefix": "ivy-wait",
+    "body": [
+      "- wait: ${1:1.0}"
+    ],
+    "description": "Wait for a duration"
+  },
+  "Particles": {
+    "prefix": "ivy-particles",
+    "body": [
+      "- particles: ${1|snow,rain,sakura,sparkle,leaves|}",
+      "  particle_intensity: ${2:0.5}",
+      "  text: \"${3:text}\""
+    ],
+    "description": "Enable particle effects"
+  },
+  "Cinematic Mode": {
+    "prefix": "ivy-cinematic",
+    "body": [
+      "- cinematic: true",
+      "  cinematic_duration: ${1:0.5}",
+      "  text: \"${2:text}\""
+    ],
+    "description": "Enable cinematic letterbox bars"
+  },
+  "Camera Pan": {
+    "prefix": "ivy-camera-pan",
+    "body": [
+      "- camera:",
+      "    pan:",
+      "      x: ${1:0}",
+      "      y: ${2:0}",
+      "    duration: ${3:0.5}",
+      "    easing: ${4:ease_out}",
+      "  text: \"${5:text}\""
+    ],
+    "description": "Pan the camera"
+  },
+  "Camera Zoom": {
+    "prefix": "ivy-camera-zoom",
+    "body": [
+      "- camera:",
+      "    zoom: ${1:1.5}",
+      "    focus: ${2|center,left,right,top_center,bottom_center|}",
+      "    duration: ${3:0.5}",
+      "    easing: ${4:ease_out}",
+      "  text: \"${5:text}\""
+    ],
+    "description": "Zoom the camera"
+  },
+  "NVL Mode": {
+    "prefix": "ivy-nvl",
+    "body": [
+      "- nvl: true",
+      "  text: \"${1:First line of NVL text.}\"",
+      "",
+      "- text: \"${2:Second line continues.}\"",
+      "",
+      "- nvl_clear: true",
+      "  text: \"${3:New page starts here.}\""
+    ],
+    "description": "Switch to NVL mode"
+  },
+  "Achievement": {
+    "prefix": "ivy-achievement",
+    "body": [
+      "- achievement:",
+      "    id: ${1:achievement_id}",
+      "    name: \"${2:Achievement Name}\"",
+      "    description: \"${3:Achievement description}\"",
+      "  text: \"${4:text}\""
+    ],
+    "description": "Unlock an achievement"
+  },
+  "Video Playback": {
+    "prefix": "ivy-video",
+    "body": [
+      "- video:",
+      "    path: \"${1:assets/videos/scene.webm}\"",
+      "    skippable: ${2:true}",
+      "    bgm_fade_out: ${3:0.5}"
+    ],
+    "description": "Play a video"
+  },
+  "Video Background": {
+    "prefix": "ivy-video-bg",
+    "body": [
+      "- video_bg:",
+      "    path: \"${1:assets/videos/bg.webm}\"",
+      "    looped: true",
+      "  text: \"${2:text}\""
+    ],
+    "description": "Set a video as background"
+  },
+  "Ambient Audio": {
+    "prefix": "ivy-ambient",
+    "body": [
+      "- ambient:",
+      "    - id: ${1:ambient_id}",
+      "      path: \"${2:assets/ambient/sound.ogg}\"",
+      "      volume: ${3:0.5}",
+      "      looped: true",
+      "      fade_in: ${4:1.0}",
+      "  text: \"${5:text}\""
+    ],
+    "description": "Start ambient audio"
+  },
+  "Stop Ambient": {
+    "prefix": "ivy-ambient-stop",
+    "body": [
+      "- ambient_stop:",
+      "    - id: ${1:ambient_id}",
+      "      fade_out: ${2:1.0}"
+    ],
+    "description": "Stop ambient audio"
+  },
+  "Chapter Definition": {
+    "prefix": "ivy-chapter",
+    "body": [
+      "chapters:",
+      "  - id: ${1:chapter1}",
+      "    title: \"${2:Chapter 1}\"",
+      "    start_label: ${3:chapter1_start}"
+    ],
+    "description": "Define a chapter"
+  },
+  "Modular Character": {
+    "prefix": "ivy-modular-char",
+    "body": [
+      "- modular_char:",
+      "    ref: ${1:character_name}",
+      "    layers:",
+      "      ${2:expression}: ${3:happy}",
+      "  text: \"${4:text}\""
+    ],
+    "description": "Display modular character with layers"
+  },
+  "Color Text": {
+    "prefix": "ivy-color",
+    "body": [
+      "{color:${1|red,blue,green,yellow,white,black|}}"
+    ],
+    "description": "Start colored text"
+  },
+  "Ruby Text": {
+    "prefix": "ivy-ruby",
+    "body": [
+      "{ruby:${1:text}:${2:reading}}"
+    ],
+    "description": "Add ruby (furigana) text"
+  },
+  "Variable Reference": {
+    "prefix": "ivy-var",
+    "body": [
+      "{var:${1:variable_name}}"
+    ],
+    "description": "Reference a variable in text"
+  }
+}

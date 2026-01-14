@@ -57,6 +57,12 @@ tests/                   # テスト
 ├── variables_test.rs    # 変数システムテスト
 ├── keybinds_test.rs     # キーバインドテスト
 └── integration_test.rs  # シナリオ実行テスト
+
+editors/                 # エディタ拡張
+└── vscode/              # VSCode拡張
+    ├── package.json     # 拡張メタデータ
+    ├── syntaxes/        # シンタックスハイライト
+    └── snippets/        # コードスニペット
 ```
 
 ## シナリオ形式（YAML）
@@ -352,12 +358,14 @@ cargo run --bin ivy-validate -- --cycles scenario.yaml  # 循環パス検出も�
   - 未使用ラベル警告
   - 自己参照ジャンプ検出
   - 循環パス検出
+- [x] VSCode拡張（`editors/vscode`）
+  - シンタックスハイライト（`.ivy.yaml`, `.ivy.yml`）
+  - コードスニペット（40+ パターン）
 
 ### 今後の予定
 
 #### 中優先度（開発体験・演出強化）
 - [ ] 開発ツール（追加）
-  - [ ] VSCode拡張（シンタックスハイライト、補完）
   - [ ] リアルタイムプレビュー
 - [ ] Live2D対応
 - [ ] リップシンク（音声連動）

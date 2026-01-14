@@ -1,0 +1,52 @@
+{
+  "name": "ivy-vn",
+  "displayName": "Ivy Visual Novel",
+  "description": "Language support for Ivy visual novel scenario files",
+  "version": "0.1.0",
+  "publisher": "dqn",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "ivy",
+        "aliases": [
+          "Ivy Scenario",
+          "ivy"
+        ],
+        "extensions": [
+          ".ivy.yaml",
+          ".ivy.yml"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ivy",
+        "scopeName": "source.ivy",
+        "path": "./syntaxes/ivy.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "ivy",
+        "path": "./snippets/ivy.json"
+      },
+      {
+        "language": "yaml",
+        "path": "./snippets/ivy.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dqn/ivy"
+  },
+  "license": "MIT"
+}
