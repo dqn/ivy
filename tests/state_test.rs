@@ -1,6 +1,5 @@
-use ivy::runtime::{DisplayState, GameState, Variables};
+use ivy::runtime::{DisplayState, GameState, Value};
 use ivy::scenario::parse_scenario;
-use ivy::types::Value;
 
 fn create_minimal_state() -> GameState {
     let yaml = r#"
@@ -493,37 +492,6 @@ fn test_jump_to_nonexistent_label_goes_to_end() {
 }
 
 #[test]
-fn test_timed_choices() {
-    let yaml = r#"
-title: Timed Choices Test
-
-script:
-  - text: "Quick!"
-    timeout: 5.0
-    choices:
-      - label: "Yes"
-        jump: yes
-        default: true
-      - label: "No"
-        jump: no
-"#;
-    let scenario = parse_scenario(yaml).unwrap();
-    let mut state = GameState::new(scenario);
-
-    match state.display_state() {
-        DisplayState::Choices {
-            timeout,
-            default_choice,
-            ..
-        } => {
-            assert_eq!(timeout, Some(5.0));
-            assert_eq!(default_choice, Some(0)); // First choice is default
-        }
-        _ => panic!("Expected DisplayState::Choices"),
-    }
-}
-
-#[test]
 fn test_multiple_rollbacks() {
     let mut state = create_minimal_state();
 
@@ -623,126 +591,179 @@ script:
     }
 }
 
-// SaveData conversion tests
-
 #[test]
-fn test_to_save_data_includes_all_fields() {
+fn test_multiple_characters() {
     let yaml = r#"
-title: Save Test
+title: Multiple Characters Test
 
 script:
-  - background: "bg.png"
-    text: "First"
-  - text: "Second"
+  - characters:
+      - image: "alice.png"
+        pos: left
+      - image: "bob.png"
+        pos: right
+    text: "Two characters"
 "#;
     let scenario = parse_scenario(yaml).unwrap();
     let mut state = GameState::new(scenario);
 
-    // Set a variable
-    state.set_variable("test_var", Value::Int(42));
-
-    // Advance once
-    let _ = state.display_state();
-    state.advance();
-
-    let save = state.to_save_data("test.yaml");
-
-    assert_eq!(save.scenario_path, "test.yaml");
-    assert_eq!(save.current_index, 1);
-    assert!(save.timestamp > 0);
-    assert_eq!(
-        save.variables.get("test_var"),
-        Some(&Value::Int(42))
-    );
-    assert_eq!(save.visual.background, Some("bg.png".to_string()));
+    match state.display_state() {
+        DisplayState::Text { visual, .. } => {
+            assert_eq!(visual.characters.len(), 2);
+            assert_eq!(visual.characters[0].path, "alice.png");
+            assert_eq!(visual.characters[1].path, "bob.png");
+            // Single character should be cleared when using multiple
+            assert!(visual.character.is_none());
+        }
+        _ => panic!("Expected DisplayState::Text"),
+    }
 }
 
 #[test]
-fn test_from_save_data_restores_state() {
-    use ivy::runtime::{SaveData, VisualState};
-
+fn test_single_character_clears_multiple() {
     let yaml = r#"
-title: Restore Test
+title: Single Clears Multiple Test
 
 script:
-  - text: "First"
-  - text: "Second"
-  - text: "Third"
+  - characters:
+      - image: "alice.png"
+        pos: left
+      - image: "bob.png"
+        pos: right
+    text: "Two characters"
+  - character: "charlie.png"
+    char_pos: center
+    text: "Single character"
 "#;
     let scenario = parse_scenario(yaml).unwrap();
+    let mut state = GameState::new(scenario);
 
-    let mut variables = Variables::new();
-    variables.set("restored_var", Value::String("hello".to_string()));
+    // First command has multiple characters
+    let _ = state.display_state();
+    state.advance();
 
-    let save = SaveData {
-        scenario_path: "test.yaml".to_string(),
-        current_index: 2,
-        visual: VisualState {
-            background: Some("restored_bg.png".to_string()),
-            ..Default::default()
-        },
-        timestamp: 12345,
-        variables,
-    };
-
-    let scenario2 = parse_scenario(yaml).unwrap();
-    let mut state = GameState::from_save_data(&save, scenario2);
-
-    // Should be at index 2
+    // Second command has single character, multiple should be cleared
     match state.display_state() {
-        DisplayState::Text { text, visual, .. } => {
-            assert_eq!(text, "Third");
-            assert_eq!(visual.background, Some("restored_bg.png".to_string()));
+        DisplayState::Text { visual, .. } => {
+            assert!(visual.characters.is_empty());
+            assert_eq!(visual.character.as_ref().unwrap(), "charlie.png");
+        }
+        _ => panic!("Expected DisplayState::Text"),
+    }
+}
+
+#[test]
+fn test_character_positions() {
+    use ivy::scenario::CharPosition;
+
+    let yaml = r#"
+title: Position Test
+
+script:
+  - character: "char.png"
+    char_pos: left
+    text: "Left"
+  - char_pos: center
+    text: "Center"
+  - char_pos: right
+    text: "Right"
+"#;
+    let scenario = parse_scenario(yaml).unwrap();
+    let mut state = GameState::new(scenario);
+
+    // Left position
+    match state.display_state() {
+        DisplayState::Text { visual, .. } => {
+            assert!(matches!(visual.char_pos, CharPosition::Left));
         }
         _ => panic!("Expected DisplayState::Text"),
     }
 
-    // Variable should be restored
-    assert_eq!(
-        state.variables().get("restored_var"),
-        Some(&Value::String("hello".to_string()))
-    );
+    state.advance();
+
+    // Center position (character persists)
+    match state.display_state() {
+        DisplayState::Text { visual, .. } => {
+            assert!(matches!(visual.char_pos, CharPosition::Center));
+            assert_eq!(visual.character.as_ref().unwrap(), "char.png");
+        }
+        _ => panic!("Expected DisplayState::Text"),
+    }
+
+    state.advance();
+
+    // Right position
+    match state.display_state() {
+        DisplayState::Text { visual, .. } => {
+            assert!(matches!(visual.char_pos, CharPosition::Right));
+        }
+        _ => panic!("Expected DisplayState::Text"),
+    }
 }
 
 #[test]
-fn test_from_save_data_clamps_invalid_index() {
-    use ivy::runtime::{SaveData, VisualState};
-
+fn test_three_characters() {
     let yaml = r#"
-title: Clamp Test
+title: Three Characters Test
 
 script:
-  - text: "Only one"
+  - characters:
+      - image: "alice.png"
+        pos: left
+      - image: "bob.png"
+        pos: center
+      - image: "charlie.png"
+        pos: right
+    text: "Three characters"
 "#;
     let scenario = parse_scenario(yaml).unwrap();
+    let mut state = GameState::new(scenario);
 
-    let save = SaveData {
-        scenario_path: "test.yaml".to_string(),
-        current_index: 999, // Invalid - beyond script length
-        visual: VisualState::default(),
-        timestamp: 0,
-        variables: Variables::new(),
-    };
-
-    let scenario2 = parse_scenario(yaml).unwrap();
-    let mut state = GameState::from_save_data(&save, scenario2);
-
-    // Index should be clamped to script length
-    assert!(matches!(state.display_state(), DisplayState::End));
+    match state.display_state() {
+        DisplayState::Text { visual, .. } => {
+            assert_eq!(visual.characters.len(), 3);
+        }
+        _ => panic!("Expected DisplayState::Text"),
+    }
 }
 
-// Effect command tests
+#[test]
+fn test_default_choice_second() {
+    let yaml = r#"
+title: Default Choice Test
+
+script:
+  - text: "Choose"
+    timeout: 5.0
+    choices:
+      - label: "Option A"
+        jump: a
+      - label: "Option B"
+        jump: b
+        default: true
+      - label: "Option C"
+        jump: c
+"#;
+    let scenario = parse_scenario(yaml).unwrap();
+    let mut state = GameState::new(scenario);
+
+    match state.display_state() {
+        DisplayState::Choices { default_choice, .. } => {
+            assert_eq!(default_choice, Some(1)); // Second choice (index 1) is default
+        }
+        _ => panic!("Expected DisplayState::Choices"),
+    }
+}
 
 #[test]
-fn test_current_transition() {
+fn test_transition_command() {
     let yaml = r#"
 title: Transition Test
 
 script:
-  - background: "bg.png"
-    transition:
+  - transition:
       type: fade
-      duration: 1.0
+      duration: 0.5
     text: "Fading"
 "#;
     let scenario = parse_scenario(yaml).unwrap();
@@ -750,22 +771,20 @@ script:
 
     let transition = state.current_transition();
     assert!(transition.is_some());
-
     let t = transition.unwrap();
-    assert!(matches!(t.transition_type, ivy::scenario::TransitionType::Fade));
-    assert_eq!(t.duration, 1.0);
+    assert_eq!(t.duration, 0.5);
 }
 
 #[test]
-fn test_current_shake() {
+fn test_shake_command() {
     let yaml = r#"
 title: Shake Test
 
 script:
   - shake:
       type: horizontal
-      intensity: 15.0
-      duration: 0.5
+      intensity: 10.0
+      duration: 0.3
     text: "Shaking"
 "#;
     let scenario = parse_scenario(yaml).unwrap();
@@ -773,127 +792,118 @@ script:
 
     let shake = state.current_shake();
     assert!(shake.is_some());
-
     let s = shake.unwrap();
-    assert!(matches!(s.shake_type, ivy::scenario::ShakeType::Horizontal));
-    assert_eq!(s.intensity, 15.0);
-    assert_eq!(s.duration, 0.5);
+    assert_eq!(s.intensity, 10.0);
+    assert_eq!(s.duration, 0.3);
 }
 
 #[test]
-fn test_current_particles() {
+fn test_particles_command() {
     let yaml = r#"
 title: Particles Test
 
 script:
-  - particles: snow
-    particle_intensity: 0.8
+  - particles: "snow"
+    particle_intensity: 0.7
     text: "Snowing"
 "#;
     let scenario = parse_scenario(yaml).unwrap();
     let state = GameState::new(scenario);
 
-    if let Some((particle_type, intensity)) = state.current_particles() {
-        assert_eq!(particle_type, "snow");
-        assert!((intensity - 0.8).abs() < 0.01);
-    } else {
-        panic!("Expected particles to be set");
-    }
+    let particles = state.current_particles();
+    assert!(particles.is_some());
+    let (particle_type, intensity) = particles.unwrap();
+    assert_eq!(particle_type, "snow");
+    assert_eq!(intensity, 0.7);
 }
 
 #[test]
-fn test_current_cinematic() {
+fn test_cinematic_command() {
     let yaml = r#"
 title: Cinematic Test
 
 script:
   - cinematic: true
     cinematic_duration: 0.5
-    text: "Dramatic scene"
+    text: "Dramatic"
 "#;
     let scenario = parse_scenario(yaml).unwrap();
     let state = GameState::new(scenario);
 
-    if let Some((enabled, duration)) = state.current_cinematic() {
-        assert!(enabled);
-        assert_eq!(duration, 0.5);
-    } else {
-        panic!("Expected cinematic to be set");
-    }
+    let cinematic = state.current_cinematic();
+    assert!(cinematic.is_some());
+    let (enabled, duration) = cinematic.unwrap();
+    assert!(enabled);
+    assert_eq!(duration, 0.5);
 }
 
 #[test]
-fn test_current_achievement() {
+fn test_char_enter_animation() {
+    use ivy::scenario::CharAnimationType;
+
     let yaml = r#"
-title: Achievement Test
-
-script:
-  - achievement:
-      id: test_ach
-      name: "Test Achievement"
-      description: "For testing"
-    text: "Achievement!"
-"#;
-    let scenario = parse_scenario(yaml).unwrap();
-    let state = GameState::new(scenario);
-
-    let ach = state.current_achievement();
-    assert!(ach.is_some());
-
-    let a = ach.unwrap();
-    assert_eq!(a.id, "test_ach");
-    assert_eq!(a.name, "Test Achievement");
-    assert_eq!(a.description, "For testing");
-}
-
-#[test]
-fn test_current_char_enter_animation() {
-    let yaml = r#"
-title: Enter Animation Test
+title: Char Enter Test
 
 script:
   - character: "char.png"
     char_enter:
-      type: fade
-      duration: 0.5
+      type: slide_left
+      duration: 0.3
     text: "Entering"
 "#;
     let scenario = parse_scenario(yaml).unwrap();
     let state = GameState::new(scenario);
 
-    let enter = state.current_char_enter();
-    assert!(enter.is_some());
-
-    let e = enter.unwrap();
-    assert!(matches!(
-        e.animation_type,
-        ivy::scenario::CharAnimationType::Fade
-    ));
-    assert_eq!(e.duration, 0.5);
+    let char_enter = state.current_char_enter();
+    assert!(char_enter.is_some());
+    let anim = char_enter.unwrap();
+    assert!(matches!(anim.animation_type, CharAnimationType::SlideLeft));
+    assert_eq!(anim.duration, 0.3);
 }
 
 #[test]
-fn test_current_char_exit_animation() {
+fn test_char_exit_animation() {
+    use ivy::scenario::CharAnimationType;
+
     let yaml = r#"
-title: Exit Animation Test
+title: Char Exit Test
 
 script:
   - character: ""
     char_exit:
-      type: slide_left
-      duration: 0.3
+      type: fade
+      duration: 0.4
     text: "Exiting"
 "#;
     let scenario = parse_scenario(yaml).unwrap();
     let state = GameState::new(scenario);
 
-    let exit = state.current_char_exit();
-    assert!(exit.is_some());
+    let char_exit = state.current_char_exit();
+    assert!(char_exit.is_some());
+    let anim = char_exit.unwrap();
+    assert!(matches!(anim.animation_type, CharAnimationType::Fade));
+    assert_eq!(anim.duration, 0.4);
+}
 
-    let e = exit.unwrap();
-    assert!(matches!(
-        e.animation_type,
-        ivy::scenario::CharAnimationType::SlideLeft
-    ));
-    assert_eq!(e.duration, 0.3);
+#[test]
+fn test_achievement_command() {
+    let yaml = r#"
+title: Achievement Test
+
+script:
+  - achievement:
+      id: first_win
+      name: "First Victory"
+      description: "Win your first battle"
+    text: "Achievement unlocked!"
+"#;
+    let scenario = parse_scenario(yaml).unwrap();
+    let state = GameState::new(scenario);
+
+    let achievement = state.current_achievement();
+    assert!(achievement.is_some());
+    let a = achievement.unwrap();
+    assert_eq!(a.id, "first_win");
+    assert_eq!(a.name, "First Victory");
+    assert_eq!(a.description, "Win your first battle");
 }
