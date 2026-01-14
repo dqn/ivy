@@ -1,0 +1,47 @@
+title: Text Formatting Test
+
+script:
+  # Basic colored text
+  - text: "{color:red}Red text{/color} and {color:blue}blue text{/color}"
+
+  # Nested colors
+  - text: "{color:red}Outer {color:yellow}inner{/color} outer{/color}"
+
+  # Ruby (furigana)
+  - text: "{ruby:漢字:かんじ} test"
+
+  # Multiple ruby
+  - text: "{ruby:日本語:にほんご}を{ruby:勉強:べんきょう}する"
+
+  # Variable expansion
+  - set:
+      name: player
+      value: "Taro"
+  - text: "Hello, {var:player}!"
+
+  # Int variable
+  - set:
+      name: score
+      value: 100
+  - text: "Score: {var:score}"
+
+  # Bool variable
+  - set:
+      name: debug
+      value: true
+  - text: "Debug: {var:debug}"
+
+  # Combined: color + ruby
+  - text: "{color:gold}{ruby:宝石:ほうせき}{/color} discovered!"
+
+  # Combined: color + variable
+  - text: "{color:green}{var:player}{/color} wins!"
+
+  # Hex color
+  - text: "{color:#ff00ff}Magenta{/color}"
+
+  # All named colors
+  - text: "{color:red}red{/color} {color:blue}blue{/color} {color:green}green{/color}"
+  - text: "{color:yellow}yellow{/color} {color:cyan}cyan{/color} {color:magenta}magenta{/color}"
+  - text: "{color:white}white{/color} {color:gray}gray{/color} {color:gold}gold{/color}"
+  - text: "{color:orange}orange{/color} {color:pink}pink{/color} {color:lime}lime{/color}"

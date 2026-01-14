@@ -1,0 +1,49 @@
+title: Audio Test
+
+script:
+  # Start BGM
+  - bgm: "assets/bgm_main.mp3"
+    text: "BGM started."
+
+  # BGM continues (no bgm field = keep playing)
+  - text: "BGM still playing..."
+
+  # Play SE
+  - se: "assets/se_click.wav"
+    text: "Click sound played."
+
+  # Play voice
+  - voice: "assets/voice_hello.wav"
+    text: "Voice line played."
+
+  # Multiple audio at once
+  - se: "assets/se_impact.wav"
+    voice: "assets/voice_attack.wav"
+    text: "SE and voice together."
+
+  # Change BGM
+  - bgm: "assets/bgm_battle.mp3"
+    text: "Battle music started."
+
+  # Stop BGM
+  - bgm: ""
+    text: "BGM stopped."
+
+  # Start new BGM
+  - bgm: "assets/bgm_peaceful.mp3"
+    text: "Peaceful music."
+
+  # Same BGM (should not restart)
+  - bgm: "assets/bgm_peaceful.mp3"
+    text: "Same BGM specified (no restart)."
+
+  # SE with background and character
+  - background: "assets/bg_forest.png"
+    character: "assets/char_alice.png"
+    char_pos: center
+    se: "assets/se_appear.wav"
+    text: "Alice appears with sound."
+
+  # Stop BGM at the end
+  - bgm: ""
+    text: "Scene ends."

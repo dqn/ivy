@@ -1,0 +1,88 @@
+title: Multiple Characters Test
+
+script:
+  # Single character - center
+  - character: "assets/char_alice.png"
+    char_pos: center
+    text: "Alice appears in the center."
+
+  # Change position - left
+  - char_pos: left
+    text: "Alice moves to the left."
+
+  # Change position - right
+  - char_pos: right
+    text: "Alice moves to the right."
+
+  # Different character
+  - character: "assets/char_bob.png"
+    char_pos: center
+    text: "Bob replaces Alice."
+
+  # Multiple characters
+  - characters:
+      - image: "assets/char_alice.png"
+        pos: left
+      - image: "assets/char_bob.png"
+        pos: right
+    text: "Both Alice and Bob appear."
+
+  # Three characters
+  - characters:
+      - image: "assets/char_alice.png"
+        pos: left
+      - image: "assets/char_charlie.png"
+        pos: center
+      - image: "assets/char_bob.png"
+        pos: right
+    text: "All three characters appear."
+
+  # Back to single character (clears multiple)
+  - character: "assets/char_alice.png"
+    char_pos: center
+    text: "Only Alice remains."
+
+  # Character with enter animation
+  - character: "assets/char_bob.png"
+    char_pos: right
+    char_enter:
+      type: slide_right
+      duration: 0.3
+    text: "Bob slides in from the right."
+
+  # Character with fade enter
+  - character: "assets/char_charlie.png"
+    char_pos: left
+    char_enter:
+      type: fade
+      duration: 0.5
+    text: "Charlie fades in."
+
+  # Character exit with animation
+  - character: ""
+    char_exit:
+      type: slide_left
+      duration: 0.3
+    text: "Character exits to the left."
+
+  # Character exit with fade
+  - character: "assets/char_alice.png"
+    char_pos: center
+    text: "Alice appears."
+  - character: ""
+    char_exit:
+      type: fade
+      duration: 0.4
+    text: "Alice fades out."
+
+  # Clear all (empty string)
+  - character: ""
+    text: "All characters cleared."
+
+  # Image state persistence (no character field = keep previous)
+  - character: "assets/char_alice.png"
+    char_pos: center
+    text: "Alice appears."
+  - text: "Alice is still visible (no character field)."
+  - background: "assets/bg_forest.png"
+    text: "Background changed, Alice still visible."

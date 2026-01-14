@@ -1,0 +1,181 @@
+title: Full Scenario Integration Test
+
+chapters:
+  - id: chapter1
+    title: "Chapter 1: The Beginning"
+    start_label: start
+    description: "The story begins..."
+  - id: chapter2
+    title: "Chapter 2: The Choice"
+    start_label: chapter2_start
+    description: "A crucial decision..."
+
+script:
+  # Chapter 1: Introduction
+  - label: start
+    background: "assets/bg_room.png"
+    bgm: "assets/bgm_intro.mp3"
+    transition:
+      type: fade
+      duration: 1.0
+    text: "The story begins..."
+
+  # Player name input
+  - input:
+      var: player_name
+      prompt: "Enter your name:"
+      default: "Hero"
+
+  # Use player name with color
+  - text: "Welcome, {color:gold}{var:player_name}{/color}!"
+
+  # Character introduction with animation
+  - character: "assets/char_guide.png"
+    char_pos: center
+    char_enter:
+      type: fade
+      duration: 0.5
+    speaker: "Guide"
+    text: "Hello, {var:player_name}. I've been expecting you."
+
+  # Set initial variables
+  - set:
+      name: courage
+      value: 0
+  - set:
+      name: wisdom
+      value: 0
+
+  # Ruby text demonstration
+  - speaker: "Guide"
+    text: "This is {ruby:日本:にほん} - the land of stories."
+
+  # Choice that affects variables
+  - text: "How will you approach this journey?"
+    choices:
+      - label: "With courage"
+        jump: courage_path
+      - label: "With wisdom"
+        jump: wisdom_path
+
+  - label: courage_path
+    set:
+      name: courage
+      value: 10
+    text: "You feel brave!"
+    jump: after_choice
+
+  - label: wisdom_path
+    set:
+      name: wisdom
+      value: 10
+    text: "You feel wise!"
+    jump: after_choice
+
+  - label: after_choice
+    character: ""
+    char_exit:
+      type: fade
+      duration: 0.3
+    text: "The guide disappears..."
+    jump: chapter2_start
+
+  # Chapter 2: Effects and Challenges
+  - label: chapter2_start
+    background: "assets/bg_forest.png"
+    bgm: "assets/bgm_adventure.mp3"
+    transition:
+      type: dissolve
+      duration: 0.8
+    particles: "leaves"
+    text: "You venture into the forest..."
+
+  # Dramatic moment with cinematic
+  - cinematic: true
+    shake:
+      type: both
+      intensity: 8.0
+      duration: 0.4
+    se: "assets/se_impact.wav"
+    text: "Suddenly, a monster appears!"
+
+  # Multiple characters
+  - characters:
+      - image: "assets/char_hero.png"
+        pos: left
+      - image: "assets/char_monster.png"
+        pos: right
+    particles: ""
+    text: "You face the enemy."
+
+  # Timed combat choice
+  - timeout: 5.0
+    text: "What will you do?"
+    choices:
+      - label: "Attack"
+        jump: attack
+      - label: "Defend"
+        jump: defend
+        default: true
+      - label: "Use magic"
+        jump: magic
+
+  - label: attack
+    if:
+      var: courage
+      is: 10
+      jump: attack_success
+    text: "Your attack was weak..."
+    jump: battle_end
+
+  - label: attack_success
+    se: "assets/se_hit.wav"
+    text: "Critical hit! Your courage paid off!"
+    jump: battle_end
+
+  - label: defend
+    text: "You defended successfully."
+    jump: battle_end
+
+  - label: magic
+    if:
+      var: wisdom
+      is: 10
+      jump: magic_success
+    text: "The spell fizzled..."
+    jump: battle_end
+
+  - label: magic_success
+    particles: "sparkle"
+    text: "Powerful magic! Your wisdom shows!"
+    jump: battle_end
+
+  - label: battle_end
+    cinematic: false
+    character: ""
+    particles: ""
+    transition:
+      type: fade_white
+      duration: 0.5
+    text: "The battle is over."
+
+  # Achievement unlock
+  - achievement:
+      id: first_battle
+      name: "First Battle"
+      description: "Complete your first battle."
+    text: "You gained experience!"
+
+  # Ending
+  - background: "assets/bg_sunset.png"
+    bgm: "assets/bgm_ending.mp3"
+    text: "Your adventure continues..."
+
+  - text: "{color:gold}~ THE END ~{/color}"
+
+  # Wait before end
+  - wait: 2.0
+
+  - bgm: ""
+    background: ""
+    text: "Thanks for playing!"

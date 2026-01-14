@@ -1,0 +1,84 @@
+title: Timed Choices Test
+
+script:
+  # Regular choices (no timeout)
+  - text: "Normal choice:"
+    choices:
+      - label: "Option A"
+        jump: path_a
+      - label: "Option B"
+        jump: path_b
+
+  - label: path_a
+    text: "You chose A."
+    jump: timed_section
+
+  - label: path_b
+    text: "You chose B."
+    jump: timed_section
+
+  # Timed choice with default
+  - label: timed_section
+    text: "Quick! Choose now!"
+    timeout: 5.0
+    choices:
+      - label: "Fight"
+        jump: fight
+      - label: "Run"
+        jump: run
+        default: true
+
+  - label: fight
+    text: "You chose to fight!"
+    jump: multi_choice
+
+  - label: run
+    text: "You ran away (default choice)."
+    jump: multi_choice
+
+  # Timed choice with first as default
+  - label: multi_choice
+    text: "Choose quickly!"
+    timeout: 3.0
+    choices:
+      - label: "Attack"
+        jump: attack
+        default: true
+      - label: "Defend"
+        jump: defend
+      - label: "Magic"
+        jump: magic
+
+  - label: attack
+    text: "Attack! (default)"
+    jump: end
+
+  - label: defend
+    text: "Defend!"
+    jump: end
+
+  - label: magic
+    text: "Magic!"
+    jump: end
+
+  # Short timeout
+  - label: short_timeout
+    text: "Very quick!"
+    timeout: 1.0
+    choices:
+      - label: "Yes"
+        jump: yes
+        default: true
+      - label: "No"
+        jump: no
+
+  - label: yes
+    text: "Yes!"
+    jump: end
+
+  - label: no
+    text: "No!"
+    jump: end
+
+  - label: end
+    text: "The end."
