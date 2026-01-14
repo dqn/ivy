@@ -286,7 +286,8 @@ impl ParticleState {
 
             while self.spawn_timer >= spawn_rate {
                 self.spawn_timer -= spawn_rate;
-                self.particles.push(Particle::new(self.particle_type, screen_w, screen_h));
+                self.particles
+                    .push(Particle::new(self.particle_type, screen_w, screen_h));
             }
         }
 

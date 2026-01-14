@@ -108,7 +108,12 @@ fn parse_color(name: &str) -> Option<Color> {
         let r = u8::from_str_radix(&name[1..3], 16).ok()?;
         let g = u8::from_str_radix(&name[3..5], 16).ok()?;
         let b = u8::from_str_radix(&name[5..7], 16).ok()?;
-        return Some(Color::new(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0, 1.0));
+        return Some(Color::new(
+            r as f32 / 255.0,
+            g as f32 / 255.0,
+            b as f32 / 255.0,
+            1.0,
+        ));
     }
 
     // Named colors
@@ -337,7 +342,13 @@ fn draw_text_box_internal(
     char_limit: Option<usize>,
 ) -> usize {
     // Draw background
-    draw_rectangle(config.x, config.y, config.width, config.height, config.bg_color);
+    draw_rectangle(
+        config.x,
+        config.y,
+        config.width,
+        config.height,
+        config.bg_color,
+    );
 
     // Draw border
     draw_rectangle_lines(config.x, config.y, config.width, config.height, 2.0, WHITE);
@@ -701,10 +712,7 @@ mod tests {
         // Color tags should not be counted
         assert_eq!(count_visible_chars("{color:red}hello{/color}"), 5);
         assert_eq!(count_visible_chars("{color:#ff0000}test{/color}"), 4);
-        assert_eq!(
-            count_visible_chars("{color:blue}hello{/color} world"),
-            11
-        );
+        assert_eq!(count_visible_chars("{color:blue}hello{/color} world"), 11);
     }
 
     #[test]
@@ -728,9 +736,18 @@ mod tests {
         vars.set("count", crate::types::Value::Int(42));
         vars.set("flag", crate::types::Value::Bool(true));
 
-        assert_eq!(interpolate_variables("Hello {var:name}!", &vars), "Hello Alice!");
-        assert_eq!(interpolate_variables("Count: {var:count}", &vars), "Count: 42");
-        assert_eq!(interpolate_variables("Flag: {var:flag}", &vars), "Flag: true");
+        assert_eq!(
+            interpolate_variables("Hello {var:name}!", &vars),
+            "Hello Alice!"
+        );
+        assert_eq!(
+            interpolate_variables("Count: {var:count}", &vars),
+            "Count: 42"
+        );
+        assert_eq!(
+            interpolate_variables("Flag: {var:flag}", &vars),
+            "Flag: true"
+        );
         assert_eq!(
             interpolate_variables("{var:unknown}", &vars),
             "{var:unknown}"

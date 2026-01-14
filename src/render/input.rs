@@ -106,7 +106,13 @@ pub fn draw_input(
     }
 
     // Draw dialog background
-    draw_rectangle(config.x, config.y, config.width, config.height, config.bg_color);
+    draw_rectangle(
+        config.x,
+        config.y,
+        config.width,
+        config.height,
+        config.bg_color,
+    );
     draw_rectangle_lines(config.x, config.y, config.width, config.height, 2.0, WHITE);
 
     // Draw prompt text
@@ -173,7 +179,13 @@ pub fn draw_input(
             },
         );
     } else {
-        draw_text(&state.text, text_x, text_y, config.font_size, config.text_color);
+        draw_text(
+            &state.text,
+            text_x,
+            text_y,
+            config.font_size,
+            config.text_color,
+        );
     }
 
     // Draw cursor
@@ -213,7 +225,13 @@ pub fn draw_input(
             },
         );
     } else {
-        draw_text(hint_text, config.x + config.padding, hint_y, 16.0, hint_color);
+        draw_text(
+            hint_text,
+            config.x + config.padding,
+            hint_y,
+            16.0,
+            hint_color,
+        );
     }
 
     InputResult {

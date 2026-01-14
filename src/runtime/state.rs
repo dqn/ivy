@@ -95,10 +95,7 @@ impl GameState {
         if let Some(choices) = &command.choices {
             let text = command.text.clone().unwrap_or_default();
             // Find default choice index
-            let default_choice = choices
-                .iter()
-                .position(|c| c.default)
-                .or(Some(0)); // Default to first choice if none marked
+            let default_choice = choices.iter().position(|c| c.default).or(Some(0)); // Default to first choice if none marked
             return DisplayState::Choices {
                 speaker,
                 text,
@@ -213,7 +210,10 @@ impl GameState {
 
     /// Push current state to history for rollback.
     fn push_history(&mut self) {
-        let text = self.scenario.script.get(self.current_index)
+        let text = self
+            .scenario
+            .script
+            .get(self.current_index)
             .and_then(|cmd| cmd.text.clone())
             .unwrap_or_default();
 

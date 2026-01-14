@@ -32,15 +32,9 @@ pub enum DisplayState {
         default_choice: Option<usize>,
     },
     /// Waiting for a specified duration.
-    Wait {
-        duration: f32,
-        visual: VisualState,
-    },
+    Wait { duration: f32, visual: VisualState },
     /// Waiting for player text input.
-    Input {
-        input: Input,
-        visual: VisualState,
-    },
+    Input { input: Input, visual: VisualState },
     /// Scenario has ended.
     End,
 }

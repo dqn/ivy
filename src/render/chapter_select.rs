@@ -120,11 +120,7 @@ pub fn draw_chapter_select(
                 Color::new(0.3, 0.6, 0.3, 1.0),
             )
         } else {
-            (
-                Color::new(0.2, 0.2, 0.25, 0.8),
-                config.unlocked_color,
-                GRAY,
-            )
+            (Color::new(0.2, 0.2, 0.25, 0.8), config.unlocked_color, GRAY)
         };
 
         // Draw item background

@@ -164,7 +164,12 @@ pub fn draw_gallery(
     let start_idx = state.scroll_offset * config.columns;
     let end_idx = ((state.scroll_offset + visible_rows + 1) * config.columns).min(images.len());
 
-    for (i, path) in images.iter().enumerate().skip(start_idx).take(end_idx - start_idx) {
+    for (i, path) in images
+        .iter()
+        .enumerate()
+        .skip(start_idx)
+        .take(end_idx - start_idx)
+    {
         let row = i / config.columns - state.scroll_offset;
         let col = i % config.columns;
 
@@ -185,7 +190,13 @@ pub fn draw_gallery(
         } else {
             Color::new(0.15, 0.15, 0.2, 1.0)
         };
-        draw_rectangle(x, y, config.thumbnail_width, config.thumbnail_height, bg_color);
+        draw_rectangle(
+            x,
+            y,
+            config.thumbnail_width,
+            config.thumbnail_height,
+            bg_color,
+        );
 
         // Draw thumbnail image if loaded
         if let Some(texture) = textures.get(path) {
@@ -259,8 +270,7 @@ pub fn draw_gallery(
         let scrollbar_x = screen_w - config.padding;
         let scrollbar_height = screen_h - grid_y - config.padding;
         let thumb_height = scrollbar_height * (visible_rows as f32 / total_rows as f32);
-        let thumb_y =
-            grid_y + scrollbar_height * (state.scroll_offset as f32 / total_rows as f32);
+        let thumb_y = grid_y + scrollbar_height * (state.scroll_offset as f32 / total_rows as f32);
 
         // Draw scrollbar track
         draw_rectangle(scrollbar_x - 5.0, grid_y, 10.0, scrollbar_height, DARKGRAY);

@@ -56,11 +56,7 @@ impl BacklogState {
 }
 
 /// Draw the backlog overlay.
-pub fn draw_backlog(
-    config: &BacklogConfig,
-    state: &mut BacklogState,
-    history: &[HistoryEntry],
-) {
+pub fn draw_backlog(config: &BacklogConfig, state: &mut BacklogState, history: &[HistoryEntry]) {
     // Handle scroll
     state.handle_scroll(history.len(), config);
 
@@ -101,7 +97,9 @@ pub fn draw_backlog(
         let y_pos = content_y + (i as f32 * config.line_height) - state.scroll_offset;
 
         // Only draw visible entries
-        if y_pos < content_y - config.line_height || y_pos > config.y + config.height - config.padding {
+        if y_pos < content_y - config.line_height
+            || y_pos > config.y + config.height - config.padding
+        {
             continue;
         }
 
@@ -125,7 +123,9 @@ pub fn draw_backlog(
     if total_height > content_height {
         let scroll_ratio = state.scroll_offset / (total_height - content_height);
         let indicator_height = 50.0;
-        let indicator_y = config.y + config.padding + scroll_ratio * (config.height - config.padding * 2.0 - indicator_height);
+        let indicator_y = config.y
+            + config.padding
+            + scroll_ratio * (config.height - config.padding * 2.0 - indicator_height);
 
         draw_rectangle(
             config.x + config.width - 10.0,

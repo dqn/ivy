@@ -142,7 +142,10 @@ script:
     let mut state = GameState::new(scenario);
 
     // Verify we start at choices
-    assert!(matches!(state.display_state(), DisplayState::Choices { .. }));
+    assert!(matches!(
+        state.display_state(),
+        DisplayState::Choices { .. }
+    ));
 
     // Select second choice (B)
     state.select_choice(1);

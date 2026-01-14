@@ -147,7 +147,11 @@ pub fn draw_debug(
     draw_text_row("Ended: ", &game_state.is_ended().to_string(), draw_y);
     draw_y += config.line_height;
 
-    draw_text_row("Can Rollback: ", &game_state.can_rollback().to_string(), draw_y);
+    draw_text_row(
+        "Can Rollback: ",
+        &game_state.can_rollback().to_string(),
+        draw_y,
+    );
     draw_y += config.line_height;
 
     draw_text_row(
@@ -188,7 +192,14 @@ pub fn draw_debug(
 
     // Draw variables (with scroll)
     let variables = game_state.variables();
-    draw_variables(config, variables, text_x, draw_y, config.width - config.padding * 2.0, font);
+    draw_variables(
+        config,
+        variables,
+        text_x,
+        draw_y,
+        config.width - config.padding * 2.0,
+        font,
+    );
 }
 
 /// Draw variables list.
@@ -271,7 +282,16 @@ fn draw_variables(
         let value_width = measure_text(&display_value, font, config.font_size as u16, 1.0).width;
         if value_width > available_width {
             // Truncate with ellipsis
-            while measure_text(&format!("{}...", display_value), font, config.font_size as u16, 1.0).width > available_width && !display_value.is_empty() {
+            while measure_text(
+                &format!("{}...", display_value),
+                font,
+                config.font_size as u16,
+                1.0,
+            )
+            .width
+                > available_width
+                && !display_value.is_empty()
+            {
                 display_value.pop();
             }
             display_value.push_str("...");

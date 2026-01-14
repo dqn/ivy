@@ -81,7 +81,12 @@ pub fn draw_achievement(
             ..Default::default()
         }
     };
-    draw_text_ex(title, text_x, y + config.padding + config.title_size, title_params);
+    draw_text_ex(
+        title,
+        text_x,
+        y + config.padding + config.title_size,
+        title_params,
+    );
 
     // Draw achievement name
     let name_params = if let Some(f) = font {
@@ -113,9 +118,12 @@ fn draw_star(cx: f32, cy: f32, size: f32, color: Color) {
     let outer_radius = size;
 
     for i in 0..points {
-        let angle1 = (i as f32 * 2.0 * std::f32::consts::PI / points as f32) - std::f32::consts::PI / 2.0;
-        let angle2 = ((i as f32 + 0.5) * 2.0 * std::f32::consts::PI / points as f32) - std::f32::consts::PI / 2.0;
-        let angle3 = ((i as f32 + 1.0) * 2.0 * std::f32::consts::PI / points as f32) - std::f32::consts::PI / 2.0;
+        let angle1 =
+            (i as f32 * 2.0 * std::f32::consts::PI / points as f32) - std::f32::consts::PI / 2.0;
+        let angle2 = ((i as f32 + 0.5) * 2.0 * std::f32::consts::PI / points as f32)
+            - std::f32::consts::PI / 2.0;
+        let angle3 = ((i as f32 + 1.0) * 2.0 * std::f32::consts::PI / points as f32)
+            - std::f32::consts::PI / 2.0;
 
         let x1 = cx + outer_radius * angle1.cos();
         let y1 = cy + outer_radius * angle1.sin();

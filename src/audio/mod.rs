@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use macroquad::audio::{load_sound, play_sound, play_sound_once, stop_sound, Sound};
+use macroquad::audio::{Sound, load_sound, play_sound, play_sound_once, stop_sound};
 
 /// Audio manager for BGM, SE, and voice playback.
 pub struct AudioManager {

@@ -35,7 +35,8 @@ impl Variables {
     /// Increment an integer variable.
     pub fn increment(&mut self, name: &str, amount: i64) {
         if let Some(Value::Int(current)) = self.data.get(name) {
-            self.data.insert(name.to_string(), Value::Int(current + amount));
+            self.data
+                .insert(name.to_string(), Value::Int(current + amount));
         }
     }
 

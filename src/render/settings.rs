@@ -2,7 +2,9 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::platform;
-use crate::render::widgets::{draw_button, draw_checkbox, draw_slider, draw_slider_ex, SliderFormat};
+use crate::render::widgets::{
+    SliderFormat, draw_button, draw_checkbox, draw_slider, draw_slider_ex,
+};
 use crate::runtime::KeyBindings;
 
 const CONFIG_PATH: &str = "config.json";
@@ -252,9 +254,15 @@ pub fn draw_settings_screen(
     let button_x = (screen_width - button_width) / 2.0;
     let button_y = config.back_button_y;
 
-    let back_pressed =
-        draw_button(button_x, button_y, button_width, button_height, "Back", font, config.label_font_size)
-            || is_key_pressed(KeyCode::Escape);
+    let back_pressed = draw_button(
+        button_x,
+        button_y,
+        button_width,
+        button_height,
+        "Back",
+        font,
+        config.label_font_size,
+    ) || is_key_pressed(KeyCode::Escape);
 
     SettingsResult { back_pressed }
 }

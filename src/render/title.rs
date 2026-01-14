@@ -68,12 +68,7 @@ pub fn draw_title_screen(
         }
     };
 
-    let title_dim = measure_text(
-        title,
-        font,
-        config.title_font_size as u16,
-        1.0,
-    );
+    let title_dim = measure_text(title, font, config.title_font_size as u16, 1.0);
     let title_x = (screen_width - title_dim.width) / 2.0;
     draw_text_ex(title, title_x, config.title_y, title_params);
 
@@ -107,11 +102,24 @@ pub fn draw_title_screen(
         } else {
             Color::new(0.2, 0.2, 0.25, 0.8)
         };
-        draw_rectangle(x, y, config.menu_item_width, config.menu_item_height, bg_color);
+        draw_rectangle(
+            x,
+            y,
+            config.menu_item_width,
+            config.menu_item_height,
+            bg_color,
+        );
 
         // Draw button border
         let border_color = if is_hovered { YELLOW } else { GRAY };
-        draw_rectangle_lines(x, y, config.menu_item_width, config.menu_item_height, 2.0, border_color);
+        draw_rectangle_lines(
+            x,
+            y,
+            config.menu_item_width,
+            config.menu_item_height,
+            2.0,
+            border_color,
+        );
 
         // Draw button text
         let text_params = if let Some(f) = font {
@@ -131,7 +139,8 @@ pub fn draw_title_screen(
 
         let text_dim = measure_text(label, font, config.menu_font_size as u16, 1.0);
         let text_x = x + (config.menu_item_width - text_dim.width) / 2.0;
-        let text_y = y + (config.menu_item_height + text_dim.height) / 2.0 - text_dim.offset_y / 2.0;
+        let text_y =
+            y + (config.menu_item_height + text_dim.height) / 2.0 - text_dim.offset_y / 2.0;
         draw_text_ex(label, text_x, text_y, text_params);
 
         // Check for click

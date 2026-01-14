@@ -33,7 +33,8 @@ fn get_local_storage() -> Option<web_sys::Storage> {
 /// Read from localStorage (WASM).
 #[cfg(target_arch = "wasm32")]
 pub fn read_file(path: &str) -> Result<String> {
-    let storage = get_local_storage().ok_or_else(|| anyhow::anyhow!("localStorage not available"))?;
+    let storage =
+        get_local_storage().ok_or_else(|| anyhow::anyhow!("localStorage not available"))?;
     storage
         .get_item(path)
         .map_err(|_| anyhow::anyhow!("Failed to read from localStorage"))?
@@ -43,7 +44,8 @@ pub fn read_file(path: &str) -> Result<String> {
 /// Write to localStorage (WASM).
 #[cfg(target_arch = "wasm32")]
 pub fn write_file(path: &str, content: &str) -> Result<()> {
-    let storage = get_local_storage().ok_or_else(|| anyhow::anyhow!("localStorage not available"))?;
+    let storage =
+        get_local_storage().ok_or_else(|| anyhow::anyhow!("localStorage not available"))?;
     storage
         .set_item(path, content)
         .map_err(|_| anyhow::anyhow!("Failed to write to localStorage"))

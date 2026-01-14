@@ -33,11 +33,16 @@ script:
     let mut state = GameState::new(scenario);
 
     // First text
-    assert!(matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Welcome to the adventure!"));
+    assert!(
+        matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Welcome to the adventure!")
+    );
     state.advance();
 
     // Second text with choices
-    assert!(matches!(state.display_state(), DisplayState::Choices { .. }));
+    assert!(matches!(
+        state.display_state(),
+        DisplayState::Choices { .. }
+    ));
 
     // Select left path (index 0)
     state.select_choice(0);
@@ -195,21 +200,31 @@ script:
     let mut state = GameState::new(scenario);
 
     // Advance through all messages
-    assert!(matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Message 1"));
+    assert!(
+        matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Message 1")
+    );
     state.advance();
 
-    assert!(matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Message 2"));
+    assert!(
+        matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Message 2")
+    );
     state.advance();
 
-    assert!(matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Message 3"));
+    assert!(
+        matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Message 3")
+    );
 
     // Rollback to message 2
     assert!(state.rollback());
-    assert!(matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Message 2"));
+    assert!(
+        matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Message 2")
+    );
 
     // Rollback to message 1
     assert!(state.rollback());
-    assert!(matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Message 1"));
+    assert!(
+        matches!(state.display_state(), DisplayState::Text { text, .. } if text == "Message 1")
+    );
 
     // Can't rollback further
     assert!(!state.rollback());
@@ -487,7 +502,10 @@ script:
     state.advance();
 
     // At choices
-    assert!(matches!(state.display_state(), DisplayState::Choices { .. }));
+    assert!(matches!(
+        state.display_state(),
+        DisplayState::Choices { .. }
+    ));
 
     // Choose "Look around"
     state.select_choice(0);
@@ -646,7 +664,7 @@ script:
 /// Test save/restore roundtrip with characters.
 #[test]
 fn test_save_restore_with_characters() {
-    use ivy::runtime::{SaveData, VisualState, CharacterState};
+    use ivy::runtime::{CharacterState, SaveData, VisualState};
     use ivy::scenario::CharPosition;
 
     let yaml = r#"
