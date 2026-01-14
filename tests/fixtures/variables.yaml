@@ -1,0 +1,32 @@
+title: Variables Test
+
+script:
+  - set:
+      name: player_name
+      value: "Alice"
+    text: "Your name is {var:player_name}."
+
+  - set:
+      name: score
+      value: 100
+    text: "Your score is {var:score}."
+
+  - set:
+      name: has_key
+      value: true
+    text: "You have a key."
+
+  - if:
+      var: has_key
+      is: true
+      jump: with_key
+    text: "Checking key..."
+
+  - text: "You don't have the key."
+    jump: ending
+
+  - label: with_key
+    text: "You used the key to open the door."
+
+  - label: ending
+    text: "The end."

@@ -1,4 +1,5 @@
 mod audio;
+mod input;
 mod platform;
 mod render;
 mod runtime;

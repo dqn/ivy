@@ -1,0 +1,20 @@
+title: Choices Test
+
+script:
+  - text: "What do you want to do?"
+    choices:
+      - label: "Go to the forest"
+        jump: forest
+      - label: "Go to the town"
+        jump: town
+
+  - label: forest
+    text: "You entered the forest."
+    jump: ending
+
+  - label: town
+    text: "You arrived at the town."
+    jump: ending
+
+  - label: ending
+    text: "The end."
