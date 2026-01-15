@@ -420,7 +420,7 @@ ivy を「非エンジニアでもVNゲームを作れる」エンジンにす�
 
 #### Phase 1: ドキュメント整備
 - [x] Getting Started ガイド（Rust インストール、ビルド、Hello World）
-- [ ] よくあるエラーの FAQ
+- [x] よくあるエラーの FAQ
 - [ ] YAML 構文ガイド（初心者向け）
 
 #### Phase 2: 配布の簡素化
