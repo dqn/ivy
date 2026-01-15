@@ -1451,3 +1451,174 @@ body {
   font-size: 11px;
   color: var(--text-primary);
 }
+
+/* Localized String Editor */
+.localized-string-editor {
+  margin-bottom: 12px;
+}
+
+.localized-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.localized-header > label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.localized-header .required {
+  color: var(--error-color);
+  margin-left: 2px;
+}
+
+.multilingual-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.multilingual-toggle:hover {
+  border-color: var(--accent-color);
+}
+
+.multilingual-toggle.active {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.simple-input input,
+.simple-input textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.simple-input input {
+  height: 36px;
+}
+
+.simple-input textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.simple-input input:focus,
+.simple-input textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.multilingual-input {
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.language-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.language-row:last-of-type {
+  margin-bottom: 0;
+}
+
+.language-label {
+  width: 70px;
+  flex-shrink: 0;
+  padding-top: 8px;
+}
+
+.lang-code {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.lang-name {
+  display: block;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.language-input {
+  flex: 1;
+}
+
+.language-input input,
+.language-input textarea {
+  width: 100%;
+  padding: 6px 10px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.language-input input {
+  height: 32px;
+}
+
+.language-input textarea {
+  resize: vertical;
+  min-height: 48px;
+}
+
+.language-input input:focus,
+.language-input textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.remove-lang-button {
+  width: 24px;
+  height: 24px;
+  margin-top: 4px;
+  border-radius: 4px;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.remove-lang-button:hover {
+  background-color: var(--error-color);
+  border-color: var(--error-color);
+  color: white;
+}
+
+.add-language {
+  margin-top: 8px;
+}
+
+.add-language select {
+  width: 100%;
+  padding: 6px 10px;
+  background-color: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}

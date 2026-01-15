@@ -495,7 +495,7 @@ ivy-editor を VN ゲーム開発の全工程をカバーするツールに拡�
   - [x] パーティクルエフェクトプレビュー
   - [x] 変数エディタ（set/if の視覚的編集）
 - [ ] Phase 9: 多言語サポート
-  - [ ] LocalizedString の GUI 編集
+  - [x] LocalizedString の GUI 編集
   - [ ] 翻訳テーブル管理画面
   - [ ] 言語切替プレビュー
 - [ ] Phase 10: テスト＆デバッグ

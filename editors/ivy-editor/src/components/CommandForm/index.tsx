@@ -17,6 +17,7 @@ import { TransitionPicker } from "./TransitionPicker";
 import { CameraPicker } from "./CameraPicker";
 import { ParticlePicker } from "./ParticlePicker";
 import { VariableEditor } from "./VariableEditor";
+import { LocalizedStringEditor } from "./LocalizedStringEditor";
 
 interface CommandFormProps {
   command: Command;
@@ -92,37 +93,25 @@ export const CommandForm: React.FC<CommandFormProps> = ({
           />
         </div>
 
-        <div className="form-field optional">
-          <label>Speaker</label>
-          <input
-            type="text"
-            value={getTextValue(command.speaker)}
-            onChange={(e) => {
-              updateField(
-                "speaker",
-                e.target.value ? setTextValue(e.target.value) : undefined
-              );
-            }}
-            placeholder="Character name"
-          />
-        </div>
+        <LocalizedStringEditor
+          label="Speaker"
+          value={command.speaker}
+          placeholder="Character name"
+          onChange={(value) => {
+            updateField("speaker", value);
+          }}
+        />
 
-        <div className="form-field">
-          <label>
-            Text<span className="required">*</span>
-          </label>
-          <textarea
-            value={getTextValue(command.text)}
-            onChange={(e) => {
-              updateField(
-                "text",
-                e.target.value ? setTextValue(e.target.value) : undefined
-              );
-            }}
-            placeholder="Dialogue or narration text"
-            rows={3}
-          />
-        </div>
+        <LocalizedStringEditor
+          label="Text"
+          value={command.text}
+          placeholder="Dialogue or narration text"
+          multiline
+          required
+          onChange={(value) => {
+            updateField("text", value);
+          }}
+        />
       </section>
 
       {/* Visual Section */}
