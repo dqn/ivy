@@ -1,5 +1,6 @@
 pub mod easing;
 pub mod parser;
+pub mod position;
 pub mod types;
 pub mod validator;
 

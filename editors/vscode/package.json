@@ -97,6 +97,16 @@
           "type": "string",
           "default": "",
           "description": "Path to ivy-validate binary (leave empty for auto-detection)"
+        },
+        "ivy.lspEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Language Server Protocol features"
+        },
+        "ivy.lspPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to ivy-lsp binary (leave empty for auto-detection)"
         }
       }
     }
@@ -105,6 +115,9 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "vscode:prepublish": "npm run compile"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

@@ -4,6 +4,7 @@
 /saves
 /dist
 node_modules
+editors/vscode/out
 tests/e2e/test-results
 tests/e2e/playwright-report
 config.json

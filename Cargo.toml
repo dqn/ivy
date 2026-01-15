@@ -22,6 +22,8 @@ gamepads = "0.1"
 video-rs = { version = "0.9", optional = true }
 tiny_http = "0.12"
 tungstenite = "0.24"
+tower-lsp = "0.20"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-std"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2"
@@ -51,6 +53,10 @@ path = "src/bin/validate.rs"
 [[bin]]
 name = "ivy-preview"
 path = "src/bin/preview.rs"
+
+[[bin]]
+name = "ivy-lsp"
+path = "src/bin/lsp.rs"
 
 [dev-dependencies]
 insta = { version = "1.34", features = ["yaml"] }

@@ -249,6 +249,10 @@ cargo run --bin ivy-validate -- --quiet scenario.yaml  # エラーのみ出力�
 # リアルタイムプレビュー
 cargo run --bin ivy-preview -- scenario.yaml           # プレビューサーバー起動（http://127.0.0.1:3000）
 cargo run --bin ivy-preview -- --port 8080 scenario.yaml # カスタムポート指定
+
+# Language Server (LSP)
+cargo build --bin ivy-lsp                              # LSPサーバーをビルド
+# VSCode拡張が自動検出、または ivy.lspPath で設定
 ```
 
 ## 操作
@@ -435,7 +439,12 @@ ivy を「非エンジニアでもVNゲームを作れる」エンジンにす�
 
 #### Phase 4: ツール統合の強化
 - [x] VSCode 拡張: CLI バイナリの自動検出・インストールガイド
-- [ ] Language Server Protocol (LSP) 対応
+- [x] Language Server Protocol (LSP) 対応
+  - Diagnostics（リアルタイムバリデーション）
+  - Go to Definition（ラベルジャンプ）
+  - Find References（参照検索）
+  - Completion（キーワード、ラベル、char_pos、easing）
+  - Hover（フィールドドキュメント）
 
 #### Phase 5: ビジュアルエディタ
 

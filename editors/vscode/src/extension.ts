@@ -2,12 +2,18 @@ import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
+import {
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+} from 'vscode-languageclient/node';
 
 type ChildProcess = cp.ChildProcess;
 
 let previewProcess: ChildProcess | undefined;
 let previewPanel: vscode.WebviewPanel | undefined;
 let outputChannel: vscode.OutputChannel;
+let languageClient: LanguageClient | undefined;
 
 // Common paths where ivy binaries might be installed
 const COMMON_PATHS = [
@@ -24,6 +30,7 @@ const COMMON_PATHS = [
 interface BinaryPaths {
     ivyPreview: string | null;
     ivyValidate: string | null;
+    ivyLsp: string | null;
 }
 
 function findBinary(name: string, configPath: string): string | null {
@@ -71,6 +78,7 @@ function detectBinaries(): BinaryPaths {
     return {
         ivyPreview: findBinary('ivy-preview', config.get<string>('ivyPreviewPath', '')),
         ivyValidate: findBinary('ivy-validate', config.get<string>('ivyValidatePath', '')),
+        ivyLsp: findBinary('ivy-lsp', config.get<string>('lspPath', '')),
     };
 }
 
@@ -213,6 +221,15 @@ export function activate(context: vscode.ExtensionContext) {
     }
     if (binaries.ivyValidate) {
         outputChannel.appendLine(`Found ivy-validate: ${binaries.ivyValidate}`);
+    }
+    if (binaries.ivyLsp) {
+        outputChannel.appendLine(`Found ivy-lsp: ${binaries.ivyLsp}`);
+    }
+
+    // Start LSP client if enabled and binary is found
+    const config = vscode.workspace.getConfiguration('ivy');
+    if (config.get<boolean>('lspEnabled', true) && binaries.ivyLsp) {
+        startLanguageClient(binaries.ivyLsp, context);
     }
 
     const previewCommand = vscode.commands.registerCommand('ivy.preview', async () => {
@@ -435,6 +452,47 @@ function getWebviewContent(port: number): string {
 </html>`;
 }
 
-export function deactivate() {
+function startLanguageClient(lspPath: string, context: vscode.ExtensionContext) {
+    const serverOptions: ServerOptions = {
+        run: { command: lspPath },
+        debug: { command: lspPath },
+    };
+
+    const clientOptions: LanguageClientOptions = {
+        documentSelector: [
+            { scheme: 'file', language: 'ivy' },
+            { scheme: 'file', language: 'yaml', pattern: '**/*.ivy.yaml' },
+            { scheme: 'file', language: 'yaml', pattern: '**/*.ivy.yml' },
+        ],
+        synchronize: {
+            fileEvents: vscode.workspace.createFileSystemWatcher('**/*.{ivy.yaml,ivy.yml}'),
+        },
+        outputChannel,
+    };
+
+    languageClient = new LanguageClient(
+        'ivy-lsp',
+        'Ivy Language Server',
+        serverOptions,
+        clientOptions
+    );
+
+    languageClient.start();
+    outputChannel.appendLine('Ivy Language Server started');
+
+    context.subscriptions.push({
+        dispose: () => {
+            if (languageClient) {
+                languageClient.stop();
+            }
+        }
+    });
+}
+
+export async function deactivate() {
     stopPreview();
+    if (languageClient) {
+        await languageClient.stop();
+        languageClient = undefined;
+    }
 }
