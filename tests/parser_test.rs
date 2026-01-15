@@ -351,6 +351,48 @@ fn test_parse_invalid_yaml_returns_error() {
 }
 
 #[test]
+fn test_parse_error_shows_line_number() {
+    let yaml = r#"title: Test
+script:
+  - text: "Hello"
+  - text: [invalid syntax
+  - text: "World"
+"#;
+
+    let result = parse_scenario(yaml);
+    assert!(result.is_err());
+
+    let error_msg = result.unwrap_err().to_string();
+    // Error message should contain line number
+    assert!(
+        error_msg.contains("line 4"),
+        "Error should mention line 4: {}",
+        error_msg
+    );
+}
+
+#[test]
+fn test_parse_error_shows_context() {
+    let yaml = r#"title: Test
+script:
+  - text: "Hello"
+  - invalid_field: [broken
+  - text: "World"
+"#;
+
+    let result = parse_scenario(yaml);
+    assert!(result.is_err());
+
+    let error_msg = result.unwrap_err().to_string();
+    // Error message should contain surrounding lines for context
+    assert!(
+        error_msg.contains(">>"),
+        "Error should highlight the error line: {}",
+        error_msg
+    );
+}
+
+#[test]
 fn test_parse_missing_title_returns_error() {
     let yaml = r#"
 script:
