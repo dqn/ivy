@@ -1,0 +1,231 @@
+.translation-table {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-secondary);
+}
+
+.translation-table.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.translation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+.translation-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.translation-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.lang-stat {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.translation-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+.language-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lang-button {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.lang-button:hover {
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+}
+
+.lang-button.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-controls select {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.filter-controls input {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.filter-controls input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.translation-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.translation-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.translation-content thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-primary);
+}
+
+.translation-content th {
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.translation-content td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.translation-content tr {
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.translation-content tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.col-index {
+  width: 40px;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-family: monospace;
+}
+
+.col-type {
+  width: 80px;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: capitalize;
+  border-radius: 3px;
+}
+
+.type-badge.type-speaker {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.type-badge.type-text {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.type-badge.type-choice {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.col-lang {
+  min-width: 150px;
+}
+
+.col-lang input {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: border-color 0.15s ease;
+}
+
+.col-lang input:hover {
+  border-color: var(--border-color);
+}
+
+.col-lang input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  background: var(--bg-primary);
+}
+
+.col-lang input::placeholder {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.col-lang.empty input {
+  background: #fff8e1;
+  border-color: #ffcc80;
+}
+
+.col-lang.empty input:focus {
+  border-color: var(--accent-color);
+  background: var(--bg-primary);
+}
+
+.no-results {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}

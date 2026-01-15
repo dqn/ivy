@@ -12,6 +12,7 @@ import { FlowchartView } from "./components/FlowchartView";
 import { PreviewPanel } from "./components/PreviewPanel";
 import { AssetBrowser } from "./components/AssetBrowser";
 import { CharacterDatabase } from "./components/CharacterDatabase";
+import { TranslationTable } from "./components/TranslationTable";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { ProjectWizard } from "./components/ProjectWizard";
 import { ProjectSettings } from "./components/ProjectSettings";
@@ -86,7 +87,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"form" | "yaml">("form");
   const [view, setView] = useState<"list" | "flowchart">("list");
   const [sidebarTab, setSidebarTab] = useState<
-    "commands" | "assets" | "scenarios" | "characters"
+    "commands" | "assets" | "scenarios" | "characters" | "translations"
   >("commands");
   const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
   const [showProjectWizard, setShowProjectWizard] = useState(false);
@@ -390,6 +391,12 @@ const App: React.FC = () => {
                 >
                   Characters
                 </button>
+                <button
+                  className={sidebarTab === "translations" ? "active" : ""}
+                  onClick={() => setSidebarTab("translations")}
+                >
+                  Translations
+                </button>
               </div>
               {sidebarTab === "scenarios" ? (
                 <ScenarioList
@@ -441,6 +448,12 @@ const App: React.FC = () => {
                   onRemoveLayer={removeLayer}
                   onReorderLayers={reorderLayers}
                 />
+              ) : sidebarTab === "translations" ? (
+                <TranslationTable
+                  scenario={scenario}
+                  onUpdateCommand={updateCommand}
+                  onSelectCommand={selectCommand}
+                />
               ) : (
                 <div className="empty-state">
                   <p>Select a scenario</p>
@@ -462,6 +475,12 @@ const App: React.FC = () => {
                 >
                   Assets
                 </button>
+                <button
+                  className={sidebarTab === "translations" ? "active" : ""}
+                  onClick={() => setSidebarTab("translations")}
+                >
+                  Translations
+                </button>
               </div>
               {sidebarTab === "commands" ? (
                 view === "list" ? (
@@ -481,12 +500,18 @@ const App: React.FC = () => {
                     onNodeClick={selectCommand}
                   />
                 )
-              ) : (
+              ) : sidebarTab === "assets" ? (
                 <AssetBrowser
                   baseDir={baseDir}
                   scenario={scenario}
                   onSelectAsset={handleSelectAsset}
                   onShowUsages={handleShowUsages}
+                />
+              ) : (
+                <TranslationTable
+                  scenario={scenario}
+                  onUpdateCommand={updateCommand}
+                  onSelectCommand={selectCommand}
                 />
               )}
             </>
