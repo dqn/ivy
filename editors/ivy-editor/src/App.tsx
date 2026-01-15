@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useScenario } from "./hooks/useScenario";
+import { usePreview } from "./hooks/usePreview";
 import { CommandList } from "./components/CommandList";
 import { CommandForm } from "./components/CommandForm";
 import { YamlPreview } from "./components/YamlPreview";
 import { ValidationErrors } from "./components/ValidationErrors";
 import { FlowchartView } from "./components/FlowchartView";
+import { PreviewPanel } from "./components/PreviewPanel";
 import "./App.css";
 
 const App: React.FC = () => {
@@ -30,6 +32,32 @@ const App: React.FC = () => {
   const [newTitle, setNewTitle] = useState("");
   const [activeTab, setActiveTab] = useState<"form" | "yaml">("form");
   const [view, setView] = useState<"list" | "flowchart">("list");
+
+  // Compute base directory for asset loading
+  const baseDir = useMemo(() => {
+    if (!filePath) return null;
+    const lastSlash = filePath.lastIndexOf("/");
+    return lastSlash >= 0 ? filePath.substring(0, lastSlash) : null;
+  }, [filePath]);
+
+  // Preview state
+  const {
+    state: previewState,
+    backgroundUrl,
+    characterUrl,
+    goto: previewGoto,
+    next: previewNext,
+    prev: previewPrev,
+  } = usePreview(scenario, baseDir, selectedIndex);
+
+  // Sync: when preview navigates, update editor selection
+  const handlePreviewGoto = useCallback(
+    (index: number) => {
+      previewGoto(index);
+      selectCommand(index);
+    },
+    [previewGoto, selectCommand]
+  );
 
   const labels = useMemo(() => {
     if (!scenario) return [];
@@ -173,8 +201,16 @@ const App: React.FC = () => {
           ) : null}
         </div>
 
-        {/* Right Panel: Validation */}
+        {/* Right Panel: Preview + Validation */}
         <div className="panel panel-right">
+          <PreviewPanel
+            state={previewState}
+            backgroundUrl={backgroundUrl}
+            characterUrl={characterUrl}
+            onPrev={previewPrev}
+            onNext={previewNext}
+            onGoto={handlePreviewGoto}
+          />
           <ValidationErrors
             result={validationResult}
             onSelectCommand={selectCommand}

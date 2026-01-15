@@ -132,10 +132,13 @@ body {
 }
 
 .panel-right {
-  width: 280px;
-  min-width: 200px;
+  width: 360px;
+  min-width: 280px;
   border-left: 1px solid var(--border-color);
   background-color: var(--bg-secondary);
+  gap: 8px;
+  padding: 8px;
+  overflow-y: auto;
 }
 
 /* Command List */
