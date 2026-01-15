@@ -9,6 +9,16 @@ enum FontType {
     OpenDyslexic,
 }
 
+/// Self-voicing mode (mirror of accessibility::SelfVoicingMode).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum SelfVoicingMode {
+    #[default]
+    Off,
+    Tts,
+    Clipboard,
+}
+
 /// Accessibility settings (mirror of render::settings::AccessibilitySettings).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct AccessibilitySettings {
@@ -22,6 +32,8 @@ struct AccessibilitySettings {
     font_type: FontType,
     #[serde(default)]
     letter_spacing: f32,
+    #[serde(default)]
+    self_voicing: SelfVoicingMode,
 }
 
 fn default_font_scale() -> f32 {
@@ -40,6 +52,7 @@ impl Default for AccessibilitySettings {
             line_spacing: 1.0,
             font_type: FontType::Default,
             letter_spacing: 0.0,
+            self_voicing: SelfVoicingMode::Off,
         }
     }
 }
@@ -204,4 +217,37 @@ fn test_accessibility_backward_compatibility_extended() {
     // New fields should use defaults
     assert_eq!(settings.accessibility.font_type, FontType::Default);
     assert_eq!(settings.accessibility.letter_spacing, 0.0);
+    assert_eq!(settings.accessibility.self_voicing, SelfVoicingMode::Off);
+}
+
+#[test]
+fn test_self_voicing_mode_default() {
+    let settings = GameSettings::default();
+    assert_eq!(settings.accessibility.self_voicing, SelfVoicingMode::Off);
+}
+
+#[test]
+fn test_self_voicing_mode_serialization() {
+    let json = r#""off""#;
+    let mode: SelfVoicingMode = serde_json::from_str(json).unwrap();
+    assert_eq!(mode, SelfVoicingMode::Off);
+
+    let json = r#""tts""#;
+    let mode: SelfVoicingMode = serde_json::from_str(json).unwrap();
+    assert_eq!(mode, SelfVoicingMode::Tts);
+
+    let json = r#""clipboard""#;
+    let mode: SelfVoicingMode = serde_json::from_str(json).unwrap();
+    assert_eq!(mode, SelfVoicingMode::Clipboard);
+}
+
+#[test]
+fn test_accessibility_self_voicing_roundtrip() {
+    let mut settings = GameSettings::default();
+    settings.accessibility.self_voicing = SelfVoicingMode::Tts;
+
+    let json = serde_json::to_string(&settings).unwrap();
+    let deserialized: GameSettings = serde_json::from_str(&json).unwrap();
+
+    assert_eq!(deserialized.accessibility.self_voicing, SelfVoicingMode::Tts);
 }

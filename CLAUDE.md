@@ -364,6 +364,9 @@ cargo run --bin ivy-preview -- --port 8080 scenario.yaml # カスタムポート
 - [x] 行間調整（1.0x - 2.0x）
 - [x] 字間調整（-2.0px - 5.0px）
 - [x] ディスレクシアフォント対応（OpenDyslexic）
+- [x] セルフボイシング（スクリーンリーダー対応）
+  - TTS モード（WASM: Web Speech API）
+  - クリップボードモード（外部スクリーンリーダー連携）
 
 ### 開発ツール
 - [x] シナリオバリデーター（`ivy-validate` CLI）
@@ -403,7 +406,5 @@ cargo run --bin ivy-preview -- --port 8080 scenario.yaml # カスタムポート
 - [ ] リップシンク（音声連動）
 
 #### 低優先度
-- [ ] アクセシビリティ機能（追加）
-  - [ ] スクリーンリーダー対応
 - [ ] Spine対応
 - [ ] クラウドセーブ

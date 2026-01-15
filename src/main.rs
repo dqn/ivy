@@ -1,6 +1,7 @@
 // Many public APIs are not used in main but are provided for external use or future features.
 #![allow(dead_code)]
 
+mod accessibility;
 mod audio;
 mod cache;
 mod flowchart;

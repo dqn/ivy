@@ -1,6 +1,7 @@
 use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use crate::accessibility::SelfVoicingMode;
 use crate::platform;
 use crate::render::widgets::{
     SliderFormat, draw_button, draw_checkbox, draw_slider, draw_slider_ex,
@@ -99,6 +100,9 @@ pub struct AccessibilitySettings {
     /// Letter spacing adjustment (-2.0 to 5.0 pixels).
     #[serde(default)]
     pub letter_spacing: f32,
+    /// Self-voicing mode for screen reader support.
+    #[serde(default)]
+    pub self_voicing: SelfVoicingMode,
 }
 
 fn default_font_scale() -> f32 {
@@ -117,6 +121,7 @@ impl Default for AccessibilitySettings {
             line_spacing: 1.0,
             font_type: FontType::Default,
             letter_spacing: 0.0,
+            self_voicing: SelfVoicingMode::Off,
         }
     }
 }
@@ -627,6 +632,108 @@ pub fn draw_settings_screen(
 
         if is_hovered && is_mouse_button_pressed(MouseButton::Left) {
             settings.accessibility.font_type = *font_type;
+        }
+    }
+
+    // Self-Voicing selector
+    y += config.slider_spacing;
+    let sv_button_width = 120.0;
+    let sv_button_height = 30.0;
+    let sv_spacing = 10.0;
+
+    // Draw label
+    let sv_label_params = if let Some(f) = font {
+        TextParams {
+            font: Some(f),
+            font_size: config.label_font_size as u16,
+            color: WHITE,
+            ..Default::default()
+        }
+    } else {
+        TextParams {
+            font_size: config.label_font_size as u16,
+            color: WHITE,
+            ..Default::default()
+        }
+    };
+    draw_text_ex(
+        "Self-Voicing",
+        slider_x,
+        y + config.label_font_size,
+        sv_label_params,
+    );
+
+    let sv_btn_y = y + 5.0;
+    for (i, mode) in SelfVoicingMode::all().iter().enumerate() {
+        let btn_x = slider_x + 120.0 + (sv_button_width + sv_spacing) * i as f32;
+        let is_selected = settings.accessibility.self_voicing == *mode;
+
+        let mouse_pos = mouse_position();
+        let button_rect = Rect::new(btn_x, sv_btn_y, sv_button_width, sv_button_height);
+        let is_hovered = button_rect.contains(Vec2::new(mouse_pos.0, mouse_pos.1));
+
+        let bg_color = if is_selected {
+            Color::new(0.3, 0.6, 0.3, 0.9)
+        } else if is_hovered {
+            Color::new(0.3, 0.3, 0.4, 0.9)
+        } else {
+            Color::new(0.2, 0.2, 0.25, 0.8)
+        };
+
+        draw_rectangle(
+            btn_x,
+            sv_btn_y,
+            sv_button_width,
+            sv_button_height,
+            bg_color,
+        );
+        draw_rectangle_lines(
+            btn_x,
+            sv_btn_y,
+            sv_button_width,
+            sv_button_height,
+            2.0,
+            if is_selected {
+                Color::new(0.3, 0.8, 0.3, 1.0)
+            } else if is_hovered {
+                YELLOW
+            } else {
+                GRAY
+            },
+        );
+
+        let sv_text_params = if let Some(f) = font {
+            TextParams {
+                font: Some(f),
+                font_size: (config.label_font_size * 0.8) as u16,
+                color: if is_selected || is_hovered {
+                    WHITE
+                } else {
+                    LIGHTGRAY
+                },
+                ..Default::default()
+            }
+        } else {
+            TextParams {
+                font_size: (config.label_font_size * 0.8) as u16,
+                color: if is_selected || is_hovered {
+                    WHITE
+                } else {
+                    LIGHTGRAY
+                },
+                ..Default::default()
+            }
+        };
+
+        let label = mode.display_name();
+        let text_dim = measure_text(label, font, (config.label_font_size * 0.8) as u16, 1.0);
+        let text_x = btn_x + (sv_button_width - text_dim.width) / 2.0;
+        let text_y =
+            sv_btn_y + (sv_button_height + text_dim.height) / 2.0 - text_dim.offset_y / 2.0;
+        draw_text_ex(label, text_x, text_y, sv_text_params);
+
+        if is_hovered && is_mouse_button_pressed(MouseButton::Left) {
+            settings.accessibility.self_voicing = *mode;
         }
     }
 

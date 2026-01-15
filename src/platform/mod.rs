@@ -59,3 +59,64 @@ pub fn file_exists(path: &str) -> bool {
         .flatten()
         .is_some()
 }
+
+/// Speak text using text-to-speech (native: no-op, WASM: Web Speech API).
+#[cfg(not(target_arch = "wasm32"))]
+pub fn speak_text(_text: &str) {
+    // Native TTS would require platform-specific libraries
+    // For now, this is a no-op on native platforms
+}
+
+/// Speak text using Web Speech API (WASM).
+#[cfg(target_arch = "wasm32")]
+pub fn speak_text(text: &str) {
+    use wasm_bindgen::JsCast;
+
+    if let Some(window) = web_sys::window() {
+        if let Ok(speech_synthesis) = js_sys::Reflect::get(&window, &"speechSynthesis".into()) {
+            if let Some(synthesis) = speech_synthesis.dyn_ref::<web_sys::SpeechSynthesis>() {
+                // Cancel any ongoing speech
+                synthesis.cancel();
+
+                // Create new utterance
+                if let Ok(utterance) = web_sys::SpeechSynthesisUtterance::new_with_text(text) {
+                    // Set language to match content (default to Japanese for VN)
+                    utterance.set_lang("ja-JP");
+                    synthesis.speak(&utterance);
+                }
+            }
+        }
+    }
+}
+
+/// Copy text to clipboard (native).
+#[cfg(not(target_arch = "wasm32"))]
+pub fn copy_to_clipboard(text: &str) {
+    // Use arboard or similar on native, for now just print
+    // This allows external screen readers to access the text
+    eprintln!("[Screen Reader] {}", text);
+}
+
+/// Copy text to clipboard (WASM).
+#[cfg(target_arch = "wasm32")]
+pub fn copy_to_clipboard(text: &str) {
+    if let Some(window) = web_sys::window() {
+        if let Some(navigator) = window.navigator().clipboard() {
+            let _ = navigator.write_text(text);
+        }
+    }
+}
+
+/// Check if TTS is available on this platform.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn tts_available() -> bool {
+    false // Native TTS not implemented yet
+}
+
+/// Check if TTS is available (WASM: Web Speech API).
+#[cfg(target_arch = "wasm32")]
+pub fn tts_available() -> bool {
+    web_sys::window()
+        .map(|w| js_sys::Reflect::has(&w, &"speechSynthesis".into()).unwrap_or(false))
+        .unwrap_or(false)
+}

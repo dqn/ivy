@@ -10,3 +10,7 @@ pub mod runtime;
 pub mod scenario;
 pub mod types;
 pub mod video;
+
+// Re-export accessibility types
+pub mod accessibility;
+pub use accessibility::{SelfVoicing, SelfVoicingMode};
