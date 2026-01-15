@@ -6,6 +6,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
+            commands::flowchart::get_flowchart,
             commands::scenario::load_scenario,
             commands::scenario::save_scenario,
             commands::scenario::validate,

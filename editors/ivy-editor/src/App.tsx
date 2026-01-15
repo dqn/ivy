@@ -4,6 +4,7 @@ import { CommandList } from "./components/CommandList";
 import { CommandForm } from "./components/CommandForm";
 import { YamlPreview } from "./components/YamlPreview";
 import { ValidationErrors } from "./components/ValidationErrors";
+import { FlowchartView } from "./components/FlowchartView";
 import "./App.css";
 
 const App: React.FC = () => {
@@ -28,6 +29,7 @@ const App: React.FC = () => {
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [activeTab, setActiveTab] = useState<"form" | "yaml">("form");
+  const [view, setView] = useState<"list" | "flowchart">("list");
 
   const labels = useMemo(() => {
     if (!scenario) return [];
@@ -82,21 +84,45 @@ const App: React.FC = () => {
           <button onClick={() => void validate()} disabled={!scenario}>
             Validate
           </button>
+          <div className="view-toggle">
+            <button
+              className={view === "list" ? "active" : ""}
+              onClick={() => {
+                setView("list");
+              }}
+              disabled={!scenario}
+            >
+              List
+            </button>
+            <button
+              className={view === "flowchart" ? "active" : ""}
+              onClick={() => {
+                setView("flowchart");
+              }}
+              disabled={!scenario}
+            >
+              Flowchart
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="app-main">
-        {/* Left Panel: Command List */}
+        {/* Left Panel: Command List / Flowchart */}
         <div className="panel panel-left">
           {scenario ? (
-            <CommandList
-              commands={scenario.script}
-              selectedIndex={selectedIndex}
-              onSelect={selectCommand}
-              onAdd={addCommand}
-              onRemove={removeCommand}
-            />
+            view === "list" ? (
+              <CommandList
+                commands={scenario.script}
+                selectedIndex={selectedIndex}
+                onSelect={selectCommand}
+                onAdd={addCommand}
+                onRemove={removeCommand}
+              />
+            ) : (
+              <FlowchartView scenario={scenario} onNodeClick={selectCommand} />
+            )
           ) : (
             <div className="empty-state">
               <p>No scenario loaded</p>

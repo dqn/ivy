@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use super::types::{Flowchart, NodeId};
 
 /// Node position in the flowchart layout.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct NodeLayout {
     pub x: f32,
     pub y: f32,
