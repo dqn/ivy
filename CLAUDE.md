@@ -413,3 +413,30 @@ cargo run --bin ivy-preview -- --port 8080 scenario.yaml # カスタムポート
 - Live2D対応: Cubism SDK（C++）とライセンスが必要
 - Spine対応: Spine Runtime とライセンスが必要
 - クラウドセーブ: バックエンドサーバーの構築・運用が必要
+
+### 非エンジニア向けロードマップ
+
+ivy を「非エンジニアでもVNゲームを作れる」エンジンにするための改善計画。
+
+#### Phase 1: ドキュメント整備
+- [ ] Getting Started ガイド（Rust インストール、ビルド、Hello World）
+- [ ] よくあるエラーの FAQ
+- [ ] YAML 構文ガイド（初心者向け）
+
+#### Phase 2: 配布の簡素化
+- [x] GitHub Releases にビルド済みバイナリを配布（Windows / macOS / Linux）
+- [x] GitHub Actions による自動ビルド
+- [ ] WASM デモサイトの公開
+
+#### Phase 3: エラー体験の改善
+- [ ] YAML パースエラーに行番号を追加
+- [ ] よくあるエラーパターンの検出とヒント表示
+
+#### Phase 4: ツール統合の強化
+- [ ] VSCode 拡張: CLI バイナリの自動検出・インストールガイド
+- [ ] Language Server Protocol (LSP) 対応
+
+#### Phase 5: ビジュアルエディタ（長期目標）
+- [ ] GUI ベースのシナリオエディタ
+- [ ] YAML を隠したフォーム入力
+- [ ] プレビューとの連携
