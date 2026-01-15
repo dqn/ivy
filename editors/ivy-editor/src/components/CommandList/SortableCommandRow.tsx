@@ -7,6 +7,7 @@ interface SortableCommandRowProps {
   index: number;
   command: Command;
   isSelected: boolean;
+  isHighlighted?: boolean;
   typeColor: string;
   onSelect: () => void;
   onAddAfter: () => void;
@@ -61,6 +62,7 @@ export const SortableCommandRow: React.FC<SortableCommandRowProps> = ({
   index,
   command,
   isSelected,
+  isHighlighted = false,
   typeColor,
   onSelect,
   onAddAfter,
@@ -87,7 +89,7 @@ export const SortableCommandRow: React.FC<SortableCommandRowProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`command-row ${isSelected ? "selected" : ""} ${isDragging ? "dragging" : ""}`}
+      className={`command-row ${isSelected ? "selected" : ""} ${isHighlighted ? "highlighted" : ""} ${isDragging ? "dragging" : ""}`}
       onClick={onSelect}
     >
       <span className="drag-handle" {...attributes} {...listeners}>

@@ -126,6 +126,32 @@ body {
   background-color: var(--bg-secondary);
 }
 
+/* Sidebar Tabs */
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-tabs button {
+  flex: 1;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.sidebar-tabs button:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.sidebar-tabs button.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-color);
+}
+
 .panel-center {
   flex: 1;
   background-color: var(--bg-primary);
@@ -198,6 +224,15 @@ body {
   opacity: 0.5;
   background-color: var(--bg-tertiary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.command-row.highlighted {
+  background-color: rgba(245, 158, 11, 0.2);
+  border-left: 3px solid var(--warning-color);
+}
+
+.command-row.highlighted.selected {
+  background-color: var(--accent-color);
 }
 
 /* Drag Handle */

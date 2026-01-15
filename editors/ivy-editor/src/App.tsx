@@ -7,6 +7,7 @@ import { YamlPreview } from "./components/YamlPreview";
 import { ValidationErrors } from "./components/ValidationErrors";
 import { FlowchartView } from "./components/FlowchartView";
 import { PreviewPanel } from "./components/PreviewPanel";
+import { AssetBrowser } from "./components/AssetBrowser";
 import "./App.css";
 
 const App: React.FC = () => {
@@ -33,6 +34,10 @@ const App: React.FC = () => {
   const [newTitle, setNewTitle] = useState("");
   const [activeTab, setActiveTab] = useState<"form" | "yaml">("form");
   const [view, setView] = useState<"list" | "flowchart">("list");
+  const [sidebarTab, setSidebarTab] = useState<"commands" | "assets">(
+    "commands",
+  );
+  const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
 
   // Compute base directory for asset loading
   const baseDir = useMemo(() => {
@@ -57,7 +62,47 @@ const App: React.FC = () => {
       previewGoto(index);
       selectCommand(index);
     },
-    [previewGoto, selectCommand]
+    [previewGoto, selectCommand],
+  );
+
+  // Asset browser handlers
+  const handleSelectAsset = useCallback(
+    (path: string) => {
+      if (selectedIndex === null || !scenario) {
+        return;
+      }
+      const cmd = scenario.script[selectedIndex];
+
+      // Determine field based on file extension
+      const ext = path.split(".").pop()?.toLowerCase();
+      const isImage = ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(
+        ext || "",
+      );
+      const isAudio = ["mp3", "ogg", "wav", "flac"].includes(ext || "");
+
+      if (isImage) {
+        // Default to background, user can move to character in form
+        updateCommand(selectedIndex, { ...cmd, background: path });
+      } else if (isAudio) {
+        // Default to bgm
+        updateCommand(selectedIndex, { ...cmd, bgm: path });
+      }
+
+      // Switch to commands tab to show the update
+      setSidebarTab("commands");
+    },
+    [selectedIndex, scenario, updateCommand],
+  );
+
+  const handleShowUsages = useCallback(
+    (indices: number[]) => {
+      setHighlightedIndices(indices);
+      setSidebarTab("commands");
+      if (indices.length > 0) {
+        selectCommand(indices[0]);
+      }
+    },
+    [selectCommand],
   );
 
   const labels = useMemo(() => {
@@ -138,21 +183,50 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <main className="app-main">
-        {/* Left Panel: Command List / Flowchart */}
+        {/* Left Panel: Command List / Flowchart / Assets */}
         <div className="panel panel-left">
           {scenario ? (
-            view === "list" ? (
-              <CommandList
-                commands={scenario.script}
-                selectedIndex={selectedIndex}
-                onSelect={selectCommand}
-                onAdd={addCommand}
-                onRemove={removeCommand}
-                onReorder={reorderCommand}
-              />
-            ) : (
-              <FlowchartView scenario={scenario} onNodeClick={selectCommand} />
-            )
+            <>
+              <div className="sidebar-tabs">
+                <button
+                  className={sidebarTab === "commands" ? "active" : ""}
+                  onClick={() => setSidebarTab("commands")}
+                >
+                  Commands
+                </button>
+                <button
+                  className={sidebarTab === "assets" ? "active" : ""}
+                  onClick={() => setSidebarTab("assets")}
+                >
+                  Assets
+                </button>
+              </div>
+              {sidebarTab === "commands" ? (
+                view === "list" ? (
+                  <CommandList
+                    commands={scenario.script}
+                    selectedIndex={selectedIndex}
+                    highlightedIndices={highlightedIndices}
+                    onSelect={selectCommand}
+                    onAdd={addCommand}
+                    onRemove={removeCommand}
+                    onReorder={reorderCommand}
+                  />
+                ) : (
+                  <FlowchartView
+                    scenario={scenario}
+                    onNodeClick={selectCommand}
+                  />
+                )
+              ) : (
+                <AssetBrowser
+                  baseDir={baseDir}
+                  scenario={scenario}
+                  onSelectAsset={handleSelectAsset}
+                  onShowUsages={handleShowUsages}
+                />
+              )}
+            </>
           ) : (
             <div className="empty-state">
               <p>No scenario loaded</p>

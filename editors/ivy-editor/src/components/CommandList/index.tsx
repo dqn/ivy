@@ -19,6 +19,7 @@ import { SortableCommandRow } from "./SortableCommandRow";
 interface CommandListProps {
   commands: Command[];
   selectedIndex: number | null;
+  highlightedIndices?: number[];
   onSelect: (index: number) => void;
   onAdd: (afterIndex?: number) => void;
   onRemove: (index: number) => void;
@@ -60,6 +61,7 @@ function getCommandType(cmd: Command): string {
 export const CommandList: React.FC<CommandListProps> = ({
   commands,
   selectedIndex,
+  highlightedIndices = [],
   onSelect,
   onAdd,
   onRemove,
@@ -129,6 +131,7 @@ export const CommandList: React.FC<CommandListProps> = ({
                   index={index}
                   command={cmd}
                   isSelected={selectedIndex === index}
+                  isHighlighted={highlightedIndices.includes(index)}
                   typeColor={typeColors[type]}
                   onSelect={() => {
                     onSelect(index);

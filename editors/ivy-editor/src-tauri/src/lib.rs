@@ -8,6 +8,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::assets::get_relative_path,
             commands::assets::read_asset_base64,
+            commands::assets::list_assets,
+            commands::assets::get_asset_info,
+            commands::assets::find_asset_usages,
+            commands::assets::find_unused_assets,
             commands::flowchart::get_flowchart,
             commands::preview::get_preview_state,
             commands::scenario::load_scenario,
