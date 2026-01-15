@@ -421,7 +421,7 @@ ivy を「非エンジニアでもVNゲームを作れる」エンジンにす�
 #### Phase 1: ドキュメント整備
 - [x] Getting Started ガイド（Rust インストール、ビルド、Hello World）
 - [x] よくあるエラーの FAQ
-- [ ] YAML 構文ガイド（初心者向け）
+- [x] YAML 構文ガイド（初心者向け）
 
 #### Phase 2: 配布の簡素化
 - [x] GitHub Releases にビルド済みバイナリを配布（Windows / macOS / Linux）
