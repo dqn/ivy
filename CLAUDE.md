@@ -419,7 +419,7 @@ cargo run --bin ivy-preview -- --port 8080 scenario.yaml # カスタムポート
 ivy を「非エンジニアでもVNゲームを作れる」エンジンにするための改善計画。
 
 #### Phase 1: ドキュメント整備
-- [ ] Getting Started ガイド（Rust インストール、ビルド、Hello World）
+- [x] Getting Started ガイド（Rust インストール、ビルド、Hello World）
 - [ ] よくあるエラーの FAQ
 - [ ] YAML 構文ガイド（初心者向け）
 
