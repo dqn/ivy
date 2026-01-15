@@ -9,6 +9,7 @@ interface SortableCommandRowProps {
   isSelected: boolean;
   isHighlighted?: boolean;
   typeColor: string;
+  speakerCharacterMap?: Map<string, string>;
   onSelect: () => void;
   onAddAfter: () => void;
   onRemove: () => void;
@@ -57,6 +58,11 @@ function getCommandPreview(cmd: Command): string {
   return "(empty)";
 }
 
+function getSpeakerText(speaker: LocalizedString): string {
+  if (typeof speaker === "string") return speaker;
+  return Object.values(speaker)[0] ?? "";
+}
+
 export const SortableCommandRow: React.FC<SortableCommandRowProps> = ({
   id,
   index,
@@ -64,6 +70,7 @@ export const SortableCommandRow: React.FC<SortableCommandRowProps> = ({
   isSelected,
   isHighlighted = false,
   typeColor,
+  speakerCharacterMap,
   onSelect,
   onAddAfter,
   onRemove,
@@ -85,6 +92,13 @@ export const SortableCommandRow: React.FC<SortableCommandRowProps> = ({
 
   const type = getCommandType(command);
 
+  // Check if speaker is mapped to a character
+  const speakerText = command.speaker ? getSpeakerText(command.speaker) : null;
+  const mappedCharacter =
+    speakerText && speakerCharacterMap
+      ? speakerCharacterMap.get(speakerText)
+      : null;
+
   return (
     <div
       ref={setNodeRef}
@@ -99,6 +113,18 @@ export const SortableCommandRow: React.FC<SortableCommandRowProps> = ({
       <span className="command-type" style={{ backgroundColor: typeColor }}>
         {type}
       </span>
+      {speakerText && (
+        <span
+          className={`speaker-indicator ${mappedCharacter ? "mapped" : "unmapped"}`}
+          title={
+            mappedCharacter
+              ? `${speakerText} → ${mappedCharacter}`
+              : `${speakerText} (not mapped)`
+          }
+        >
+          {mappedCharacter ? "●" : "○"}
+        </span>
+      )}
       <span className="command-preview">{getCommandPreview(command)}</span>
       <div className="command-actions">
         <button

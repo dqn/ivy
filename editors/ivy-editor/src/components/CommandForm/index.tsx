@@ -4,13 +4,19 @@ import type {
   LocalizedString,
   CharPosition,
   Choice,
+  ModularCharRef,
+  Transition,
 } from "../../types/scenario";
+import type { CharacterDatabase } from "../../types/character";
 import { AssetField } from "./AssetField";
+import { ModularCharField } from "./ModularCharField";
+import { TransitionPicker } from "./TransitionPicker";
 
 interface CommandFormProps {
   command: Command;
   labels: string[];
   baseDir: string | null;
+  characterDatabase: CharacterDatabase;
   onChange: (command: Command) => void;
 }
 
@@ -28,6 +34,7 @@ export const CommandForm: React.FC<CommandFormProps> = ({
   command,
   labels,
   baseDir,
+  characterDatabase,
   onChange,
 }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -152,6 +159,25 @@ export const CommandForm: React.FC<CommandFormProps> = ({
             <option value="right">Right</option>
           </select>
         </div>
+
+        <ModularCharField
+          value={command.modular_char as ModularCharRef | undefined}
+          charPos={command.char_pos}
+          characterDatabase={characterDatabase}
+          onChange={(value) => {
+            updateField("modular_char", value);
+          }}
+          onCharPosChange={(pos) => {
+            updateField("char_pos", pos);
+          }}
+        />
+
+        <TransitionPicker
+          value={command.transition as Transition | undefined}
+          onChange={(value) => {
+            updateField("transition", value);
+          }}
+        />
       </section>
 
       {/* Audio Section */}

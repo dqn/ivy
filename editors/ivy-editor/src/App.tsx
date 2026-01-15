@@ -3,6 +3,7 @@ import { useScenario } from "./hooks/useScenario";
 import { usePreview } from "./hooks/usePreview";
 import { useProject } from "./hooks/useProject";
 import { useRecentProjects } from "./hooks/useRecentProjects";
+import { useCharacters } from "./hooks/useCharacters";
 import { CommandList } from "./components/CommandList";
 import { CommandForm } from "./components/CommandForm";
 import { YamlPreview } from "./components/YamlPreview";
@@ -10,6 +11,7 @@ import { ValidationErrors } from "./components/ValidationErrors";
 import { FlowchartView } from "./components/FlowchartView";
 import { PreviewPanel } from "./components/PreviewPanel";
 import { AssetBrowser } from "./components/AssetBrowser";
+import { CharacterDatabase } from "./components/CharacterDatabase";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { ProjectWizard } from "./components/ProjectWizard";
 import { ProjectSettings } from "./components/ProjectSettings";
@@ -63,12 +65,28 @@ const App: React.FC = () => {
     removeRecentProject,
   } = useRecentProjects();
 
+  const {
+    database: characterDatabase,
+    selectedCharacter,
+    isDirty: charactersDirty,
+    loadCharacters,
+    saveCharacters,
+    selectCharacter,
+    addCharacter,
+    updateCharacter,
+    removeCharacter,
+    addLayer,
+    updateLayer,
+    removeLayer,
+    reorderLayers,
+  } = useCharacters();
+
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [activeTab, setActiveTab] = useState<"form" | "yaml">("form");
   const [view, setView] = useState<"list" | "flowchart">("list");
   const [sidebarTab, setSidebarTab] = useState<
-    "commands" | "assets" | "scenarios"
+    "commands" | "assets" | "scenarios" | "characters"
   >("commands");
   const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
   const [showProjectWizard, setShowProjectWizard] = useState(false);
@@ -209,6 +227,23 @@ const App: React.FC = () => {
     setShowProjectSettings(false);
   };
 
+  // Save characters when dirty
+  const handleSaveCharacters = useCallback(async () => {
+    if (!project || !charactersDirty) return;
+    try {
+      await saveCharacters(project.root_path);
+    } catch (e) {
+      console.error("Failed to save characters:", e);
+    }
+  }, [project, charactersDirty, saveCharacters]);
+
+  // Auto-save characters when switching away from characters tab
+  useEffect(() => {
+    if (sidebarTab !== "characters" && charactersDirty && project) {
+      void handleSaveCharacters();
+    }
+  }, [sidebarTab, charactersDirty, project, handleSaveCharacters]);
+
   // Update mode when project is loaded
   useEffect(() => {
     if (project && mode.type === "welcome") {
@@ -216,6 +251,13 @@ const App: React.FC = () => {
       setMode({ type: "project" });
     }
   }, [project, mode.type, addRecentProject]);
+
+  // Load characters when project is opened
+  useEffect(() => {
+    if (project) {
+      void loadCharacters(project.root_path);
+    }
+  }, [project, loadCharacters]);
 
   // Update mode when file is loaded in standalone mode
   useEffect(() => {
@@ -342,6 +384,12 @@ const App: React.FC = () => {
                 >
                   Assets
                 </button>
+                <button
+                  className={sidebarTab === "characters" ? "active" : ""}
+                  onClick={() => setSidebarTab("characters")}
+                >
+                  Characters
+                </button>
               </div>
               {sidebarTab === "scenarios" ? (
                 <ScenarioList
@@ -359,6 +407,7 @@ const App: React.FC = () => {
                     commands={scenario.script}
                     selectedIndex={selectedIndex}
                     highlightedIndices={highlightedIndices}
+                    characterDatabase={characterDatabase}
                     onSelect={selectCommand}
                     onAdd={addCommand}
                     onRemove={removeCommand}
@@ -376,6 +425,21 @@ const App: React.FC = () => {
                   scenario={scenario}
                   onSelectAsset={handleSelectAsset}
                   onShowUsages={handleShowUsages}
+                />
+              ) : sidebarTab === "characters" ? (
+                <CharacterDatabase
+                  database={characterDatabase}
+                  selectedCharacter={selectedCharacter}
+                  baseDir={baseDir}
+                  scenario={scenario}
+                  onSelectCharacter={selectCharacter}
+                  onAddCharacter={addCharacter}
+                  onUpdateCharacter={updateCharacter}
+                  onRemoveCharacter={removeCharacter}
+                  onAddLayer={addLayer}
+                  onUpdateLayer={updateLayer}
+                  onRemoveLayer={removeLayer}
+                  onReorderLayers={reorderLayers}
                 />
               ) : (
                 <div className="empty-state">
@@ -405,6 +469,7 @@ const App: React.FC = () => {
                     commands={scenario.script}
                     selectedIndex={selectedIndex}
                     highlightedIndices={highlightedIndices}
+                    characterDatabase={characterDatabase}
                     onSelect={selectCommand}
                     onAdd={addCommand}
                     onRemove={removeCommand}
@@ -457,6 +522,7 @@ const App: React.FC = () => {
                   command={selectedCommand}
                   labels={labels}
                   baseDir={baseDir}
+                  characterDatabase={characterDatabase}
                   onChange={(cmd) => {
                     updateCommand(selectedIndex!, cmd);
                   }}

@@ -1,4 +1,5 @@
 pub mod assets;
+pub mod character;
 pub mod flowchart;
 pub mod preview;
 pub mod project;

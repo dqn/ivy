@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import {
   DndContext,
   closestCenter,
@@ -14,12 +14,14 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import type { Command } from "../../types/scenario";
+import type { CharacterDatabase } from "../../types/character";
 import { SortableCommandRow } from "./SortableCommandRow";
 
 interface CommandListProps {
   commands: Command[];
   selectedIndex: number | null;
   highlightedIndices?: number[];
+  characterDatabase?: CharacterDatabase;
   onSelect: (index: number) => void;
   onAdd: (afterIndex?: number) => void;
   onRemove: (index: number) => void;
@@ -62,6 +64,7 @@ export const CommandList: React.FC<CommandListProps> = ({
   commands,
   selectedIndex,
   highlightedIndices = [],
+  characterDatabase,
   onSelect,
   onAdd,
   onRemove,
@@ -77,6 +80,24 @@ export const CommandList: React.FC<CommandListProps> = ({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  // Map speakers to character names
+  const speakerCharacterMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!characterDatabase) return map;
+
+    for (const [charName, charDef] of Object.entries(
+      characterDatabase.characters
+    )) {
+      // Character name itself
+      map.set(charName, charName);
+      // Aliases
+      for (const alias of charDef.aliases ?? []) {
+        map.set(alias, charName);
+      }
+    }
+    return map;
+  }, [characterDatabase]);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -133,6 +154,7 @@ export const CommandList: React.FC<CommandListProps> = ({
                   isSelected={selectedIndex === index}
                   isHighlighted={highlightedIndices.includes(index)}
                   typeColor={typeColors[type]}
+                  speakerCharacterMap={speakerCharacterMap}
                   onSelect={() => {
                     onSelect(index);
                   }}
