@@ -426,7 +426,7 @@ ivy を「非エンジニアでもVNゲームを作れる」エンジンにす�
 #### Phase 2: 配布の簡素化
 - [x] GitHub Releases にビルド済みバイナリを配布（Windows / macOS / Linux）
 - [x] GitHub Actions による自動ビルド
-- [ ] WASM デモサイトの公開
+- [x] WASM デモサイトの公開
 
 #### Phase 3: エラー体験の改善
 - [x] YAML パースエラーに行番号を追加
