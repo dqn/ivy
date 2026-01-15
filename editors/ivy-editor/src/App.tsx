@@ -13,6 +13,7 @@ import { PreviewPanel } from "./components/PreviewPanel";
 import { AssetBrowser } from "./components/AssetBrowser";
 import { CharacterDatabase } from "./components/CharacterDatabase";
 import { TranslationTable } from "./components/TranslationTable";
+import { VariableWatcher } from "./components/VariableWatcher";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { ProjectWizard } from "./components/ProjectWizard";
 import { ProjectSettings } from "./components/ProjectSettings";
@@ -576,6 +577,11 @@ const App: React.FC = () => {
             onPrev={previewPrev}
             onNext={previewNext}
             onGoto={handlePreviewGoto}
+          />
+          <VariableWatcher
+            scenario={scenario}
+            variables={previewState?.variables || {}}
+            currentIndex={previewState?.command_index || 0}
           />
           <ValidationErrors
             result={validationResult}

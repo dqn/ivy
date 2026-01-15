@@ -1,0 +1,130 @@
+.variable-watcher {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.variable-watcher-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-primary);
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.variable-watcher-header:hover {
+  background: var(--bg-hover);
+}
+
+.toggle-icon {
+  font-size: 10px;
+  color: var(--text-secondary);
+  width: 12px;
+}
+
+.variable-watcher-header h4 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.variable-watcher-content {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.variable-filter {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.variable-filter input {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.variable-filter input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.no-variables {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.variable-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.variable-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 12px;
+}
+
+.variable-item:last-child {
+  border-bottom: none;
+}
+
+.variable-item.undefined {
+  opacity: 0.6;
+}
+
+.variable-name {
+  font-family: monospace;
+  font-weight: 500;
+  color: var(--accent-color);
+}
+
+.variable-value {
+  font-family: monospace;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.variable-value em {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.variable-meta {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.set-indicator,
+.usage-indicator {
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.set-indicator.active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.usage-indicator {
+  background: #e3f2fd;
+  color: #1565c0;
+}
