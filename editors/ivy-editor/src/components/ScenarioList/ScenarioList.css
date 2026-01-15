@@ -1,0 +1,99 @@
+.scenario-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.scenario-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.scenario-list-header .add-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background-color: var(--accent-color);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.scenario-list-header .add-button:hover {
+  background-color: #3a7bc8;
+}
+
+.scenario-list-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.scenario-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.scenario-row:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.scenario-row.selected {
+  background-color: var(--accent-color);
+}
+
+.scenario-icon {
+  width: 20px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.scenario-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scenario-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scenario-path {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scenario-row.selected .scenario-path {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.entry-indicator {
+  color: var(--warning-color);
+  font-size: 12px;
+}
+
+.scenario-row.selected .entry-indicator {
+  color: white;
+}

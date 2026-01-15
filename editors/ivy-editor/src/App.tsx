@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useScenario } from "./hooks/useScenario";
 import { usePreview } from "./hooks/usePreview";
+import { useProject } from "./hooks/useProject";
+import { useRecentProjects } from "./hooks/useRecentProjects";
 import { CommandList } from "./components/CommandList";
 import { CommandForm } from "./components/CommandForm";
 import { YamlPreview } from "./components/YamlPreview";
@@ -8,9 +10,21 @@ import { ValidationErrors } from "./components/ValidationErrors";
 import { FlowchartView } from "./components/FlowchartView";
 import { PreviewPanel } from "./components/PreviewPanel";
 import { AssetBrowser } from "./components/AssetBrowser";
+import { WelcomeScreen } from "./components/WelcomeScreen";
+import { ProjectWizard } from "./components/ProjectWizard";
+import { ProjectSettings } from "./components/ProjectSettings";
+import { ScenarioList } from "./components/ScenarioList";
+import type { Resolution, ProjectConfig } from "./types/project";
 import "./App.css";
 
+type EditorMode =
+  | { type: "welcome" }
+  | { type: "project" }
+  | { type: "standalone" };
+
 const App: React.FC = () => {
+  const [mode, setMode] = useState<EditorMode>({ type: "welcome" });
+
   const {
     scenario,
     filePath,
@@ -30,21 +44,45 @@ const App: React.FC = () => {
     validate,
   } = useScenario();
 
+  const {
+    project,
+    isDirty: projectIsDirty,
+    activeScenarioPath,
+    createProject,
+    openProject,
+    openProjectFromPath,
+    saveProject,
+    closeProject,
+    updateConfig,
+    setActiveScenario,
+  } = useProject();
+
+  const {
+    recentProjects,
+    addRecentProject,
+    removeRecentProject,
+  } = useRecentProjects();
+
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [activeTab, setActiveTab] = useState<"form" | "yaml">("form");
   const [view, setView] = useState<"list" | "flowchart">("list");
-  const [sidebarTab, setSidebarTab] = useState<"commands" | "assets">(
-    "commands",
-  );
+  const [sidebarTab, setSidebarTab] = useState<
+    "commands" | "assets" | "scenarios"
+  >("commands");
   const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
+  const [showProjectWizard, setShowProjectWizard] = useState(false);
+  const [showProjectSettings, setShowProjectSettings] = useState(false);
 
   // Compute base directory for asset loading
   const baseDir = useMemo(() => {
+    if (mode.type === "project" && project) {
+      return project.root_path;
+    }
     if (!filePath) return null;
     const lastSlash = filePath.lastIndexOf("/");
     return lastSlash >= 0 ? filePath.substring(0, lastSlash) : null;
-  }, [filePath]);
+  }, [mode.type, project, filePath]);
 
   // Preview state
   const {
@@ -62,7 +100,7 @@ const App: React.FC = () => {
       previewGoto(index);
       selectCommand(index);
     },
-    [previewGoto, selectCommand],
+    [previewGoto, selectCommand]
   );
 
   // Asset browser handlers
@@ -76,22 +114,19 @@ const App: React.FC = () => {
       // Determine field based on file extension
       const ext = path.split(".").pop()?.toLowerCase();
       const isImage = ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(
-        ext || "",
+        ext || ""
       );
       const isAudio = ["mp3", "ogg", "wav", "flac"].includes(ext || "");
 
       if (isImage) {
-        // Default to background, user can move to character in form
         updateCommand(selectedIndex, { ...cmd, background: path });
       } else if (isAudio) {
-        // Default to bgm
         updateCommand(selectedIndex, { ...cmd, bgm: path });
       }
 
-      // Switch to commands tab to show the update
       setSidebarTab("commands");
     },
-    [selectedIndex, scenario, updateCommand],
+    [selectedIndex, scenario, updateCommand]
   );
 
   const handleShowUsages = useCallback(
@@ -102,7 +137,7 @@ const App: React.FC = () => {
         selectCommand(indices[0]);
       }
     },
-    [selectCommand],
+    [selectCommand]
   );
 
   const labels = useMemo(() => {
@@ -123,6 +158,72 @@ const App: React.FC = () => {
     }
   }, [scenario, validate]);
 
+  // Project mode handlers
+  const handleCreateProject = async (
+    rootPath: string,
+    name: string,
+    author: string,
+    description: string,
+    resolution: Resolution
+  ) => {
+    await createProject(rootPath, name, author, description, resolution);
+    addRecentProject(rootPath, name);
+    setShowProjectWizard(false);
+    setMode({ type: "project" });
+  };
+
+  const handleOpenProject = async () => {
+    await openProject();
+    if (project) {
+      addRecentProject(project.root_path, project.config.name);
+      setMode({ type: "project" });
+    }
+  };
+
+  const handleOpenRecentProject = async (path: string) => {
+    try {
+      await openProjectFromPath(path);
+      setMode({ type: "project" });
+    } catch (e) {
+      console.error("Failed to open project:", e);
+      removeRecentProject(path);
+      alert(`Failed to open project: ${e}`);
+    }
+  };
+
+  const handleOpenFile = async () => {
+    await openFile();
+    if (filePath) {
+      setMode({ type: "standalone" });
+    }
+  };
+
+  const handleBackToWelcome = () => {
+    closeProject();
+    setMode({ type: "welcome" });
+  };
+
+  const handleSaveProjectConfig = (config: ProjectConfig) => {
+    void updateConfig(config);
+    void saveProject();
+    setShowProjectSettings(false);
+  };
+
+  // Update mode when project is loaded
+  useEffect(() => {
+    if (project && mode.type === "welcome") {
+      addRecentProject(project.root_path, project.config.name);
+      setMode({ type: "project" });
+    }
+  }, [project, mode.type, addRecentProject]);
+
+  // Update mode when file is loaded in standalone mode
+  useEffect(() => {
+    if (filePath && mode.type === "welcome") {
+      setMode({ type: "standalone" });
+    }
+  }, [filePath, mode.type]);
+
   const handleNew = () => {
     setNewTitle("");
     setShowNewDialog(true);
@@ -135,20 +236,59 @@ const App: React.FC = () => {
     }
   };
 
-  const title = filePath
-    ? `${filePath.split("/").pop()}${isDirty ? " *" : ""}`
-    : scenario
-      ? `Untitled${isDirty ? " *" : ""}`
-      : "ivy Editor";
+  // Welcome screen
+  if (mode.type === "welcome" && !scenario && !project) {
+    return (
+      <>
+        <WelcomeScreen
+          recentProjects={recentProjects}
+          onNewProject={() => setShowProjectWizard(true)}
+          onOpenProject={() => void handleOpenProject()}
+          onOpenRecentProject={(path) => void handleOpenRecentProject(path)}
+          onRemoveRecentProject={removeRecentProject}
+          onOpenFile={() => void handleOpenFile()}
+        />
+        {showProjectWizard && (
+          <ProjectWizard
+            onClose={() => setShowProjectWizard(false)}
+            onCreate={handleCreateProject}
+          />
+        )}
+      </>
+    );
+  }
+
+  const title =
+    mode.type === "project" && project
+      ? `${project.config.name}${projectIsDirty ? " *" : ""}`
+      : filePath
+        ? `${filePath.split("/").pop()}${isDirty ? " *" : ""}`
+        : scenario
+          ? `Untitled${isDirty ? " *" : ""}`
+          : "ivy Editor";
 
   return (
     <div className="app">
       {/* Header */}
       <header className="app-header">
-        <div className="header-title">{title}</div>
+        <div className="header-left">
+          <button className="back-button" onClick={handleBackToWelcome}>
+            ←
+          </button>
+          <div className="header-title">{title}</div>
+        </div>
         <div className="header-actions">
-          <button onClick={handleNew}>New</button>
-          <button onClick={() => void openFile()}>Open</button>
+          {mode.type === "project" && (
+            <button onClick={() => setShowProjectSettings(true)}>
+              Settings
+            </button>
+          )}
+          {mode.type === "standalone" && (
+            <>
+              <button onClick={handleNew}>New</button>
+              <button onClick={() => void openFile()}>Open</button>
+            </>
+          )}
           <button onClick={() => void saveFile()} disabled={!scenario}>
             Save
           </button>
@@ -161,18 +301,14 @@ const App: React.FC = () => {
           <div className="view-toggle">
             <button
               className={view === "list" ? "active" : ""}
-              onClick={() => {
-                setView("list");
-              }}
+              onClick={() => setView("list")}
               disabled={!scenario}
             >
               List
             </button>
             <button
               className={view === "flowchart" ? "active" : ""}
-              onClick={() => {
-                setView("flowchart");
-              }}
+              onClick={() => setView("flowchart")}
               disabled={!scenario}
             >
               Flowchart
@@ -183,9 +319,71 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <main className="app-main">
-        {/* Left Panel: Command List / Flowchart / Assets */}
+        {/* Left Panel: Scenarios / Commands / Assets */}
         <div className="panel panel-left">
-          {scenario ? (
+          {mode.type === "project" && project ? (
+            <>
+              <div className="sidebar-tabs">
+                <button
+                  className={sidebarTab === "scenarios" ? "active" : ""}
+                  onClick={() => setSidebarTab("scenarios")}
+                >
+                  Scenarios
+                </button>
+                <button
+                  className={sidebarTab === "commands" ? "active" : ""}
+                  onClick={() => setSidebarTab("commands")}
+                >
+                  Commands
+                </button>
+                <button
+                  className={sidebarTab === "assets" ? "active" : ""}
+                  onClick={() => setSidebarTab("assets")}
+                >
+                  Assets
+                </button>
+              </div>
+              {sidebarTab === "scenarios" ? (
+                <ScenarioList
+                  scenarios={project.config.scenarios}
+                  activeScenarioPath={activeScenarioPath}
+                  entryScenario={project.config.entry_scenario}
+                  onSelect={setActiveScenario}
+                  onAdd={() => {
+                    /* TODO: Add scenario dialog */
+                  }}
+                />
+              ) : sidebarTab === "commands" && scenario ? (
+                view === "list" ? (
+                  <CommandList
+                    commands={scenario.script}
+                    selectedIndex={selectedIndex}
+                    highlightedIndices={highlightedIndices}
+                    onSelect={selectCommand}
+                    onAdd={addCommand}
+                    onRemove={removeCommand}
+                    onReorder={reorderCommand}
+                  />
+                ) : (
+                  <FlowchartView
+                    scenario={scenario}
+                    onNodeClick={selectCommand}
+                  />
+                )
+              ) : sidebarTab === "assets" ? (
+                <AssetBrowser
+                  baseDir={baseDir}
+                  scenario={scenario}
+                  onSelectAsset={handleSelectAsset}
+                  onShowUsages={handleShowUsages}
+                />
+              ) : (
+                <div className="empty-state">
+                  <p>Select a scenario</p>
+                </div>
+              )}
+            </>
+          ) : scenario ? (
             <>
               <div className="sidebar-tabs">
                 <button
@@ -236,24 +434,20 @@ const App: React.FC = () => {
           )}
         </div>
 
-        {/* Center Panel: Editor / Preview */}
+        {/* Center Panel: Editor */}
         <div className="panel panel-center">
           {scenario && selectedCommand ? (
             <>
               <div className="tab-bar">
                 <button
                   className={activeTab === "form" ? "active" : ""}
-                  onClick={() => {
-                    setActiveTab("form");
-                  }}
+                  onClick={() => setActiveTab("form")}
                 >
                   Form
                 </button>
                 <button
                   className={activeTab === "yaml" ? "active" : ""}
-                  onClick={() => {
-                    setActiveTab("yaml");
-                  }}
+                  onClick={() => setActiveTab("yaml")}
                 >
                   YAML
                 </button>
@@ -303,9 +497,7 @@ const App: React.FC = () => {
             <input
               type="text"
               value={newTitle}
-              onChange={(e) => {
-                setNewTitle(e.target.value);
-              }}
+              onChange={(e) => setNewTitle(e.target.value)}
               placeholder="Scenario title"
               autoFocus
               onKeyDown={(e) => {
@@ -315,19 +507,22 @@ const App: React.FC = () => {
               }}
             />
             <div className="dialog-actions">
-              <button
-                onClick={() => {
-                  setShowNewDialog(false);
-                }}
-              >
-                Cancel
-              </button>
+              <button onClick={() => setShowNewDialog(false)}>Cancel</button>
               <button onClick={handleCreateNew} disabled={!newTitle.trim()}>
                 Create
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Project Settings Dialog */}
+      {showProjectSettings && project && (
+        <ProjectSettings
+          config={project.config}
+          onClose={() => setShowProjectSettings(false)}
+          onSave={handleSaveProjectConfig}
+        />
       )}
     </div>
   );

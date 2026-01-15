@@ -1,0 +1,232 @@
+.wizard-dialog {
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.wizard-header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.wizard-header h2 {
+  margin-bottom: 16px;
+}
+
+.wizard-steps {
+  display: flex;
+  gap: 8px;
+}
+
+.wizard-step {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.wizard-step.active {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.wizard-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.wizard-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.folder-select {
+  display: flex;
+  gap: 8px;
+}
+
+.folder-select input {
+  flex: 1;
+}
+
+.folder-select button {
+  padding: 8px 16px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.folder-select button:hover {
+  background-color: var(--accent-color);
+}
+
+.folder-preview {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
+}
+
+.resolution-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resolution-option {
+  padding: 10px 16px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.resolution-option:hover {
+  border-color: var(--accent-color);
+}
+
+.resolution-option.selected {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.custom-resolution {
+  display: flex;
+  gap: 16px;
+}
+
+.custom-resolution .form-field {
+  flex: 1;
+}
+
+.resolution-preview {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.preview-box {
+  width: 200px;
+  max-width: 100%;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.summary-section {
+  margin-bottom: 24px;
+}
+
+.summary-section h3 {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.summary-list {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 8px 16px;
+}
+
+.summary-list dt {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.summary-list dd {
+  color: var(--text-primary);
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.file-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.file-list li {
+  padding: 8px 12px;
+  background-color: var(--bg-tertiary);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
+}
+
+.wizard-error {
+  padding: 12px;
+  background-color: rgba(231, 76, 60, 0.1);
+  border: 1px solid var(--error-color);
+  border-radius: 4px;
+  color: var(--error-color);
+  font-size: 13px;
+}
+
+.wizard-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.wizard-actions-right {
+  display: flex;
+  gap: 8px;
+}
+
+.wizard-actions button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.wizard-actions button:not(.primary) {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.wizard-actions button:not(.primary):hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+}
+
+.wizard-actions button.primary {
+  background-color: var(--accent-color);
+  border: none;
+  color: white;
+}
+
+.wizard-actions button.primary:hover:not(:disabled) {
+  background-color: #3a7bc8;
+}
+
+.wizard-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
