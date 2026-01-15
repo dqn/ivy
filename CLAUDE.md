@@ -390,6 +390,7 @@ cargo run --bin ivy-preview -- --port 8080 scenario.yaml # カスタムポート
   - コードスニペット（40+ パターン）
   - プレビューコマンド（`Ivy: Open Preview`）
   - バリデーションコマンド（`Ivy: Validate Scenario`）
+  - CLIバイナリ自動検出・インストールガイド
 
 ### コミュニティModding
 - [x] Modローダー（`src/modding`）
