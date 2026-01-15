@@ -405,11 +405,11 @@ cargo run --bin ivy-preview -- --port 8080 scenario.yaml # カスタムポート
   - 複数キャラクター対応（LipSyncManager）
   - 設定可能な速度・開度
 
-### 今後の予定
+### 保留中の機能
 
-#### 中優先度（開発体験・演出強化）
-- [ ] Live2D対応（Cubism SDK必要）
+以下の機能は技術的・ライセンス的な制約により保留中。
+詳細は [docs/feature-plans/](docs/feature-plans/) を参照。
 
-#### 低優先度
-- [ ] Spine対応（Spine Runtime必要）
-- [ ] クラウドセーブ（バックエンドサーバー必要）
+- Live2D対応: Cubism SDK（C++）とライセンスが必要
+- Spine対応: Spine Runtime とライセンスが必要
+- クラウドセーブ: バックエンドサーバーの構築・運用が必要

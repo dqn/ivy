@@ -30,7 +30,7 @@ A comparison of ivy with major visual novel engines.
 | Feature | ivy | Ren'Py | TyranoBuilder | Naninovel | VNM |
 |---------|-----|--------|---------------|-----------|-----|
 | ADV mode | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| NVL mode | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| NVL mode | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Colored text | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Ruby (furigana) | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
@@ -40,9 +40,9 @@ A comparison of ivy with major visual novel engines.
 |---------|-----|--------|---------------|-----------|-----|
 | Sprite display | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Multiple characters | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Modular characters | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Modular characters | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Live2D | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Lip sync | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Lip sync | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 ### Effects
 
@@ -51,9 +51,9 @@ A comparison of ivy with major visual novel engines.
 | Transitions | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Screen shake | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Particles | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Dynamic camera | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Dynamic camera | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Video playback | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Video background | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Video background | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 ### Audio
 
@@ -62,15 +62,15 @@ A comparison of ivy with major visual novel engines.
 | BGM | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Sound effects | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Voice | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Layered audio | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Layered audio | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 ### Accessibility
 
 | Feature | ivy | Ren'Py | TyranoBuilder | Naninovel | VNM |
 |---------|-----|--------|---------------|-----------|-----|
-| Font size adjustment | :x: | :white_check_mark: | :x: | :white_check_mark: | :x: |
-| Screen reader | :x: | :white_check_mark: | :x: | :x: | :x: |
-| High contrast | :x: | :white_check_mark: | :x: | :x: | :x: |
+| Font size adjustment | :white_check_mark: | :white_check_mark: | :x: | :white_check_mark: | :x: |
+| Screen reader | :white_check_mark: | :white_check_mark: | :x: | :x: | :x: |
+| High contrast | :white_check_mark: | :white_check_mark: | :x: | :x: | :x: |
 
 ### Developer Features
 
@@ -79,7 +79,7 @@ A comparison of ivy with major visual novel engines.
 | Localization | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Hot reload | :white_check_mark: | :white_check_mark: | :x: | :white_check_mark: | :x: |
 | Debug console | :white_check_mark: | :white_check_mark: | :x: | :white_check_mark: | :x: |
-| Community modding | :x: | :white_check_mark: | :x: | :white_check_mark: | :x: |
+| Community modding | :white_check_mark: | :white_check_mark: | :x: | :white_check_mark: | :x: |
 
 ## References
 

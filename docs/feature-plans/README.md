@@ -2,28 +2,26 @@
 
 Documentation for planned features in ivy.
 
-## High Priority
+## On Hold
 
-| Feature | Description | Document |
-|---------|-------------|----------|
-| NVL Mode | Full-screen text display | [nvl-mode.md](./nvl-mode.md) |
-| Modular Characters | Layered sprite compositing | [modular-characters.md](./modular-characters.md) |
+The following features are on hold due to technical or licensing constraints.
 
-## Medium Priority
+| Feature | Reason | Document |
+|---------|--------|----------|
+| Live2D | Requires Cubism SDK (C++) and license | [live2d.md](./live2d.md) |
+| Spine | Requires Spine Runtime and license | [spine.md](./spine.md) |
+| Cloud Save | Requires backend server infrastructure | [cloud-save.md](./cloud-save.md) |
 
-| Feature | Description | Document |
-|---------|-------------|----------|
-| Development Tools | VSCode extension, validator | [dev-tools.md](./dev-tools.md) |
-| Dynamic Camera | Pan, zoom, tilt effects | [dynamic-camera.md](./dynamic-camera.md) |
-| Video Background | Animated video backgrounds | [video-background.md](./video-background.md) |
-| Layered Audio | Multiple ambient tracks | [layered-audio.md](./layered-audio.md) |
-| Live2D | 2D character animation | [live2d.md](./live2d.md) |
+## Implemented Features
 
-## Low Priority
+The following features have been implemented. See [CLAUDE.md](/CLAUDE.md) for usage documentation.
 
-| Feature | Description | Document |
-|---------|-------------|----------|
-| Accessibility | Screen reader, font size | [accessibility.md](./accessibility.md) |
-| Spine | Skeletal animation | [spine.md](./spine.md) |
-| Community Modding | Player-created content | [community-modding.md](./community-modding.md) |
-| Cloud Save | Cross-device sync | [cloud-save.md](./cloud-save.md) |
+- NVL Mode
+- Modular Characters
+- Development Tools (VSCode extension, ivy-validate, ivy-preview)
+- Dynamic Camera
+- Video Background
+- Layered Audio
+- Accessibility (font size, high contrast, screen reader, dyslexia font)
+- Community Modding
+- Lip Sync
