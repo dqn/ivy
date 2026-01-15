@@ -393,6 +393,81 @@ script:
 }
 
 #[test]
+fn test_parse_error_hint_choice_syntax_error() {
+    // Invalid YAML syntax near "choice:" - will trigger hint
+    let yaml = r#"title: Test
+script:
+  - text: "Hello"
+    choice: [invalid
+"#;
+
+    let result = parse_scenario(yaml);
+    assert!(result.is_err());
+
+    let error_msg = result.unwrap_err().to_string();
+    assert!(
+        error_msg.contains("choices:") && error_msg.contains("Hint"),
+        "Error should suggest 'choices:' instead of 'choice:': {}",
+        error_msg
+    );
+}
+
+#[test]
+fn test_parse_error_hint_pos_syntax_error() {
+    // Invalid YAML syntax near "pos:" - will trigger hint
+    let yaml = r#"title: Test
+script:
+  - text: "Hello"
+    pos: [invalid
+"#;
+
+    let result = parse_scenario(yaml);
+    assert!(result.is_err());
+
+    let error_msg = result.unwrap_err().to_string();
+    assert!(
+        error_msg.contains("char_pos") && error_msg.contains("Hint"),
+        "Error should suggest 'char_pos:' instead of 'pos:': {}",
+        error_msg
+    );
+}
+
+#[test]
+fn test_parse_error_hint_goto_syntax_error() {
+    // Invalid YAML syntax near "goto:" - will trigger hint
+    let yaml = r#"title: Test
+script:
+  - text: "Hello"
+    goto: [invalid
+"#;
+
+    let result = parse_scenario(yaml);
+    assert!(result.is_err());
+
+    let error_msg = result.unwrap_err().to_string();
+    assert!(
+        error_msg.contains("jump:") && error_msg.contains("Hint"),
+        "Error should suggest 'jump:' instead of 'goto:': {}",
+        error_msg
+    );
+}
+
+#[test]
+fn test_parse_error_hint_tab_indentation() {
+    let yaml = "title: Test\nscript:\n\t- text: \"Hello\"";
+
+    let result = parse_scenario(yaml);
+    assert!(result.is_err());
+
+    let error_msg = result.unwrap_err().to_string();
+    assert!(
+        error_msg.contains("tabs") && error_msg.contains("Hint"),
+        "Error should mention tab indentation issue: {}",
+        error_msg
+    );
+}
+
+#[test]
 fn test_parse_missing_title_returns_error() {
     let yaml = r#"
 script:
