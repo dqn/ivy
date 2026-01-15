@@ -6,6 +6,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
+            commands::assets::get_relative_path,
             commands::assets::read_asset_base64,
             commands::flowchart::get_flowchart,
             commands::preview::get_preview_state,

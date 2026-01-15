@@ -22,6 +22,7 @@ interface UseScenarioReturn {
   updateCommand: (index: number, command: Command) => void;
   addCommand: (afterIndex?: number) => void;
   removeCommand: (index: number) => void;
+  reorderCommand: (fromIndex: number, toIndex: number) => void;
 
   // Validation
   validate: () => Promise<void>;
@@ -188,6 +189,35 @@ export function useScenario(): UseScenarioReturn {
     [scenario, selectedIndex, updateYamlPreview]
   );
 
+  const reorderCommand = useCallback(
+    async (fromIndex: number, toIndex: number) => {
+      if (!scenario) return;
+      if (fromIndex === toIndex) return;
+
+      const newScript = [...scenario.script];
+      const [removed] = newScript.splice(fromIndex, 1);
+      newScript.splice(toIndex, 0, removed);
+
+      const newScenario = { ...scenario, script: newScript };
+      setScenario(newScenario);
+      setIsDirty(true);
+
+      // Update selection to follow the moved item
+      if (selectedIndex !== null) {
+        if (selectedIndex === fromIndex) {
+          setSelectedIndex(toIndex);
+        } else if (fromIndex < selectedIndex && toIndex >= selectedIndex) {
+          setSelectedIndex(selectedIndex - 1);
+        } else if (fromIndex > selectedIndex && toIndex <= selectedIndex) {
+          setSelectedIndex(selectedIndex + 1);
+        }
+      }
+
+      await updateYamlPreview(newScenario);
+    },
+    [scenario, selectedIndex, updateYamlPreview]
+  );
+
   const validate = useCallback(async () => {
     if (!scenario) return;
 
@@ -214,6 +244,7 @@ export function useScenario(): UseScenarioReturn {
     updateCommand,
     addCommand,
     removeCommand,
+    reorderCommand,
     validate,
   };
 }

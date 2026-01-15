@@ -4,11 +4,13 @@ import type {
   LocalizedString,
   CharPosition,
   Choice,
-} from "../types/scenario";
+} from "../../types/scenario";
+import { AssetField } from "./AssetField";
 
 interface CommandFormProps {
   command: Command;
   labels: string[];
+  baseDir: string | null;
   onChange: (command: Command) => void;
 }
 
@@ -25,6 +27,7 @@ function setTextValue(value: string): LocalizedString {
 export const CommandForm: React.FC<CommandFormProps> = ({
   command,
   labels,
+  baseDir,
   onChange,
 }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -113,29 +116,25 @@ export const CommandForm: React.FC<CommandFormProps> = ({
       <section className="form-section">
         <h3>Visual</h3>
 
-        <div className="form-field optional">
-          <label>Background</label>
-          <input
-            type="text"
-            value={command.background ?? ""}
-            onChange={(e) => {
-              updateField("background", e.target.value || undefined);
-            }}
-            placeholder="assets/bg.png (empty to clear)"
-          />
-        </div>
+        <AssetField
+          label="Background"
+          value={command.background}
+          baseDir={baseDir}
+          accept={[".png", ".jpg", ".jpeg", ".webp"]}
+          onChange={(value) => {
+            updateField("background", value);
+          }}
+        />
 
-        <div className="form-field optional">
-          <label>Character</label>
-          <input
-            type="text"
-            value={command.character ?? ""}
-            onChange={(e) => {
-              updateField("character", e.target.value || undefined);
-            }}
-            placeholder="assets/char.png (empty to clear)"
-          />
-        </div>
+        <AssetField
+          label="Character"
+          value={command.character}
+          baseDir={baseDir}
+          accept={[".png", ".jpg", ".jpeg", ".webp"]}
+          onChange={(value) => {
+            updateField("character", value);
+          }}
+        />
 
         <div className="form-field optional">
           <label>Position</label>
@@ -159,41 +158,35 @@ export const CommandForm: React.FC<CommandFormProps> = ({
       <section className="form-section">
         <h3>Audio</h3>
 
-        <div className="form-field optional">
-          <label>BGM</label>
-          <input
-            type="text"
-            value={command.bgm ?? ""}
-            onChange={(e) => {
-              updateField("bgm", e.target.value || undefined);
-            }}
-            placeholder="assets/bgm.mp3 (empty to stop)"
-          />
-        </div>
+        <AssetField
+          label="BGM"
+          value={command.bgm}
+          baseDir={baseDir}
+          accept={[".mp3", ".ogg", ".wav"]}
+          onChange={(value) => {
+            updateField("bgm", value);
+          }}
+        />
 
-        <div className="form-field optional">
-          <label>Sound Effect</label>
-          <input
-            type="text"
-            value={command.se ?? ""}
-            onChange={(e) => {
-              updateField("se", e.target.value || undefined);
-            }}
-            placeholder="assets/se.mp3"
-          />
-        </div>
+        <AssetField
+          label="Sound Effect"
+          value={command.se}
+          baseDir={baseDir}
+          accept={[".mp3", ".ogg", ".wav"]}
+          onChange={(value) => {
+            updateField("se", value);
+          }}
+        />
 
-        <div className="form-field optional">
-          <label>Voice</label>
-          <input
-            type="text"
-            value={command.voice ?? ""}
-            onChange={(e) => {
-              updateField("voice", e.target.value || undefined);
-            }}
-            placeholder="assets/voice.mp3"
-          />
-        </div>
+        <AssetField
+          label="Voice"
+          value={command.voice}
+          baseDir={baseDir}
+          accept={[".mp3", ".ogg", ".wav"]}
+          onChange={(value) => {
+            updateField("voice", value);
+          }}
+        />
       </section>
 
       {/* Flow Section */}
@@ -245,7 +238,7 @@ export const CommandForm: React.FC<CommandFormProps> = ({
                   </option>
                 ))}
               </select>
-              <button onClick={() => removeChoice(index)}>×</button>
+              <button onClick={() => removeChoice(index)}>x</button>
             </div>
           ))}
           <button className="add-choice" onClick={addChoice}>
@@ -262,7 +255,7 @@ export const CommandForm: React.FC<CommandFormProps> = ({
           }}
           style={{ cursor: "pointer" }}
         >
-          {showAdvanced ? "▼" : "▶"} Advanced
+          {showAdvanced ? "v" : ">"} Advanced
         </h3>
         {showAdvanced && (
           <>

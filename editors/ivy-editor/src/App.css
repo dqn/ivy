@@ -180,7 +180,10 @@ body {
   padding: 6px 12px;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
-  transition: background-color 0.1s;
+  transition:
+    background-color 0.1s,
+    opacity 0.2s,
+    box-shadow 0.2s;
 }
 
 .command-row:hover {
@@ -189,6 +192,27 @@ body {
 
 .command-row.selected {
   background-color: var(--accent-color);
+}
+
+.command-row.dragging {
+  opacity: 0.5;
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Drag Handle */
+.drag-handle {
+  width: 20px;
+  cursor: grab;
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+  user-select: none;
+  margin-right: 4px;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .command-index {
@@ -382,6 +406,95 @@ body {
   padding: 8px;
   background-color: var(--bg-tertiary);
   border-radius: 4px;
+}
+
+/* Asset Field */
+.asset-field {
+  margin-bottom: 12px;
+}
+
+.asset-field > label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.asset-drop-zone {
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  transition: all 0.2s;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.asset-drop-zone:hover {
+  border-color: var(--accent-color);
+  background: rgba(74, 144, 217, 0.1);
+}
+
+.asset-drop-zone.has-value {
+  border-style: solid;
+  border-color: var(--success-color);
+  background: rgba(39, 174, 96, 0.1);
+}
+
+.asset-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.asset-path {
+  flex: 1;
+  text-align: left;
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
+  font-size: 12px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clear-button {
+  background: var(--error-color);
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.clear-button:hover {
+  background: #c0392b;
+}
+
+.drop-placeholder {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.browse-button {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 13px;
+  padding: 0;
+}
+
+.browse-button:hover {
+  color: #6aa8e8;
 }
 
 /* YAML Preview */

@@ -3,6 +3,18 @@ use std::fs;
 use std::path::Path;
 
 #[tauri::command]
+pub fn get_relative_path(base_dir: &str, file_path: &str) -> Result<String, String> {
+    let base = Path::new(base_dir);
+    let file = Path::new(file_path);
+
+    if let Ok(relative) = file.strip_prefix(base) {
+        return Ok(relative.to_string_lossy().to_string());
+    }
+
+    Ok(file_path.to_string())
+}
+
+#[tauri::command]
 pub fn read_asset_base64(base_dir: &str, asset_path: &str) -> Result<String, String> {
     if asset_path.is_empty() {
         return Ok(String::new());

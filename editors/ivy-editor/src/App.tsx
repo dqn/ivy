@@ -25,6 +25,7 @@ const App: React.FC = () => {
     updateCommand,
     addCommand,
     removeCommand,
+    reorderCommand,
     validate,
   } = useScenario();
 
@@ -147,6 +148,7 @@ const App: React.FC = () => {
                 onSelect={selectCommand}
                 onAdd={addCommand}
                 onRemove={removeCommand}
+                onReorder={reorderCommand}
               />
             ) : (
               <FlowchartView scenario={scenario} onNodeClick={selectCommand} />
@@ -186,6 +188,7 @@ const App: React.FC = () => {
                 <CommandForm
                   command={selectedCommand}
                   labels={labels}
+                  baseDir={baseDir}
                   onChange={(cmd) => {
                     updateCommand(selectedIndex!, cmd);
                   }}
