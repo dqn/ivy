@@ -1218,3 +1218,137 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
+
+/* Particle Picker */
+.particle-picker {
+  margin-bottom: 12px;
+}
+
+.particle-picker > label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.particle-preview-container {
+  width: 100%;
+  height: 100px;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.particle-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.particle-preview-placeholder {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.particle-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.particle-type-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background-color: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.particle-type-button:hover {
+  border-color: var(--accent-color);
+  background-color: rgba(74, 144, 217, 0.1);
+}
+
+.particle-type-button.selected {
+  border-color: var(--accent-color);
+  background-color: rgba(74, 144, 217, 0.2);
+}
+
+.particle-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.particle-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.particle-type-button.selected .particle-label {
+  color: var(--text-primary);
+}
+
+.particle-intensity {
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.particle-intensity > label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.intensity-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.intensity-control input[type="range"] {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-color);
+  border-radius: 2px;
+  outline: none;
+}
+
+.intensity-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  cursor: pointer;
+}
+
+.intensity-control input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  cursor: pointer;
+  border: none;
+}
+
+.intensity-value {
+  min-width: 45px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-primary);
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
+}

@@ -13,6 +13,7 @@ import { AssetField } from "./AssetField";
 import { ModularCharField } from "./ModularCharField";
 import { TransitionPicker } from "./TransitionPicker";
 import { CameraPicker } from "./CameraPicker";
+import { ParticlePicker } from "./ParticlePicker";
 
 interface CommandFormProps {
   command: Command;
@@ -326,22 +327,16 @@ export const CommandForm: React.FC<CommandFormProps> = ({
               />
             </div>
 
-            <div className="form-field optional">
-              <label>Particles</label>
-              <select
-                value={command.particles || ""}
-                onChange={(e) => {
-                  updateField("particles", e.target.value || undefined);
-                }}
-              >
-                <option value="">-- None --</option>
-                <option value="snow">Snow</option>
-                <option value="rain">Rain</option>
-                <option value="sakura">Sakura</option>
-                <option value="sparkle">Sparkle</option>
-                <option value="leaves">Leaves</option>
-              </select>
-            </div>
+            <ParticlePicker
+              value={command.particles}
+              intensity={command.particle_intensity}
+              onChange={(value) => {
+                updateField("particles", value);
+              }}
+              onIntensityChange={(value) => {
+                updateField("particle_intensity", value);
+              }}
+            />
 
             <div className="form-field optional">
               <label>
