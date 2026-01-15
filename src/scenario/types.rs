@@ -6,6 +6,7 @@ pub use super::easing::Easing;
 
 /// Character sprite position on screen.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 #[serde(rename_all = "snake_case")]
 pub enum CharPosition {
     Left,
@@ -15,7 +16,8 @@ pub enum CharPosition {
 }
 
 /// Transition effect type.
-#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 #[serde(rename_all = "snake_case")]
 pub enum TransitionType {
     #[default]
@@ -36,7 +38,8 @@ pub enum TransitionType {
 }
 
 /// Direction for directional transitions.
-#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 #[serde(rename_all = "snake_case")]
 pub enum TransitionDirection {
     /// Left to right (default for Wipe).
@@ -67,7 +70,8 @@ pub enum TransitionDirection {
 }
 
 /// Transition configuration.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct Transition {
     #[serde(rename = "type", default)]
     pub transition_type: TransitionType,
@@ -99,7 +103,8 @@ fn default_duration() -> f32 {
 }
 
 /// Variable assignment command.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct SetVar {
     pub name: String,
     pub value: crate::types::Value,
@@ -107,6 +112,7 @@ pub struct SetVar {
 
 /// Text input command for player input.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct Input {
     /// Variable name to store the input.
     pub var: String,
@@ -119,7 +125,8 @@ pub struct Input {
 }
 
 /// Conditional jump command.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct IfCondition {
     /// Variable name to check.
     pub var: String,
@@ -130,7 +137,8 @@ pub struct IfCondition {
 }
 
 /// Character display configuration for multiple characters.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct CharacterDisplay {
     /// Character image path.
     pub image: String,
@@ -147,6 +155,7 @@ pub struct CharacterDisplay {
 
 /// Character animation type.
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 #[serde(rename_all = "snake_case")]
 pub enum CharAnimationType {
     /// No animation (instant).
@@ -162,6 +171,7 @@ pub enum CharAnimationType {
 
 /// Character enter/exit animation configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct CharAnimation {
     #[serde(rename = "type", default)]
     pub animation_type: CharAnimationType,
@@ -177,6 +187,7 @@ fn default_char_animation_duration() -> f32 {
 
 /// Character idle animation type (looping animations).
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 #[serde(rename_all = "snake_case")]
 pub enum CharIdleType {
     /// No idle animation.
@@ -194,6 +205,7 @@ pub enum CharIdleType {
 
 /// Character idle animation configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct CharIdleAnimation {
     #[serde(rename = "type", default)]
     pub idle_type: CharIdleType,
@@ -216,7 +228,8 @@ fn default_char_idle_intensity() -> f32 {
 }
 
 /// Shake effect type.
-#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 #[serde(rename_all = "snake_case")]
 pub enum ShakeType {
     /// Horizontal shake (left-right).
@@ -229,7 +242,8 @@ pub enum ShakeType {
 }
 
 /// Shake effect configuration.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct Shake {
     /// Shake type (horizontal, vertical, both).
     #[serde(rename = "type", default)]
@@ -254,6 +268,7 @@ fn default_shake_duration() -> f32 {
 
 /// Camera focus point.
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 #[serde(rename_all = "snake_case")]
 pub enum CameraFocus {
     /// Center of screen (default).
@@ -279,6 +294,7 @@ pub enum CameraFocus {
 
 /// Camera pan offset.
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct CameraPan {
     /// Horizontal offset in pixels.
     #[serde(default)]
@@ -289,7 +305,8 @@ pub struct CameraPan {
 }
 
 /// Camera command for dynamic camera effects.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct CameraCommand {
     /// Pan offset (horizontal and vertical movement).
     pub pan: Option<CameraPan>,
@@ -313,7 +330,8 @@ fn default_camera_duration() -> f32 {
 }
 
 /// Video playback command.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct VideoCommand {
     /// Video file path.
     pub path: String,
@@ -340,7 +358,8 @@ fn default_video_bgm_fade() -> f32 {
 }
 
 /// Ambient audio track for layered soundscapes.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct AmbientTrack {
     /// Unique identifier for this ambient track (used for stopping).
     pub id: String,
@@ -366,7 +385,8 @@ fn default_ambient_loop() -> bool {
 }
 
 /// Stop an ambient track by ID.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct AmbientStop {
     /// ID of the ambient track to stop.
     pub id: String,
@@ -376,7 +396,8 @@ pub struct AmbientStop {
 }
 
 /// Video background configuration.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct VideoBackground {
     /// Video file path.
     pub path: String,
@@ -393,6 +414,7 @@ fn default_video_bg_loop() -> bool {
 
 /// A single choice option that branches the story.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct Choice {
     /// Display text for this choice (supports localization).
     pub label: LocalizedString,
@@ -404,7 +426,8 @@ pub struct Choice {
 }
 
 /// A single command in the scenario script.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct Command {
     /// Optional label for this command (used as jump target).
     pub label: Option<String>,
@@ -485,7 +508,8 @@ pub struct Command {
 }
 
 /// Achievement unlock command.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct Achievement {
     /// Achievement ID.
     pub id: String,
@@ -505,7 +529,8 @@ fn default_particle_intensity() -> f32 {
 }
 
 /// Chapter definition in scenario YAML.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct ChapterDef {
     /// Unique chapter ID.
     pub id: String,
@@ -519,7 +544,8 @@ pub struct ChapterDef {
 }
 
 /// Layer definition for modular characters.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct LayerDef {
     /// Layer name (e.g., "hair", "expression", "outfit").
     pub name: String,
@@ -528,7 +554,8 @@ pub struct LayerDef {
 }
 
 /// Modular character definition for layered sprite compositing.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct ModularCharDef {
     /// Base image path (body silhouette).
     pub base: String,
@@ -538,7 +565,8 @@ pub struct ModularCharDef {
 }
 
 /// Modular character reference in commands.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct ModularCharRef {
     /// Character definition name.
     pub name: String,
@@ -548,7 +576,8 @@ pub struct ModularCharRef {
 }
 
 /// A complete scenario loaded from YAML.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct Scenario {
     /// Title of this scenario.
     pub title: String,

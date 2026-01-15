@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// Variable value types used across scenario and runtime modules.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 #[serde(untagged)]
 pub enum Value {
     Bool(bool),

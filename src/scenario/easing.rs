@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// Easing functions for smooth animations.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 #[serde(rename_all = "snake_case")]
 pub enum Easing {
     /// Linear interpolation (no easing).

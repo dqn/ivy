@@ -12,6 +12,7 @@ use super::Translations;
 /// - `Localized(HashMap)`: Inline localized strings (lang -> text).
 /// - `Key(String)`: Reference to translation key (starts with "@").
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub enum LocalizedString {
     /// Plain string (single language, backward compatible).
     Plain(String),

@@ -2,17 +2,22 @@
 
 use std::collections::{HashMap, HashSet};
 
+use serde::Serialize;
+
 use crate::scenario::types::Scenario;
 
 /// Severity level for validation issues.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
+#[serde(rename_all = "snake_case")]
 pub enum Severity {
     Error,
     Warning,
 }
 
 /// A validation issue found in the scenario.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct ValidationIssue {
     pub severity: Severity,
     pub message: String,
@@ -46,7 +51,8 @@ impl ValidationIssue {
 }
 
 /// Result of scenario validation.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize)]
+#[cfg_attr(feature = "editor-types", derive(ts_rs::TS))]
 pub struct ValidationResult {
     pub issues: Vec<ValidationIssue>,
 }
