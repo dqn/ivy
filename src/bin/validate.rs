@@ -4,6 +4,7 @@
 //!   ivy-validate <scenario.yaml>
 //!   ivy-validate --all <directory>
 //!   ivy-validate --watch <directory>
+//!   ivy-validate --json <scenario.yaml>
 
 use std::env;
 use std::fs;
@@ -17,6 +18,7 @@ use std::time::Duration;
 use ivy::scenario::{detect_circular_paths, parse_scenario, validate_scenario, Severity};
 #[cfg(not(target_arch = "wasm32"))]
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+use serde::Serialize;
 
 // ANSI color codes
 const RED: &str = "\x1b[31m";
@@ -25,6 +27,36 @@ const GREEN: &str = "\x1b[32m";
 const CYAN: &str = "\x1b[36m";
 const BOLD: &str = "\x1b[1m";
 const RESET: &str = "\x1b[0m";
+
+/// JSON output structure for a single issue.
+#[derive(Serialize)]
+struct JsonIssue {
+    severity: String,
+    message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    command_index: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    label: Option<String>,
+}
+
+/// JSON output structure for a file's validation result.
+#[derive(Serialize)]
+struct JsonFileResult {
+    file: String,
+    errors: usize,
+    warnings: usize,
+    issues: Vec<JsonIssue>,
+}
+
+/// JSON output structure for the overall validation result.
+#[derive(Serialize)]
+struct JsonOutput {
+    success: bool,
+    files_checked: usize,
+    total_errors: usize,
+    total_warnings: usize,
+    results: Vec<JsonFileResult>,
+}
 
 fn print_usage() {
     eprintln!("ivy-validate - Validate ivy scenario files");
@@ -42,6 +74,8 @@ fn print_usage() {
     eprintln!("  --watch       Watch for file changes and re-validate automatically");
     eprintln!("  --cycles      Also detect circular jump paths");
     eprintln!("  --no-color    Disable colored output");
+    eprintln!("  --json        Output results in JSON format (for CI/tooling integration)");
+    eprintln!("  --quiet, -q   Only output errors (suppress warnings and info)");
 }
 
 fn validate_file(path: &Path, check_cycles: bool, use_color: bool) -> (usize, usize) {
@@ -129,6 +163,95 @@ fn validate_file(path: &Path, check_cycles: bool, use_color: bool) -> (usize, us
     }
 
     (errors, warnings)
+}
+
+/// Validate a file and return JSON-compatible result.
+fn validate_file_json(path: &Path, check_cycles: bool) -> JsonFileResult {
+    let mut issues = Vec::new();
+    let mut errors = 0;
+    let mut warnings = 0;
+
+    let content = match fs::read_to_string(path) {
+        Ok(c) => c,
+        Err(e) => {
+            issues.push(JsonIssue {
+                severity: "error".to_string(),
+                message: format!("Error reading file: {}", e),
+                command_index: None,
+                label: None,
+            });
+            return JsonFileResult {
+                file: path.display().to_string(),
+                errors: 1,
+                warnings: 0,
+                issues,
+            };
+        }
+    };
+
+    let scenario = match parse_scenario(&content) {
+        Ok(s) => s,
+        Err(e) => {
+            issues.push(JsonIssue {
+                severity: "error".to_string(),
+                message: format!("Parse error: {}", e),
+                command_index: None,
+                label: None,
+            });
+            return JsonFileResult {
+                file: path.display().to_string(),
+                errors: 1,
+                warnings: 0,
+                issues,
+            };
+        }
+    };
+
+    let result = validate_scenario(&scenario);
+
+    for issue in &result.issues {
+        let severity = match issue.severity {
+            Severity::Error => {
+                errors += 1;
+                "error"
+            }
+            Severity::Warning => {
+                warnings += 1;
+                "warning"
+            }
+        };
+
+        issues.push(JsonIssue {
+            severity: severity.to_string(),
+            message: issue.message.clone(),
+            command_index: issue.command_index,
+            label: issue.label.clone(),
+        });
+    }
+
+    if check_cycles {
+        let cycles = detect_circular_paths(&scenario);
+        for cycle in &cycles {
+            warnings += 1;
+            issues.push(JsonIssue {
+                severity: "warning".to_string(),
+                message: format!(
+                    "Circular path detected: {} -> {}",
+                    cycle.join(" -> "),
+                    cycle.first().unwrap_or(&String::new())
+                ),
+                command_index: None,
+                label: cycle.first().cloned(),
+            });
+        }
+    }
+
+    JsonFileResult {
+        file: path.display().to_string(),
+        errors,
+        warnings,
+        issues,
+    }
 }
 
 fn validate_directory(path: &Path, check_cycles: bool, use_color: bool) -> (usize, usize, usize) {
@@ -253,6 +376,8 @@ fn main() -> ExitCode {
     #[cfg(not(target_arch = "wasm32"))]
     let mut watch_mode = false;
     let mut use_color = true;
+    let mut json_mode = false;
+    let mut quiet_mode = false;
     let mut target: Option<&str> = None;
 
     let mut i = 1;
@@ -274,6 +399,12 @@ fn main() -> ExitCode {
             }
             "--no-color" => {
                 use_color = false;
+            }
+            "--json" => {
+                json_mode = true;
+            }
+            "-q" | "--quiet" => {
+                quiet_mode = true;
             }
             arg if !arg.starts_with('-') => {
                 target = Some(arg);
@@ -297,6 +428,61 @@ fn main() -> ExitCode {
     };
 
     let path = Path::new(target);
+
+    // JSON mode
+    if json_mode {
+        let mut results = Vec::new();
+        let mut total_errors = 0;
+        let mut total_warnings = 0;
+
+        if all_mode || path.is_dir() {
+            if !path.is_dir() {
+                eprintln!("Error: {} is not a directory", target);
+                return ExitCode::from(1);
+            }
+
+            if let Ok(entries) = fs::read_dir(path) {
+                for entry in entries.flatten() {
+                    let file_path = entry.path();
+                    if let Some(ext) = file_path.extension() {
+                        if ext == "yaml" || ext == "yml" {
+                            let result = validate_file_json(&file_path, check_cycles);
+                            total_errors += result.errors;
+                            total_warnings += result.warnings;
+                            results.push(result);
+                        }
+                    }
+                }
+            }
+        } else {
+            if !path.is_file() {
+                eprintln!("Error: {} is not a file", target);
+                return ExitCode::from(1);
+            }
+            let result = validate_file_json(path, check_cycles);
+            total_errors += result.errors;
+            total_warnings += result.warnings;
+            results.push(result);
+        }
+
+        let output = JsonOutput {
+            success: total_errors == 0,
+            files_checked: results.len(),
+            total_errors,
+            total_warnings,
+            results,
+        };
+
+        if let Ok(json) = serde_json::to_string_pretty(&output) {
+            println!("{}", json);
+        }
+
+        return if total_errors > 0 {
+            ExitCode::from(1)
+        } else {
+            ExitCode::from(0)
+        };
+    }
 
     // Watch mode
     #[cfg(not(target_arch = "wasm32"))]
@@ -325,16 +511,20 @@ fn main() -> ExitCode {
             return ExitCode::from(1);
         }
 
-        if use_color {
-            eprintln!("{}Validating:{} {}", CYAN, RESET, path.display());
-        } else {
-            eprintln!("Validating: {}", path.display());
+        if !quiet_mode {
+            if use_color {
+                eprintln!("{}Validating:{} {}", CYAN, RESET, path.display());
+            } else {
+                eprintln!("Validating: {}", path.display());
+            }
         }
         let (errors, warnings) = validate_file(path, check_cycles, use_color);
         (errors, warnings, 1)
     };
 
-    print_summary(total_errors, total_warnings, files_checked, use_color);
+    if !quiet_mode || total_errors > 0 {
+        print_summary(total_errors, total_warnings, files_checked, use_color);
+    }
 
     if total_errors > 0 {
         ExitCode::from(1)

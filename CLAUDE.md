@@ -243,6 +243,8 @@ cargo run --bin ivy-validate -- --all assets/          # ディレクトリ内�
 cargo run --bin ivy-validate -- --watch assets/        # ファイル監視モード（変更時自動検証）
 cargo run --bin ivy-validate -- --cycles scenario.yaml # 循環パス検出も実行
 cargo run --bin ivy-validate -- --no-color scenario.yaml # カラー出力無効
+cargo run --bin ivy-validate -- --json scenario.yaml   # JSON形式で出力（CI/ツール連携用）
+cargo run --bin ivy-validate -- --quiet scenario.yaml  # エラーのみ出力（警告・情報を抑制）
 ```
 
 ## 操作
@@ -368,6 +370,8 @@ cargo run --bin ivy-validate -- --no-color scenario.yaml # カラー出力無効
   - 循環パス検出
   - ファイル監視モード（`--watch`）
   - カラー出力（`--no-color` で無効化可能）
+  - JSON出力（`--json`、CI/ツール連携用）
+  - 静音モード（`--quiet`、エラーのみ出力）
 - [x] VSCode拡張（`editors/vscode`）
   - シンタックスハイライト（`.ivy.yaml`, `.ivy.yml`）
   - コードスニペット（40+ パターン）
