@@ -22,8 +22,10 @@ use macroquad::prelude::*;
 
 use cache::TextureCache;
 use flowchart::{build_flowchart, calculate_layout};
-use game::{GameContext, GameMode, QUICK_SAVE_PATH, SCENARIO_PATH, window_conf};
-use input::{GamepadAxis, GamepadButton, STICK_THRESHOLD};
+use game::{
+    ChoiceNavAction, GameContext, GameMode, InputDetector, PlayerAction, QUICK_SAVE_PATH,
+    SCENARIO_PATH, window_conf,
+};
 use render::{
     ChapterSelectState, CharAnimationState, CharIdleState, InputSource, ParticleType,
     TitleMenuItem, VideoBackgroundState, calculate_camera_transform, count_nvl_chars,
@@ -424,114 +426,55 @@ async fn main() {
         // Flag to return to title screen (set later, processed at end of loop)
         let mut return_to_title = false;
 
-        // Handle save/load
-        // QuickSave / QuickLoad keybinds
-        // Shift+1-0 = save to slot, 1-0 = load from slot
-        if ctx.settings
-            .keybinds
-            .is_pressed_with_gamepad(Action::QuickSave, &ctx.gamepad_state)
-        {
-            save_game(state);
-        }
-        if ctx.settings
-            .keybinds
-            .is_pressed_with_gamepad(Action::QuickLoad, &ctx.gamepad_state)
-            && let Some(loaded_state) = load_game()
-        {
-            *state = loaded_state;
-            ctx.last_index = None; // Force audio/transition update
-        }
+        // Create input detector for this frame
+        let input = InputDetector::new(&ctx.settings.keybinds, &ctx.gamepad_state);
 
-        // Slot save/load (1-9, 0=10)
-        let shift_held = is_key_down(KeyCode::LeftShift) || is_key_down(KeyCode::RightShift);
-        let slot_keys = [
-            (KeyCode::Key1, 1),
-            (KeyCode::Key2, 2),
-            (KeyCode::Key3, 3),
-            (KeyCode::Key4, 4),
-            (KeyCode::Key5, 5),
-            (KeyCode::Key6, 6),
-            (KeyCode::Key7, 7),
-            (KeyCode::Key8, 8),
-            (KeyCode::Key9, 9),
-            (KeyCode::Key0, 10),
-        ];
-
-        for (key, slot) in slot_keys {
-            if is_key_pressed(key) {
-                if shift_held {
-                    save_to_slot(state, slot);
-                } else if SaveData::slot_exists(slot) {
-                    if let Some(loaded_state) = load_from_slot(slot) {
+        // Process detected actions
+        for action in input.detect_actions() {
+            match action {
+                PlayerAction::QuickSave => save_game(state),
+                PlayerAction::QuickLoad => {
+                    if let Some(loaded_state) = load_game() {
                         *state = loaded_state;
-                        ctx.last_index = None; // Force audio/transition update
+                        ctx.last_index = None;
                     }
-                } else {
-                    eprintln!("Slot {} is empty", slot);
                 }
-            }
-        }
-
-        // Toggle backlog
-        if ctx.settings
-            .keybinds
-            .is_pressed_with_gamepad(Action::Backlog, &ctx.gamepad_state)
-        {
-            ctx.show_backlog = !ctx.show_backlog;
-            ctx.backlog_state = Default::default();
-        }
-
-        // Toggle auto mode
-        if ctx.settings
-            .keybinds
-            .is_pressed_with_gamepad(Action::AutoMode, &ctx.gamepad_state)
-        {
-            ctx.auto_mode = !ctx.auto_mode;
-            ctx.auto_timer = 0.0;
-            if ctx.auto_mode {
-                eprintln!("Auto mode ON");
-            } else {
-                eprintln!("Auto mode OFF");
-            }
-        }
-
-        // Toggle skip mode
-        if ctx.settings
-            .keybinds
-            .is_pressed_with_gamepad(Action::SkipMode, &ctx.gamepad_state)
-        {
-            ctx.skip_mode = !ctx.skip_mode;
-            if ctx.skip_mode {
-                eprintln!("Skip mode ON");
-            } else {
-                eprintln!("Skip mode OFF");
-            }
-        }
-
-        // Toggle debug console
-        if ctx.settings
-            .keybinds
-            .is_pressed_with_gamepad(Action::Debug, &ctx.gamepad_state)
-        {
-            ctx.debug_state.toggle();
-        }
-
-        // Open flowchart with F key (debug feature)
-        if is_key_pressed(KeyCode::F) {
-            game_mode = GameMode::Flowchart;
-            ctx.flowchart_state.dirty = true;
-        }
-
-        // Handle rollback (keybind or mouse wheel up) - only when backlog is not shown
-        if !ctx.show_backlog {
-            let wheel = mouse_wheel();
-            if (ctx.settings
-                .keybinds
-                .is_pressed_with_gamepad(Action::Rollback, &ctx.gamepad_state)
-                || wheel.1 > 0.0)
-                && state.can_rollback()
-            {
-                state.rollback();
+                PlayerAction::SaveToSlot(slot) => save_to_slot(state, slot),
+                PlayerAction::LoadFromSlot(slot) => {
+                    if SaveData::slot_exists(slot) {
+                        if let Some(loaded_state) = load_from_slot(slot) {
+                            *state = loaded_state;
+                            ctx.last_index = None;
+                        }
+                    } else {
+                        eprintln!("Slot {} is empty", slot);
+                    }
+                }
+                PlayerAction::ToggleBacklog => {
+                    ctx.show_backlog = !ctx.show_backlog;
+                    ctx.backlog_state = Default::default();
+                }
+                PlayerAction::ToggleAuto => {
+                    ctx.auto_mode = !ctx.auto_mode;
+                    ctx.auto_timer = 0.0;
+                    eprintln!("Auto mode {}", if ctx.auto_mode { "ON" } else { "OFF" });
+                }
+                PlayerAction::ToggleSkip => {
+                    ctx.skip_mode = !ctx.skip_mode;
+                    eprintln!("Skip mode {}", if ctx.skip_mode { "ON" } else { "OFF" });
+                }
+                PlayerAction::ToggleDebug => ctx.debug_state.toggle(),
+                PlayerAction::OpenFlowchart => {
+                    game_mode = GameMode::Flowchart;
+                    ctx.flowchart_state.dirty = true;
+                }
+                PlayerAction::Rollback => {
+                    if !ctx.show_backlog && state.can_rollback() {
+                        state.rollback();
+                    }
+                }
+                PlayerAction::Screenshot => save_screenshot(),
+                _ => {}
             }
         }
 
@@ -901,9 +844,7 @@ async fn main() {
                     );
                 } else {
                     // Skip mode: S key toggle or Ctrl key held down
-                    let skip_active = ctx.skip_mode
-                        || is_key_down(KeyCode::LeftControl)
-                        || is_key_down(KeyCode::RightControl);
+                    let skip_active = input.is_skip_active(ctx.skip_mode);
 
                     // Auto mode timer (only counts when text is complete)
                     let mut auto_advance = false;
@@ -920,10 +861,7 @@ async fn main() {
                     }
 
                     // Handle click/Advance keybind
-                    let input_pressed = is_mouse_button_pressed(MouseButton::Left)
-                        || ctx.settings
-                            .keybinds
-                            .is_pressed_with_gamepad(Action::Advance, &ctx.gamepad_state);
+                    let input_pressed = input.is_advance_pressed();
 
                     if skip_active || auto_advance {
                         // Check if we can skip (skip_unread=true or text is read)
@@ -1073,46 +1011,35 @@ async fn main() {
                             }
                         }
 
-                        // --- Input mode switching ---
-                        let mouse_pos = mouse_position();
-                        if mouse_pos != ctx.last_mouse_pos {
-                            // Mouse moved, switch to mouse mode
-                            ctx.choice_nav_state.input_source = InputSource::Mouse;
-                            ctx.choice_nav_state.focus_index = None;
-                            ctx.last_mouse_pos = mouse_pos;
-                        }
-
-                        // --- Gamepad input ---
-                        let dpad_up = ctx.gamepad_state.is_button_pressed(GamepadButton::DPadUp);
-                        let dpad_down = ctx.gamepad_state.is_button_pressed(GamepadButton::DPadDown);
-                        let stick_y = ctx.gamepad_state.axis(GamepadAxis::LeftY);
-
-                        // Stick debounce processing
+                        // --- Input mode switching and navigation ---
                         ctx.choice_nav_state.stick_debounce -= get_frame_time();
-                        let stick_up =
-                            stick_y < -STICK_THRESHOLD && ctx.choice_nav_state.stick_debounce <= 0.0;
-                        let stick_down =
-                            stick_y > STICK_THRESHOLD && ctx.choice_nav_state.stick_debounce <= 0.0;
 
-                        if dpad_up || dpad_down || stick_up || stick_down {
-                            // Switch to gamepad mode
-                            ctx.choice_nav_state.input_source = InputSource::Gamepad;
-
-                            // Initialize focus if not set
-                            if ctx.choice_nav_state.focus_index.is_none() {
-                                ctx.choice_nav_state.focus_index = Some(0);
-                            }
-
-                            // Move focus
-                            if let Some(idx) = ctx.choice_nav_state.focus_index {
-                                if dpad_up || stick_up {
-                                    ctx.choice_nav_state.focus_index = Some(idx.saturating_sub(1));
-                                    ctx.choice_nav_state.stick_debounce = 0.2;
-                                } else if dpad_down || stick_down {
-                                    ctx.choice_nav_state.focus_index =
-                                        Some((idx + 1).min(choice_count - 1));
-                                    ctx.choice_nav_state.stick_debounce = 0.2;
+                        if let Some(nav_action) = input.detect_choice_nav(
+                            ctx.last_mouse_pos,
+                            ctx.choice_nav_state.stick_debounce,
+                        ) {
+                            match nav_action {
+                                ChoiceNavAction::MouseMoved => {
+                                    ctx.choice_nav_state.input_source = InputSource::Mouse;
+                                    ctx.choice_nav_state.focus_index = None;
+                                    ctx.last_mouse_pos = mouse_position();
                                 }
+                                ChoiceNavAction::Up | ChoiceNavAction::Down => {
+                                    ctx.choice_nav_state.input_source = InputSource::Gamepad;
+                                    if ctx.choice_nav_state.focus_index.is_none() {
+                                        ctx.choice_nav_state.focus_index = Some(0);
+                                    }
+                                    if let Some(idx) = ctx.choice_nav_state.focus_index {
+                                        if nav_action == ChoiceNavAction::Up {
+                                            ctx.choice_nav_state.focus_index = Some(idx.saturating_sub(1));
+                                        } else {
+                                            ctx.choice_nav_state.focus_index =
+                                                Some((idx + 1).min(choice_count - 1));
+                                        }
+                                        ctx.choice_nav_state.stick_debounce = 0.2;
+                                    }
+                                }
+                                ChoiceNavAction::Confirm => {}
                             }
                         }
 
@@ -1129,32 +1056,29 @@ async fn main() {
                         );
 
                         // --- Selection confirmation ---
-                        // Mouse click
-                        if let Some(index) = result.selected {
+                        let selected_index = if let Some(index) = result.selected {
+                            // Mouse click
+                            Some(index)
+                        } else if ctx.choice_nav_state.input_source == InputSource::Gamepad
+                            && input.detect_choice_nav(ctx.last_mouse_pos, 0.0) == Some(ChoiceNavAction::Confirm)
+                            && let Some(idx) = ctx.choice_nav_state.focus_index
+                        {
+                            // Gamepad A button
+                            Some(idx)
+                        } else {
+                            None
+                        };
+
+                        if let Some(index) = selected_index {
                             ctx.read_state.mark_read(SCENARIO_PATH, state.current_index());
                             state.select_choice(index);
                             ctx.choice_timer = None;
                             ctx.choice_total_time = None;
                             ctx.choice_nav_state = Default::default();
-                        } else if ctx.choice_nav_state.input_source == InputSource::Gamepad {
-                            // Gamepad A button
-                            if ctx.gamepad_state.is_button_pressed(GamepadButton::A)
-                                && let Some(idx) = ctx.choice_nav_state.focus_index
-                            {
-                                ctx.read_state.mark_read(SCENARIO_PATH, state.current_index());
-                                state.select_choice(idx);
-                                ctx.choice_timer = None;
-                                ctx.choice_total_time = None;
-                                ctx.choice_nav_state = Default::default();
-                            }
                         }
                     } else {
                         // Click to complete text
-                        if is_mouse_button_pressed(MouseButton::Left)
-                            || ctx.settings
-                                .keybinds
-                                .is_pressed_with_gamepad(Action::Advance, &ctx.gamepad_state)
-                        {
+                        if input.is_advance_pressed() {
                             ctx.typewriter_state.complete();
                         }
                     }
@@ -1187,16 +1111,11 @@ async fn main() {
                 ctx.wait_timer += get_frame_time();
 
                 // Check if wait is complete or skipped
-                let skip_active = ctx.skip_mode
-                    || is_key_down(KeyCode::LeftControl)
-                    || is_key_down(KeyCode::RightControl);
+                let skip_active = input.is_skip_active(ctx.skip_mode);
 
                 if ctx.wait_timer >= duration
                     || skip_active
-                    || is_mouse_button_pressed(MouseButton::Left)
-                    || ctx.settings
-                        .keybinds
-                        .is_pressed_with_gamepad(Action::Advance, &ctx.gamepad_state)
+                    || input.is_advance_pressed()
                 {
                     ctx.in_wait = false;
                     ctx.wait_timer = 0.0;
@@ -1291,10 +1210,7 @@ async fn main() {
                 ctx.video_state.draw();
 
                 // Check for skip input
-                let skip_pressed = is_mouse_button_pressed(MouseButton::Left)
-                    || ctx.settings
-                        .keybinds
-                        .is_pressed_with_gamepad(Action::Advance, &ctx.gamepad_state)
+                let skip_pressed = input.is_advance_pressed()
                     || is_key_pressed(KeyCode::Escape);
 
                 // Advance when video finishes or is skipped
@@ -1319,11 +1235,7 @@ async fn main() {
                 }
 
                 // Return to title on click or Advance, or exit on Escape
-                if is_mouse_button_pressed(MouseButton::Left)
-                    || ctx.settings
-                        .keybinds
-                        .is_pressed_with_gamepad(Action::Advance, &ctx.gamepad_state)
-                {
+                if input.is_advance_pressed() {
                     return_to_title = true;
                 } else if is_key_pressed(KeyCode::Escape) {
                     break;
@@ -1351,11 +1263,6 @@ async fn main() {
         // Return to title on Escape (instead of exiting)
         if is_key_pressed(KeyCode::Escape) && !state.is_ended() {
             return_to_title = true;
-        }
-
-        // Screenshot
-        if ctx.settings.keybinds.is_pressed(Action::Screenshot) {
-            save_screenshot();
         }
 
         next_frame().await;
