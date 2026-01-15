@@ -6,11 +6,13 @@ import type {
   Choice,
   ModularCharRef,
   Transition,
+  CameraCommand,
 } from "../../types/scenario";
 import type { CharacterDatabase } from "../../types/character";
 import { AssetField } from "./AssetField";
 import { ModularCharField } from "./ModularCharField";
 import { TransitionPicker } from "./TransitionPicker";
+import { CameraPicker } from "./CameraPicker";
 
 interface CommandFormProps {
   command: Command;
@@ -176,6 +178,13 @@ export const CommandForm: React.FC<CommandFormProps> = ({
           value={command.transition as Transition | undefined}
           onChange={(value) => {
             updateField("transition", value);
+          }}
+        />
+
+        <CameraPicker
+          value={command.camera as CameraCommand | undefined}
+          onChange={(value) => {
+            updateField("camera", value);
           }}
         />
       </section>
