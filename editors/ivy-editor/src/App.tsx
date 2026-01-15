@@ -108,6 +108,8 @@ const App: React.FC = () => {
     state: previewState,
     backgroundUrl,
     characterUrl,
+    language: previewLanguage,
+    setLanguage: setPreviewLanguage,
     goto: previewGoto,
     next: previewNext,
     prev: previewPrev,
@@ -569,6 +571,8 @@ const App: React.FC = () => {
             state={previewState}
             backgroundUrl={backgroundUrl}
             characterUrl={characterUrl}
+            language={previewLanguage}
+            onLanguageChange={setPreviewLanguage}
             onPrev={previewPrev}
             onNext={previewNext}
             onGoto={handlePreviewGoto}

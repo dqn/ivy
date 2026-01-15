@@ -26,11 +26,12 @@ pub struct PreviewState {
     pub nvl_mode: bool,
 }
 
-fn resolve_localized(s: &LocalizedString) -> String {
+fn resolve_localized(s: &LocalizedString, lang: &str) -> String {
     match s {
         LocalizedString::Plain(text) => text.clone(),
         LocalizedString::Localized(map) => map
-            .get("en")
+            .get(lang)
+            .or_else(|| map.get("en"))
             .or_else(|| map.values().next())
             .cloned()
             .unwrap_or_default(),
@@ -51,7 +52,9 @@ pub fn get_preview_state(
     scenario: Scenario,
     index: usize,
     variables: HashMap<String, String>,
+    lang: Option<String>,
 ) -> PreviewState {
+    let lang = lang.as_deref().unwrap_or("en");
     let total = scenario.script.len();
     let idx = index.min(total.saturating_sub(1));
 
@@ -103,10 +106,10 @@ pub fn get_preview_state(
     let current_cmd = scenario.script.get(idx);
     let text = current_cmd
         .and_then(|c| c.text.as_ref())
-        .map(resolve_localized);
+        .map(|s| resolve_localized(s, lang));
     let speaker = current_cmd
         .and_then(|c| c.speaker.as_ref())
-        .map(resolve_localized);
+        .map(|s| resolve_localized(s, lang));
 
     let choices = current_cmd
         .and_then(|c| c.choices.as_ref())
@@ -114,7 +117,7 @@ pub fn get_preview_state(
             choices
                 .iter()
                 .map(|c| ChoiceInfo {
-                    label: resolve_localized(&c.label),
+                    label: resolve_localized(&c.label, lang),
                     jump: c.jump.clone(),
                 })
                 .collect()

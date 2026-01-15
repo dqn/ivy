@@ -3,12 +3,15 @@ import { SceneView } from "./SceneView";
 import { TextBox } from "./TextBox";
 import { ChoiceButtons } from "./ChoiceButtons";
 import { Controls } from "./Controls";
+import { LanguageSelector } from "./LanguageSelector";
 import "./styles.css";
 
 interface Props {
   state: PreviewState | null;
   backgroundUrl: string | null;
   characterUrl: string | null;
+  language: string;
+  onLanguageChange: (lang: string) => void;
   onPrev: () => void;
   onNext: () => void;
   onGoto: (index: number) => void;
@@ -18,6 +21,8 @@ export const PreviewPanel: React.FC<Props> = ({
   state,
   backgroundUrl,
   characterUrl,
+  language,
+  onLanguageChange,
   onPrev,
   onNext,
 }) => {
@@ -58,6 +63,8 @@ export const PreviewPanel: React.FC<Props> = ({
         onPrev={onPrev}
         onNext={onNext}
       />
+
+      <LanguageSelector language={language} onChange={onLanguageChange} />
     </div>
   );
 };

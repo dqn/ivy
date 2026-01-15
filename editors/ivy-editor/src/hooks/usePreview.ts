@@ -7,6 +7,8 @@ interface UsePreviewReturn {
   state: PreviewState | null;
   backgroundUrl: string | null;
   characterUrl: string | null;
+  language: string;
+  setLanguage: (lang: string) => void;
   goto: (index: number) => void;
   next: () => void;
   prev: () => void;
@@ -21,6 +23,7 @@ export function usePreview(
   const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null);
   const [characterUrl, setCharacterUrl] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
+  const [language, setLanguage] = useState("en");
 
   // Sync with selected index from editor
   useEffect(() => {
@@ -29,7 +32,7 @@ export function usePreview(
     }
   }, [selectedIndex]);
 
-  // Fetch preview state when scenario or index changes
+  // Fetch preview state when scenario, index, or language changes
   useEffect(() => {
     if (!scenario) {
       setState(null);
@@ -42,6 +45,7 @@ export function usePreview(
           scenario,
           index,
           variables: {},
+          lang: language,
         });
         setState(previewState);
       } catch (e) {
@@ -50,7 +54,7 @@ export function usePreview(
     };
 
     void fetchState();
-  }, [scenario, index]);
+  }, [scenario, index, language]);
 
   // Load assets when state changes
   useEffect(() => {
@@ -114,6 +118,8 @@ export function usePreview(
     state,
     backgroundUrl,
     characterUrl,
+    language,
+    setLanguage,
     goto,
     next,
     prev,

@@ -130,3 +130,41 @@
   color: white;
   font-size: 12px;
 }
+
+/* Language Selector */
+.language-selector {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.language-selector label {
+  color: white;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.language-selector select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  color: white;
+  font-size: 10px;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.language-selector select:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.language-selector select option {
+  background: #2a2a3e;
+  color: white;
+}
