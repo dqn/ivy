@@ -238,9 +238,11 @@ cd tests/e2e && npm test           # E2Eテスト実行
 cd tests/e2e && npm run test:update  # スナップショット更新
 
 # シナリオバリデーション
-cargo run --bin ivy-validate -- scenario.yaml        # 単一ファイル検証
-cargo run --bin ivy-validate -- --all assets/        # ディレクトリ内全ファイル検証
-cargo run --bin ivy-validate -- --cycles scenario.yaml  # 循環パス検出も実行
+cargo run --bin ivy-validate -- scenario.yaml          # 単一ファイル検証
+cargo run --bin ivy-validate -- --all assets/          # ディレクトリ内全ファイル検証
+cargo run --bin ivy-validate -- --watch assets/        # ファイル監視モード（変更時自動検証）
+cargo run --bin ivy-validate -- --cycles scenario.yaml # 循環パス検出も実行
+cargo run --bin ivy-validate -- --no-color scenario.yaml # カラー出力無効
 ```
 
 ## 操作
@@ -364,6 +366,8 @@ cargo run --bin ivy-validate -- --cycles scenario.yaml  # 循環パス検出も�
   - 未使用ラベル警告
   - 自己参照ジャンプ検出
   - 循環パス検出
+  - ファイル監視モード（`--watch`）
+  - カラー出力（`--no-color` で無効化可能）
 - [x] VSCode拡張（`editors/vscode`）
   - シンタックスハイライト（`.ivy.yaml`, `.ivy.yml`）
   - コードスニペット（40+ パターン）
