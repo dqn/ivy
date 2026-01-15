@@ -2,7 +2,7 @@
   "name": "ivy-vn",
   "displayName": "Ivy Visual Novel",
   "description": "Language support for Ivy visual novel scenario files",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "dqn",
   "engines": {
     "vscode": "^1.80.0"
@@ -11,6 +11,11 @@
     "Programming Languages",
     "Snippets"
   ],
+  "activationEvents": [
+    "onLanguage:ivy",
+    "onLanguage:yaml"
+  ],
+  "main": "./out/extension.js",
   "contributes": {
     "languages": [
       {
@@ -42,7 +47,60 @@
         "language": "yaml",
         "path": "./snippets/ivy.json"
       }
-    ]
+    ],
+    "commands": [
+      {
+        "command": "ivy.preview",
+        "title": "Ivy: Open Preview",
+        "icon": "$(play)"
+      },
+      {
+        "command": "ivy.validate",
+        "title": "Ivy: Validate Scenario"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "ivy.preview",
+          "when": "resourceLangId == ivy || resourceFilename =~ /\\.yaml$/ || resourceFilename =~ /\\.yml$/",
+          "group": "navigation"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "ivy.preview",
+        "key": "ctrl+shift+p",
+        "mac": "cmd+shift+p",
+        "when": "resourceLangId == ivy"
+      }
+    ],
+    "configuration": {
+      "title": "Ivy",
+      "properties": {
+        "ivy.previewPort": {
+          "type": "number",
+          "default": 3000,
+          "description": "HTTP port for preview server"
+        },
+        "ivy.ivyPreviewPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to ivy-preview binary (leave empty to use 'ivy-preview' from PATH)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
   },
   "repository": {
     "type": "git",

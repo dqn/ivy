@@ -7,22 +7,71 @@ Language support for Ivy visual novel scenario files.
 - Syntax highlighting for `.ivy.yaml` and `.ivy.yml` files
 - Code snippets for common scenario patterns
 - YAML-based scenarios also get snippets
+- Real-time preview with hot reload
+- Scenario validation
 
 ## Installation
 
+### Prerequisites
+
+For preview and validation features, install the ivy CLI tools:
+
+```bash
+cargo install --path /path/to/ivy --bin ivy-preview
+cargo install --path /path/to/ivy --bin ivy-validate
+```
+
+Or add `target/release` to your PATH after building:
+
+```bash
+cargo build --release
+```
+
 ### From Source
 
-1. Copy the `editors/vscode` directory to your VSCode extensions folder:
+1. Build the extension:
+   ```bash
+   cd editors/vscode
+   npm install
+   npm run compile
+   ```
+
+2. Copy the `editors/vscode` directory to your VSCode extensions folder:
    - Windows: `%USERPROFILE%\.vscode\extensions\ivy-vn`
    - macOS/Linux: `~/.vscode/extensions/ivy-vn`
 
-2. Restart VSCode
+3. Restart VSCode
 
 ### Using the Extension
 
 For dedicated ivy scenario files, use the `.ivy.yaml` or `.ivy.yml` extension to get full syntax highlighting.
 
 For regular `.yaml` files, snippets are still available with the `ivy-` prefix.
+
+## Commands
+
+| Command | Description | Shortcut |
+|---------|-------------|----------|
+| `Ivy: Open Preview` | Open scenario preview in webview | `Cmd+Shift+P` (Mac) / `Ctrl+Shift+P` |
+| `Ivy: Validate Scenario` | Run validation on current file | - |
+
+## Preview
+
+The preview feature provides:
+- Live scene visualization
+- Navigation through script commands
+- Label jumping
+- Variable state inspection
+- Hot reload on file save
+
+Click the play button in the editor title bar or use the keyboard shortcut to open the preview.
+
+## Settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `ivy.previewPort` | HTTP port for preview server | `3000` |
+| `ivy.ivyPreviewPath` | Path to ivy-preview binary | `""` (uses PATH) |
 
 ## Snippets
 

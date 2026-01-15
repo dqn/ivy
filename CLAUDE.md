@@ -245,6 +245,10 @@ cargo run --bin ivy-validate -- --cycles scenario.yaml # 循環パス検出も�
 cargo run --bin ivy-validate -- --no-color scenario.yaml # カラー出力無効
 cargo run --bin ivy-validate -- --json scenario.yaml   # JSON形式で出力（CI/ツール連携用）
 cargo run --bin ivy-validate -- --quiet scenario.yaml  # エラーのみ出力（警告・情報を抑制）
+
+# リアルタイムプレビュー
+cargo run --bin ivy-preview -- scenario.yaml           # プレビューサーバー起動（http://127.0.0.1:3000）
+cargo run --bin ivy-preview -- --port 8080 scenario.yaml # カスタムポート指定
 ```
 
 ## 操作
@@ -372,9 +376,17 @@ cargo run --bin ivy-validate -- --quiet scenario.yaml  # エラーのみ出力�
   - カラー出力（`--no-color` で無効化可能）
   - JSON出力（`--json`、CI/ツール連携用）
   - 静音モード（`--quiet`、エラーのみ出力）
+- [x] リアルタイムプレビュー（`ivy-preview` CLI）
+  - WebSocket ベースのライブプレビュー
+  - ファイル変更時の自動リロード
+  - コマンドナビゲーション（前後移動、ラベルジャンプ）
+  - 変数状態の表示
+  - NVL/ADVモード表示
 - [x] VSCode拡張（`editors/vscode`）
   - シンタックスハイライト（`.ivy.yaml`, `.ivy.yml`）
   - コードスニペット（40+ パターン）
+  - プレビューコマンド（`Ivy: Open Preview`）
+  - バリデーションコマンド（`Ivy: Validate Scenario`）
 
 ### コミュニティModding
 - [x] Modローダー（`src/modding`）
@@ -387,8 +399,6 @@ cargo run --bin ivy-validate -- --quiet scenario.yaml  # エラーのみ出力�
 ### 今後の予定
 
 #### 中優先度（開発体験・演出強化）
-- [ ] 開発ツール（追加）
-  - [ ] リアルタイムプレビュー
 - [ ] Live2D対応
 - [ ] リップシンク（音声連動）
 
