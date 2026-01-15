@@ -9,25 +9,12 @@ Language support for Ivy visual novel scenario files.
 - YAML-based scenarios also get snippets
 - Real-time preview with hot reload
 - Scenario validation
+- **Automatic CLI binary detection**
+- **Built-in installation guide**
 
 ## Installation
 
-### Prerequisites
-
-For preview and validation features, install the ivy CLI tools:
-
-```bash
-cargo install --path /path/to/ivy --bin ivy-preview
-cargo install --path /path/to/ivy --bin ivy-validate
-```
-
-Or add `target/release` to your PATH after building:
-
-```bash
-cargo build --release
-```
-
-### From Source
+### Install the Extension
 
 1. Build the extension:
    ```bash
@@ -42,11 +29,46 @@ cargo build --release
 
 3. Restart VSCode
 
+### Install CLI Tools (Required for Preview/Validation)
+
+The extension will automatically detect ivy CLI tools in these locations:
+- `~/.cargo/bin/` (cargo install location)
+- System PATH
+- Project's `target/release/` or `target/debug/` directories
+
+**Option 1: Download Pre-built Binaries** (Easiest)
+
+1. Go to [GitHub Releases](https://github.com/dqn/ivy/releases)
+2. Download the archive for your platform
+3. Extract and add to your PATH
+
+**Option 2: Build from Source**
+
+```bash
+# Clone and build
+git clone https://github.com/dqn/ivy.git
+cd ivy
+cargo build --release
+
+# Option A: Install globally
+cargo install --path . --bin ivy-preview
+cargo install --path . --bin ivy-validate
+
+# Option B: Add to PATH
+export PATH="$PATH:$(pwd)/target/release"
+```
+
+**Option 3: Configure Paths Manually**
+
+Set `ivy.ivyPreviewPath` and `ivy.ivyValidatePath` in VSCode settings.
+
 ### Using the Extension
 
 For dedicated ivy scenario files, use the `.ivy.yaml` or `.ivy.yml` extension to get full syntax highlighting.
 
 For regular `.yaml` files, snippets are still available with the `ivy-` prefix.
+
+If CLI tools are not found, the extension will offer to show installation instructions.
 
 ## Commands
 
@@ -54,6 +76,7 @@ For regular `.yaml` files, snippets are still available with the `ivy-` prefix.
 |---------|-------------|----------|
 | `Ivy: Open Preview` | Open scenario preview in webview | `Cmd+Shift+P` (Mac) / `Ctrl+Shift+P` |
 | `Ivy: Validate Scenario` | Run validation on current file | - |
+| `Ivy: Show CLI Installation Guide` | Show instructions to install CLI tools | - |
 
 ## Preview
 
@@ -71,7 +94,8 @@ Click the play button in the editor title bar or use the keyboard shortcut to op
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `ivy.previewPort` | HTTP port for preview server | `3000` |
-| `ivy.ivyPreviewPath` | Path to ivy-preview binary | `""` (uses PATH) |
+| `ivy.ivyPreviewPath` | Path to ivy-preview binary | `""` (auto-detect) |
+| `ivy.ivyValidatePath` | Path to ivy-validate binary | `""` (auto-detect) |
 
 ## Snippets
 

@@ -2,7 +2,7 @@
   "name": "ivy-vn",
   "displayName": "Ivy Visual Novel",
   "description": "Language support for Ivy visual novel scenario files",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "dqn",
   "engines": {
     "vscode": "^1.80.0"
@@ -57,6 +57,10 @@
       {
         "command": "ivy.validate",
         "title": "Ivy: Validate Scenario"
+      },
+      {
+        "command": "ivy.showInstallGuide",
+        "title": "Ivy: Show CLI Installation Guide"
       }
     ],
     "menus": {
@@ -87,7 +91,12 @@
         "ivy.ivyPreviewPath": {
           "type": "string",
           "default": "",
-          "description": "Path to ivy-preview binary (leave empty to use 'ivy-preview' from PATH)"
+          "description": "Path to ivy-preview binary (leave empty for auto-detection)"
+        },
+        "ivy.ivyValidatePath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to ivy-validate binary (leave empty for auto-detection)"
         }
       }
     }
