@@ -7,6 +7,8 @@ import type {
   ModularCharRef,
   Transition,
   CameraCommand,
+  SetVar,
+  IfCondition,
 } from "../../types/scenario";
 import type { CharacterDatabase } from "../../types/character";
 import { AssetField } from "./AssetField";
@@ -14,6 +16,7 @@ import { ModularCharField } from "./ModularCharField";
 import { TransitionPicker } from "./TransitionPicker";
 import { CameraPicker } from "./CameraPicker";
 import { ParticlePicker } from "./ParticlePicker";
+import { VariableEditor } from "./VariableEditor";
 
 interface CommandFormProps {
   command: Command;
@@ -281,6 +284,18 @@ export const CommandForm: React.FC<CommandFormProps> = ({
             + Add Choice
           </button>
         </div>
+
+        <VariableEditor
+          setVar={command.set as SetVar | undefined}
+          ifCondition={command.if as IfCondition | undefined}
+          labels={labels}
+          onSetChange={(value) => {
+            updateField("set", value);
+          }}
+          onIfChange={(value) => {
+            updateField("if", value);
+          }}
+        />
       </section>
 
       {/* Advanced Section (Collapsible) */}

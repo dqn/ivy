@@ -1352,3 +1352,102 @@ body {
   color: var(--text-primary);
   font-family: "SF Mono", Monaco, "Courier New", monospace;
 }
+
+/* Variable Editor */
+.variable-editor {
+  margin-top: 12px;
+}
+
+.variable-section {
+  margin-bottom: 12px;
+}
+
+.variable-section:last-child {
+  margin-bottom: 0;
+}
+
+.variable-header {
+  margin-bottom: 8px;
+}
+
+.variable-header label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.variable-header input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.variable-options {
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.variable-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.variable-row:last-child {
+  margin-bottom: 0;
+}
+
+.variable-field {
+  flex: 1;
+}
+
+.variable-field.type-field {
+  flex: 0 0 100px;
+}
+
+.variable-field.value-field {
+  flex: 1;
+}
+
+.variable-field label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.variable-field input[type="text"],
+.variable-field input[type="number"],
+.variable-field select {
+  width: 100%;
+  padding: 6px 10px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  height: 32px;
+}
+
+.variable-field input:focus,
+.variable-field select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.variable-preview {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background-color: var(--bg-primary);
+  border-radius: 4px;
+  border-left: 3px solid var(--accent-color);
+}
+
+.variable-preview code {
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
+  font-size: 11px;
+  color: var(--text-primary);
+}
