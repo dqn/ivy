@@ -1,7 +1,13 @@
 import { useState, useCallback } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import type { Command, Scenario, ValidationResult } from "../types/scenario";
+import { invokeCommand, invokeCommandSafe } from "../lib";
+
+type ShowToast = (message: string, type?: "error" | "success" | "info" | "warning") => void;
+
+interface UseScenarioOptions {
+  showToast?: ShowToast;
+}
 
 interface UseScenarioReturn {
   scenario: Scenario | null;
@@ -32,7 +38,8 @@ function createEmptyCommand(): Command {
   return {};
 }
 
-export function useScenario(): UseScenarioReturn {
+export function useScenario(options: UseScenarioOptions = {}): UseScenarioReturn {
+  const { showToast } = options;
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [filePath, setFilePath] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
@@ -42,11 +49,11 @@ export function useScenario(): UseScenarioReturn {
   const [yamlPreview, setYamlPreview] = useState("");
 
   const updateYamlPreview = useCallback(async (s: Scenario) => {
-    try {
-      const yaml = await invoke<string>("scenario_to_yaml", { scenario: s });
+    const yaml = await invokeCommandSafe<string>("scenario_to_yaml", {
+      scenario: s,
+    });
+    if (yaml !== null) {
       setYamlPreview(yaml);
-    } catch (e) {
-      console.error("Failed to generate YAML preview:", e);
     }
   }, []);
 
@@ -57,22 +64,19 @@ export function useScenario(): UseScenarioReturn {
     });
 
     if (selected) {
-      try {
-        const loaded = await invoke<Scenario>("load_scenario", {
-          path: selected,
-        });
+      const loaded = await invokeCommandSafe<Scenario>("load_scenario", {
+        path: selected,
+      }, { showToast });
+      if (loaded) {
         setScenario(loaded);
         setFilePath(selected);
         setIsDirty(false);
         setSelectedIndex(null);
         setValidationResult(null);
         await updateYamlPreview(loaded);
-      } catch (e) {
-        console.error("Failed to load scenario:", e);
-        alert(`Failed to load: ${e}`);
       }
     }
-  }, [updateYamlPreview]);
+  }, [updateYamlPreview, showToast]);
 
   const saveFile = useCallback(async () => {
     if (!scenario) return;
@@ -82,14 +86,14 @@ export function useScenario(): UseScenarioReturn {
       return;
     }
 
-    try {
-      await invoke("save_scenario", { path: filePath, scenario });
+    const result = await invokeCommandSafe("save_scenario", {
+      path: filePath,
+      scenario,
+    }, { showToast });
+    if (result !== null) {
       setIsDirty(false);
-    } catch (e) {
-      console.error("Failed to save scenario:", e);
-      alert(`Failed to save: ${e}`);
     }
-  }, [scenario, filePath]);
+  }, [scenario, filePath, showToast]);
 
   const saveFileAs = useCallback(async () => {
     if (!scenario) return;
@@ -100,20 +104,20 @@ export function useScenario(): UseScenarioReturn {
     });
 
     if (selected) {
-      try {
-        await invoke("save_scenario", { path: selected, scenario });
+      const result = await invokeCommandSafe("save_scenario", {
+        path: selected,
+        scenario,
+      }, { showToast });
+      if (result !== null) {
         setFilePath(selected);
         setIsDirty(false);
-      } catch (e) {
-        console.error("Failed to save scenario:", e);
-        alert(`Failed to save: ${e}`);
       }
     }
-  }, [scenario, filePath]);
+  }, [scenario, filePath, showToast]);
 
   const newScenario = useCallback(
     async (title: string) => {
-      const created = await invoke<Scenario>("create_empty_scenario", {
+      const created = await invokeCommand<Scenario>("create_empty_scenario", {
         title,
       });
       setScenario(created);
@@ -221,11 +225,11 @@ export function useScenario(): UseScenarioReturn {
   const validate = useCallback(async () => {
     if (!scenario) return;
 
-    try {
-      const result = await invoke<ValidationResult>("validate", { scenario });
+    const result = await invokeCommandSafe<ValidationResult>("validate", {
+      scenario,
+    });
+    if (result !== null) {
       setValidationResult(result);
-    } catch (e) {
-      console.error("Failed to validate:", e);
     }
   }, [scenario]);
 

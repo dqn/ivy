@@ -62,10 +62,27 @@ tests/                   # テスト
 └── integration_test.rs  # シナリオ実行テスト
 
 editors/                 # エディタ拡張
-└── vscode/              # VSCode拡張
-    ├── package.json     # 拡張メタデータ
-    ├── syntaxes/        # シンタックスハイライト
-    └── snippets/        # コードスニペット
+├── vscode/              # VSCode拡張
+│   ├── package.json     # 拡張メタデータ
+│   ├── syntaxes/        # シンタックスハイライト
+│   └── snippets/        # コードスニペット
+└── ivy-editor/          # GUI エディタ（Tauri + React）
+    └── src/
+        ├── lib/         # 共通ユーティリティ
+        │   ├── tauri.ts       # Tauri invoke ラッパー
+        │   └── ValueType.ts   # 値型変換ユーティリティ
+        ├── config/      # 設定ファイル
+        │   └── keybindings.ts # キーバインド定義
+        ├── hooks/       # カスタムフック
+        │   ├── useScenario.ts
+        │   ├── useProject.ts
+        │   ├── useAssetPicker.ts
+        │   └── usePlaytestKeyboard.ts
+        ├── features/    # 機能別コンポーネント
+        │   └── editor/
+        │       ├── EditorHeader.tsx
+        │       └── useEditorState.ts
+        └── components/  # 共通コンポーネント
 ```
 
 ## シナリオ形式（YAML）

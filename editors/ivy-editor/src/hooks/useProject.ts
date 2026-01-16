@@ -1,7 +1,13 @@
 import { useState, useCallback } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import type { Project, ProjectConfig, Resolution } from "../types/project";
+import { invokeCommand, invokeCommandSafe } from "../lib";
+
+type ShowToast = (message: string, type?: "error" | "success" | "info" | "warning") => void;
+
+interface UseProjectOptions {
+  showToast?: ShowToast;
+}
 
 interface UseProjectReturn {
   project: Project | null;
@@ -30,7 +36,8 @@ interface UseProjectReturn {
   removeScenario: (scenarioPath: string) => Promise<void>;
 }
 
-export function useProject(): UseProjectReturn {
+export function useProject(options: UseProjectOptions = {}): UseProjectReturn {
+  const { showToast } = options;
   const [project, setProject] = useState<Project | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [activeScenarioPath, setActiveScenarioPath] = useState<string | null>(
@@ -45,21 +52,16 @@ export function useProject(): UseProjectReturn {
       description: string,
       resolution: Resolution
     ) => {
-      try {
-        const created = await invoke<Project>("create_project", {
-          rootPath,
-          name,
-          author,
-          description,
-          resolution,
-        });
-        setProject(created);
-        setIsDirty(false);
-        setActiveScenarioPath(created.config.entry_scenario);
-      } catch (e) {
-        console.error("Failed to create project:", e);
-        throw e;
-      }
+      const created = await invokeCommand<Project>("create_project", {
+        rootPath,
+        name,
+        author,
+        description,
+        resolution,
+      });
+      setProject(created);
+      setIsDirty(false);
+      setActiveScenarioPath(created.config.entry_scenario);
     },
     []
   );
@@ -71,48 +73,37 @@ export function useProject(): UseProjectReturn {
     });
 
     if (selected) {
-      try {
-        const loaded = await invoke<Project>("load_project", {
-          projectPath: selected,
-        });
+      const loaded = await invokeCommandSafe<Project>("load_project", {
+        projectPath: selected,
+      }, { showToast });
+      if (loaded) {
         setProject(loaded);
         setIsDirty(false);
         setActiveScenarioPath(loaded.config.entry_scenario);
-      } catch (e) {
-        console.error("Failed to load project:", e);
-        alert(`Failed to load project: ${e}`);
       }
     }
-  }, []);
+  }, [showToast]);
 
   const openProjectFromPath = useCallback(async (path: string) => {
-    try {
-      const loaded = await invoke<Project>("load_project", {
-        projectPath: path,
-      });
-      setProject(loaded);
-      setIsDirty(false);
-      setActiveScenarioPath(loaded.config.entry_scenario);
-    } catch (e) {
-      console.error("Failed to load project:", e);
-      throw e;
-    }
+    const loaded = await invokeCommand<Project>("load_project", {
+      projectPath: path,
+    });
+    setProject(loaded);
+    setIsDirty(false);
+    setActiveScenarioPath(loaded.config.entry_scenario);
   }, []);
 
   const saveProject = useCallback(async () => {
     if (!project) return;
 
-    try {
-      await invoke("save_project", {
-        rootPath: project.root_path,
-        config: project.config,
-      });
+    const result = await invokeCommandSafe("save_project", {
+      rootPath: project.root_path,
+      config: project.config,
+    }, { showToast });
+    if (result !== null) {
       setIsDirty(false);
-    } catch (e) {
-      console.error("Failed to save project:", e);
-      alert(`Failed to save project: ${e}`);
     }
-  }, [project]);
+  }, [project, showToast]);
 
   const closeProject = useCallback(() => {
     setProject(null);
@@ -139,20 +130,15 @@ export function useProject(): UseProjectReturn {
     async (scenarioPath: string, chapterName?: string) => {
       if (!project) return;
 
-      try {
-        const updatedConfig = await invoke<ProjectConfig>(
-          "add_scenario_to_project",
-          {
-            rootPath: project.root_path,
-            scenarioPath,
-            chapterName,
-          }
-        );
-        setProject({ ...project, config: updatedConfig });
-      } catch (e) {
-        console.error("Failed to add scenario:", e);
-        throw e;
-      }
+      const updatedConfig = await invokeCommand<ProjectConfig>(
+        "add_scenario_to_project",
+        {
+          rootPath: project.root_path,
+          scenarioPath,
+          chapterName,
+        }
+      );
+      setProject({ ...project, config: updatedConfig });
     },
     [project]
   );
@@ -161,23 +147,18 @@ export function useProject(): UseProjectReturn {
     async (scenarioPath: string) => {
       if (!project) return;
 
-      try {
-        const updatedConfig = await invoke<ProjectConfig>(
-          "remove_scenario_from_project",
-          {
-            rootPath: project.root_path,
-            scenarioPath,
-          }
-        );
-        setProject({ ...project, config: updatedConfig });
-
-        // If the removed scenario was active, switch to entry scenario.
-        if (activeScenarioPath === scenarioPath) {
-          setActiveScenarioPath(updatedConfig.entry_scenario);
+      const updatedConfig = await invokeCommand<ProjectConfig>(
+        "remove_scenario_from_project",
+        {
+          rootPath: project.root_path,
+          scenarioPath,
         }
-      } catch (e) {
-        console.error("Failed to remove scenario:", e);
-        throw e;
+      );
+      setProject({ ...project, config: updatedConfig });
+
+      // If the removed scenario was active, switch to entry scenario.
+      if (activeScenarioPath === scenarioPath) {
+        setActiveScenarioPath(updatedConfig.entry_scenario);
       }
     },
     [project, activeScenarioPath]

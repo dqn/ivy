@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from "react";
+import { getActionForKey } from "../config/keybindings";
 
 interface UsePlaytestKeyboardProps {
   isActive: boolean;
@@ -36,7 +37,10 @@ export function usePlaytestKeyboard({
       if (!isActive) return;
 
       // Don't handle if user is typing in an input field
-      const target = event.target as HTMLElement;
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
       if (
         target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
@@ -45,86 +49,59 @@ export function usePlaytestKeyboard({
         return;
       }
 
-      switch (event.key) {
-        case "Enter":
-        case " ":
-          // Advance or select first choice
+      const action = getActionForKey(event);
+      if (!action) return;
+
+      switch (action) {
+        case "advance_or_select_first":
           if (hasChoices) {
-            // Enter selects first choice when choices are shown
-            if (event.key === "Enter") {
-              onSelectChoice(0);
-            }
+            onSelectChoice(0);
           } else if (!isEnded) {
             event.preventDefault();
             onAdvance();
           }
           break;
 
-        case "Backspace":
-        case "ArrowUp":
-          // Rollback
-          if (canRollback) {
-            event.preventDefault();
-            onRollback();
-          }
-          break;
-
-        case "ArrowDown":
-        case "ArrowRight":
-          // Advance
+        case "advance":
           if (!isEnded && !hasChoices) {
             event.preventDefault();
             onAdvance();
           }
           break;
 
-        case "r":
-        case "R":
-          // Restart (with Ctrl/Cmd)
-          if (event.ctrlKey || event.metaKey) {
+        case "rollback":
+          if (canRollback) {
             event.preventDefault();
-            onRestart();
+            onRollback();
           }
           break;
 
-        case "a":
-        case "A":
-          // Toggle auto mode
+        case "restart":
+          event.preventDefault();
+          onRestart();
+          break;
+
+        case "toggle_auto":
           event.preventDefault();
           onToggleAutoMode?.();
           break;
 
-        case "s":
-        case "S":
-          // Toggle skip mode (without Ctrl/Cmd to avoid browser save)
-          if (!event.ctrlKey && !event.metaKey) {
-            event.preventDefault();
-            onToggleSkipMode?.();
-          }
+        case "toggle_skip":
+          event.preventDefault();
+          onToggleSkipMode?.();
           break;
 
-        case "F5":
-          // Quick save
+        case "save":
           event.preventDefault();
           onSave?.();
           break;
 
-        case "F9":
-          // Quick load
+        case "load":
           event.preventDefault();
           onLoad?.();
           break;
 
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-        case "5":
-        case "6":
-        case "7":
-        case "8":
-        case "9":
-          // Number keys for selecting choices
+        case "select_choice":
           if (hasChoices) {
             const choiceIndex = parseInt(event.key, 10) - 1;
             if (choiceIndex < choiceCount) {
@@ -132,9 +109,6 @@ export function usePlaytestKeyboard({
               onSelectChoice(choiceIndex);
             }
           }
-          break;
-
-        default:
           break;
       }
     },

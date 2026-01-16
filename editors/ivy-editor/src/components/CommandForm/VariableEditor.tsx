@@ -1,5 +1,6 @@
 import { useState } from "react";
-import type { SetVar, IfCondition, Value } from "../../types/scenario";
+import type { SetVar, IfCondition } from "../../types/scenario";
+import { ValueTypeUtils, type ValueType } from "../../lib";
 
 interface VariableEditorProps {
   setVar: SetVar | undefined;
@@ -7,31 +8,6 @@ interface VariableEditorProps {
   labels: string[];
   onSetChange: (value: SetVar | undefined) => void;
   onIfChange: (value: IfCondition | undefined) => void;
-}
-
-type ValueType = "string" | "number" | "boolean";
-
-function getValueType(value: Value | undefined): ValueType {
-  if (value === undefined) return "string";
-  if (typeof value === "boolean") return "boolean";
-  if (typeof value === "number") return "number";
-  return "string";
-}
-
-function convertValue(value: string, type: ValueType): Value {
-  switch (type) {
-    case "boolean":
-      return value === "true";
-    case "number":
-      return parseFloat(value) || 0;
-    default:
-      return value;
-  }
-}
-
-function valueToString(value: Value | undefined): string {
-  if (value === undefined) return "";
-  return String(value);
 }
 
 export const VariableEditor: React.FC<VariableEditorProps> = ({
@@ -44,10 +20,10 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
   const [setEnabled, setSetEnabled] = useState(!!setVar);
   const [ifEnabled, setIfEnabled] = useState(!!ifCondition);
   const [setValueType, setSetValueType] = useState<ValueType>(
-    getValueType(setVar?.value)
+    ValueTypeUtils.detect(setVar?.value)
   );
   const [ifValueType, setIfValueType] = useState<ValueType>(
-    getValueType(ifCondition?.is)
+    ValueTypeUtils.detect(ifCondition?.is)
   );
 
   const handleSetToggle = (enabled: boolean) => {
@@ -69,11 +45,13 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
   };
 
   const updateSetVar = (updates: Partial<SetVar>) => {
-    onSetChange({ ...setVar, ...updates } as SetVar);
+    const current: SetVar = setVar ?? { name: "", value: "" };
+    onSetChange({ ...current, ...updates });
   };
 
   const updateIfCondition = (updates: Partial<IfCondition>) => {
-    onIfChange({ ...ifCondition, ...updates } as IfCondition);
+    const current: IfCondition = ifCondition ?? { var: "", is: "", jump: "" };
+    onIfChange({ ...current, ...updates });
   };
 
   return (
@@ -111,10 +89,12 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
                 <select
                   value={setValueType}
                   onChange={(e) => {
-                    const newType = e.target.value as ValueType;
-                    setSetValueType(newType);
-                    const currentValue = valueToString(setVar?.value);
-                    updateSetVar({ value: convertValue(currentValue, newType) });
+                    const newType = e.target.value;
+                    if (newType === "string" || newType === "number" || newType === "boolean") {
+                      setSetValueType(newType);
+                      const currentValue = ValueTypeUtils.toString(setVar?.value);
+                      updateSetVar({ value: ValueTypeUtils.convert(currentValue, newType) });
+                    }
                   }}
                 >
                   <option value="string">String</option>
@@ -138,7 +118,7 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
                 ) : setValueType === "number" ? (
                   <input
                     type="number"
-                    value={valueToString(setVar?.value)}
+                    value={ValueTypeUtils.toString(setVar?.value)}
                     onChange={(e) =>
                       updateSetVar({ value: parseFloat(e.target.value) || 0 })
                     }
@@ -147,7 +127,7 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
                 ) : (
                   <input
                     type="text"
-                    value={valueToString(setVar?.value)}
+                    value={ValueTypeUtils.toString(setVar?.value)}
                     onChange={(e) => updateSetVar({ value: e.target.value })}
                     placeholder="value"
                   />
@@ -198,10 +178,12 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
                 <select
                   value={ifValueType}
                   onChange={(e) => {
-                    const newType = e.target.value as ValueType;
-                    setIfValueType(newType);
-                    const currentValue = valueToString(ifCondition?.is);
-                    updateIfCondition({ is: convertValue(currentValue, newType) });
+                    const newType = e.target.value;
+                    if (newType === "string" || newType === "number" || newType === "boolean") {
+                      setIfValueType(newType);
+                      const currentValue = ValueTypeUtils.toString(ifCondition?.is);
+                      updateIfCondition({ is: ValueTypeUtils.convert(currentValue, newType) });
+                    }
                   }}
                 >
                   <option value="string">String</option>
@@ -225,7 +207,7 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
                 ) : ifValueType === "number" ? (
                   <input
                     type="number"
-                    value={valueToString(ifCondition?.is)}
+                    value={ValueTypeUtils.toString(ifCondition?.is)}
                     onChange={(e) =>
                       updateIfCondition({ is: parseFloat(e.target.value) || 0 })
                     }
@@ -234,7 +216,7 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
                 ) : (
                   <input
                     type="text"
-                    value={valueToString(ifCondition?.is)}
+                    value={ValueTypeUtils.toString(ifCondition?.is)}
                     onChange={(e) => updateIfCondition({ is: e.target.value })}
                     placeholder="value"
                   />

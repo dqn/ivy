@@ -1,10 +1,10 @@
 import { useState, useCallback } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import type {
   SaveDataInfo,
   SaveDataValidationResult,
 } from "../types/savedata";
+import { invokeCommandSafe } from "../lib";
 
 interface UseSaveDataValidatorReturn {
   // State
@@ -36,15 +36,15 @@ export function useSaveDataValidator(): UseSaveDataValidatorReturn {
     setIsLoading(true);
     setError(null);
 
-    try {
-      const list = await invoke<SaveDataInfo[]>("list_save_data", { baseDir });
+    const list = await invokeCommandSafe<SaveDataInfo[]>("list_save_data", {
+      baseDir,
+    });
+    if (list !== null) {
       setSaveDataList(list);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+    } else {
       setSaveDataList([]);
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   }, []);
 
   const validateSaveData = useCallback(
@@ -52,18 +52,16 @@ export function useSaveDataValidator(): UseSaveDataValidatorReturn {
       setIsLoading(true);
       setError(null);
 
-      try {
-        const result = await invoke<SaveDataValidationResult>(
-          "validate_save_data",
-          { savePath, baseDir }
-        );
+      const result = await invokeCommandSafe<SaveDataValidationResult>(
+        "validate_save_data",
+        { savePath, baseDir }
+      );
+      if (result !== null) {
         setValidationResult(result);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+      } else {
         setValidationResult(null);
-      } finally {
-        setIsLoading(false);
       }
+      setIsLoading(false);
     },
     []
   );
@@ -92,24 +90,27 @@ export function useSaveDataValidator(): UseSaveDataValidatorReturn {
           defaultPath: baseDir ? `${baseDir}/saves` : undefined,
         });
 
-        if (result) {
-          const filePath = result as string;
-          const fileName = filePath.split("/").pop() || filePath;
-
-          // Create a SaveDataInfo for the selected file
-          const saveData: SaveDataInfo = {
-            file_name: fileName,
-            file_path: filePath,
-            slot: null,
-            timestamp: 0,
-            formatted_time: "Unknown",
-            scenario_path: null,
-            size_bytes: 0,
-          };
-
-          setSelectedSaveData(saveData);
-          await validateSaveData(filePath, baseDir);
+        // open() returns string | string[] | null
+        if (typeof result !== "string") {
+          return;
         }
+
+        const filePath = result;
+        const fileName = filePath.split("/").pop() || filePath;
+
+        // Create a SaveDataInfo for the selected file
+        const saveData: SaveDataInfo = {
+          file_name: fileName,
+          file_path: filePath,
+          slot: null,
+          timestamp: 0,
+          formatted_time: "Unknown",
+          scenario_path: null,
+          size_bytes: 0,
+        };
+
+        setSelectedSaveData(saveData);
+        await validateSaveData(filePath, baseDir);
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
       }
