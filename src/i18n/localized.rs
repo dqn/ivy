@@ -204,12 +204,11 @@ en: "Hello"
 ja: "こんにちは"
 "#;
         let result: LocalizedString = serde_yaml::from_str(yaml).unwrap();
-        if let LocalizedString::Localized(map) = result {
-            assert_eq!(map.get("en"), Some(&"Hello".to_string()));
-            assert_eq!(map.get("ja"), Some(&"こんにちは".to_string()));
-        } else {
-            panic!("Expected Localized variant");
-        }
+        let LocalizedString::Localized(map) = result else {
+            panic!("Expected Localized variant, got {:?}", result);
+        };
+        assert_eq!(map.get("en"), Some(&"Hello".to_string()));
+        assert_eq!(map.get("ja"), Some(&"こんにちは".to_string()));
     }
 
     #[test]

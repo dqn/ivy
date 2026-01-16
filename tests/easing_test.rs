@@ -104,7 +104,7 @@ fn test_all_14_easings_exist() {
     // All should produce valid output for mid-point
     for easing in &easings {
         let mid = easing.apply(0.5);
-        assert!(mid >= -0.5 && mid <= 1.5, "{:?} mid value {} out of range", easing, mid);
+        assert!((-0.5..=1.5).contains(&mid), "{:?} mid value {} out of range", easing, mid);
     }
 }
 

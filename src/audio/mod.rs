@@ -156,7 +156,7 @@ impl AudioManager {
     /// Note: macroquad doesn't support volume fading, so this immediately stops the BGM.
     #[allow(unused_variables)]
     pub async fn stop_bgm_fade(&mut self, fade_duration: f32) {
-        // TODO: Implement actual fade out when macroquad supports it
+        // Fade not implemented: macroquad lacks runtime volume control
         if let Some(sound) = &self.current_bgm_sound {
             stop_sound(sound);
         }

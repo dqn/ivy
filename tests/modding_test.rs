@@ -232,7 +232,7 @@ files:
     let scenarios = loader.collect_scenarios();
 
     // Should find both files (one from files list, one from directory scan)
-    assert!(scenarios.len() >= 1);
+    assert!(!scenarios.is_empty());
     assert!(
         scenarios
             .iter()
