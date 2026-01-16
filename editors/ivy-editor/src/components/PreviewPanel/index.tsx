@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { PreviewState } from "../../types/preview";
 import type { PlaytestState, InputDisplay, WaitDisplay, VideoDisplay } from "../../types/playtest";
 import type { AssetError } from "../../hooks/usePlaytest";
@@ -113,12 +114,13 @@ function getPlaytestDisplayInfo(state: PlaytestState) {
 }
 
 export const PreviewPanel: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
   const { mode, state, backgroundUrl, characterUrl, baseDir, language, onLanguageChange } = props;
 
   if (!state) {
     return (
       <div className="preview-panel empty">
-        <p>Load a scenario to see preview</p>
+        <p>{t("previewPanel.loadScenario")}</p>
       </div>
     );
   }
@@ -244,8 +246,8 @@ export const PreviewPanel: React.FC<Props> = (props) => {
 
       {mode === "playtest" && state.is_ended && (
         <div className="playtest-ended-overlay">
-          <p>Scenario Ended</p>
-          <button onClick={props.onRestart}>Restart</button>
+          <p>{t("previewPanel.scenarioEnded")}</p>
+          <button onClick={props.onRestart}>{t("previewPanel.restart")}</button>
         </div>
       )}
     </div>

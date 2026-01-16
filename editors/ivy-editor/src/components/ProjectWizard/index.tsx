@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { open } from "@tauri-apps/plugin-dialog";
 import {
   DEFAULT_RESOLUTION,
@@ -21,6 +22,7 @@ interface Props {
 type Step = "basic" | "resolution" | "summary";
 
 export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
+  const { t } = useTranslation();
   const [step, setStep] = useState<Step>("basic");
   const [name, setName] = useState("");
   const [author, setAuthor] = useState("");
@@ -85,20 +87,20 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
     <div className="dialog-overlay">
       <div className="wizard-dialog">
         <div className="wizard-header">
-          <h2>Create New Project</h2>
+          <h2>{t("projectWizard.title")}</h2>
           <div className="wizard-steps">
             <div className={`wizard-step ${step === "basic" ? "active" : ""}`}>
-              1. Basic Info
+              {t("projectWizard.step1")}
             </div>
             <div
               className={`wizard-step ${step === "resolution" ? "active" : ""}`}
             >
-              2. Display
+              {t("projectWizard.step2")}
             </div>
             <div
               className={`wizard-step ${step === "summary" ? "active" : ""}`}
             >
-              3. Summary
+              {t("projectWizard.step3")}
             </div>
           </div>
         </div>
@@ -108,56 +110,56 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
             <div className="wizard-step-content">
               <div className="form-field">
                 <label>
-                  Project Name <span className="required">*</span>
+                  {t("projectWizard.projectName")} <span className="required">{t("common.required")}</span>
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="My Visual Novel"
+                  placeholder={t("projectWizard.projectNamePlaceholder")}
                   autoFocus
                 />
               </div>
 
               <div className="form-field">
                 <label>
-                  Location <span className="required">*</span>
+                  {t("projectWizard.location")} <span className="required">{t("common.required")}</span>
                 </label>
                 <div className="folder-select">
                   <input
                     type="text"
                     value={rootPath}
                     onChange={(e) => setRootPath(e.target.value)}
-                    placeholder="Select a folder..."
+                    placeholder={t("projectWizard.locationPlaceholder")}
                     readOnly
                   />
                   <button onClick={() => void handleSelectFolder()}>
-                    Browse
+                    {t("projectWizard.browse")}
                   </button>
                 </div>
                 {rootPath && name && (
                   <p className="folder-preview">
-                    Project will be created at: {rootPath}/{name}
+                    {t("projectWizard.projectWillBeCreated", { path: `${rootPath}/${name}` })}
                   </p>
                 )}
               </div>
 
               <div className="form-field">
-                <label>Author</label>
+                <label>{t("projectWizard.author")}</label>
                 <input
                   type="text"
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
-                  placeholder="Your name"
+                  placeholder={t("projectWizard.authorPlaceholder")}
                 />
               </div>
 
               <div className="form-field">
-                <label>Description</label>
+                <label>{t("projectWizard.description")}</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="A brief description of your project..."
+                  placeholder={t("projectWizard.descriptionPlaceholder")}
                   rows={3}
                 />
               </div>
@@ -167,7 +169,7 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
           {step === "resolution" && (
             <div className="wizard-step-content">
               <div className="form-field">
-                <label>Display Resolution</label>
+                <label>{t("projectWizard.displayResolution")}</label>
                 <div className="resolution-options">
                   {RESOLUTION_PRESETS.map((preset) => (
                     <button
@@ -191,7 +193,7 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
                     className={`resolution-option ${useCustomResolution ? "selected" : ""}`}
                     onClick={() => setUseCustomResolution(true)}
                   >
-                    Custom
+                    {t("projectWizard.custom")}
                   </button>
                 </div>
               </div>
@@ -199,7 +201,7 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
               {useCustomResolution && (
                 <div className="custom-resolution">
                   <div className="form-field">
-                    <label>Width</label>
+                    <label>{t("projectWizard.width")}</label>
                     <input
                       type="number"
                       value={customWidth}
@@ -209,7 +211,7 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
                     />
                   </div>
                   <div className="form-field">
-                    <label>Height</label>
+                    <label>{t("projectWizard.height")}</label>
                     <input
                       type="number"
                       value={customHeight}
@@ -239,31 +241,31 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
           {step === "summary" && (
             <div className="wizard-step-content">
               <div className="summary-section">
-                <h3>Project Summary</h3>
+                <h3>{t("projectWizard.projectSummary")}</h3>
                 <dl className="summary-list">
-                  <dt>Name</dt>
+                  <dt>{t("projectWizard.name")}</dt>
                   <dd>{name}</dd>
 
-                  <dt>Location</dt>
+                  <dt>{t("projectWizard.location")}</dt>
                   <dd>
                     {rootPath}/{name}
                   </dd>
 
                   {author && (
                     <>
-                      <dt>Author</dt>
+                      <dt>{t("projectWizard.author")}</dt>
                       <dd>{author}</dd>
                     </>
                   )}
 
                   {description && (
                     <>
-                      <dt>Description</dt>
+                      <dt>{t("projectWizard.description")}</dt>
                       <dd>{description}</dd>
                     </>
                   )}
 
-                  <dt>Resolution</dt>
+                  <dt>{t("projectWizard.resolution")}</dt>
                   <dd>
                     {useCustomResolution
                       ? `${customWidth} x ${customHeight}`
@@ -273,7 +275,7 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
               </div>
 
               <div className="summary-section">
-                <h3>Files to be created</h3>
+                <h3>{t("projectWizard.filesToBeCreated")}</h3>
                 <ul className="file-list">
                   <li>ivy-project.yaml</li>
                   <li>scenarios/main.ivy.yaml</li>
@@ -290,12 +292,12 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
 
         <div className="wizard-actions">
           <button onClick={onClose} disabled={isCreating}>
-            Cancel
+            {t("common.cancel")}
           </button>
           <div className="wizard-actions-right">
             {step !== "basic" && (
               <button onClick={handleBack} disabled={isCreating}>
-                Back
+                {t("common.back")}
               </button>
             )}
             {step !== "summary" ? (
@@ -308,7 +310,7 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
                     : !canProceedResolution
                 }
               >
-                Next
+                {t("common.next")}
               </button>
             ) : (
               <button
@@ -316,7 +318,7 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
                 onClick={() => void handleCreate()}
                 disabled={isCreating}
               >
-                {isCreating ? "Creating..." : "Create Project"}
+                {isCreating ? t("projectWizard.creating") : t("projectWizard.createProject")}
               </button>
             )}
           </div>

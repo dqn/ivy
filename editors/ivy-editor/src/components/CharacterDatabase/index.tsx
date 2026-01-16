@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { CharacterList } from "./CharacterList";
 import { CharacterEditor } from "./CharacterEditor";
 import { SpeakerMapping } from "./SpeakerMapping";
@@ -35,6 +36,7 @@ export const CharacterDatabase: React.FC<Props> = ({
   onRemoveLayer,
   onReorderLayers,
 }) => {
+  const { t } = useTranslation();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newCharacterName, setNewCharacterName] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
@@ -107,7 +109,7 @@ export const CharacterDatabase: React.FC<Props> = ({
               onSelectCharacter={onSelectCharacter}
             />
             <div className="empty-state">
-              <p>Select a character to edit</p>
+              <p>{t("characterDatabase.selectToEdit")}</p>
             </div>
           </>
         )}
@@ -117,12 +119,12 @@ export const CharacterDatabase: React.FC<Props> = ({
       {showAddDialog && (
         <div className="dialog-overlay">
           <div className="dialog">
-            <h2>Add Character</h2>
+            <h2>{t("characterDatabase.addCharacter")}</h2>
             <input
               type="text"
               value={newCharacterName}
               onChange={(e) => setNewCharacterName(e.target.value)}
-              placeholder="Character name (e.g., sakura)"
+              placeholder={t("characterDatabase.characterNamePlaceholder")}
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -133,12 +135,12 @@ export const CharacterDatabase: React.FC<Props> = ({
               }}
             />
             <div className="dialog-actions">
-              <button onClick={() => setShowAddDialog(false)}>Cancel</button>
+              <button onClick={() => setShowAddDialog(false)}>{t("common.cancel")}</button>
               <button
                 onClick={handleConfirmAdd}
                 disabled={!newCharacterName.trim()}
               >
-                Add
+                {t("common.add")}
               </button>
             </div>
           </div>
@@ -149,15 +151,14 @@ export const CharacterDatabase: React.FC<Props> = ({
       {showDeleteConfirm && (
         <div className="dialog-overlay">
           <div className="dialog">
-            <h2>Delete Character</h2>
+            <h2>{t("characterDatabase.deleteCharacter")}</h2>
             <p>
-              Are you sure you want to delete "{showDeleteConfirm}"? This action
-              cannot be undone.
+              {t("characterDatabase.deleteConfirm", { name: showDeleteConfirm })}
             </p>
             <div className="dialog-actions">
-              <button onClick={() => setShowDeleteConfirm(null)}>Cancel</button>
+              <button onClick={() => setShowDeleteConfirm(null)}>{t("common.cancel")}</button>
               <button className="danger" onClick={handleConfirmRemove}>
-                Delete
+                {t("common.delete")}
               </button>
             </div>
           </div>

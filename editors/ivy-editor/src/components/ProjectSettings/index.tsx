@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   RESOLUTION_PRESETS,
   type ProjectConfig,
@@ -19,6 +20,7 @@ export const ProjectSettings: React.FC<Props> = ({
   onClose,
   onSave,
 }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>("general");
   const [name, setName] = useState(config.name);
   const [version, setVersion] = useState(config.version);
@@ -69,25 +71,25 @@ export const ProjectSettings: React.FC<Props> = ({
     <div className="dialog-overlay">
       <div className="settings-dialog">
         <div className="settings-header">
-          <h2>Project Settings</h2>
+          <h2>{t("projectSettings.title")}</h2>
           <div className="settings-tabs">
             <button
               className={activeTab === "general" ? "active" : ""}
               onClick={() => setActiveTab("general")}
             >
-              General
+              {t("projectSettings.general")}
             </button>
             <button
               className={activeTab === "display" ? "active" : ""}
               onClick={() => setActiveTab("display")}
             >
-              Display
+              {t("projectSettings.display")}
             </button>
             <button
               className={activeTab === "scenarios" ? "active" : ""}
               onClick={() => setActiveTab("scenarios")}
             >
-              Scenarios
+              {t("projectSettings.scenariosTab")}
             </button>
           </div>
         </div>
@@ -97,7 +99,7 @@ export const ProjectSettings: React.FC<Props> = ({
             <div className="settings-tab-content">
               <div className="form-field">
                 <label>
-                  Project Name <span className="required">*</span>
+                  {t("projectWizard.projectName")} <span className="required">{t("common.required")}</span>
                 </label>
                 <input
                   type="text"
@@ -107,7 +109,7 @@ export const ProjectSettings: React.FC<Props> = ({
               </div>
 
               <div className="form-field">
-                <label>Version</label>
+                <label>{t("projectSettings.version")}</label>
                 <input
                   type="text"
                   value={version}
@@ -116,7 +118,7 @@ export const ProjectSettings: React.FC<Props> = ({
               </div>
 
               <div className="form-field">
-                <label>Author</label>
+                <label>{t("projectWizard.author")}</label>
                 <input
                   type="text"
                   value={author}
@@ -125,7 +127,7 @@ export const ProjectSettings: React.FC<Props> = ({
               </div>
 
               <div className="form-field">
-                <label>Description</label>
+                <label>{t("projectWizard.description")}</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -138,7 +140,7 @@ export const ProjectSettings: React.FC<Props> = ({
           {activeTab === "display" && (
             <div className="settings-tab-content">
               <div className="form-field">
-                <label>Resolution</label>
+                <label>{t("projectWizard.resolution")}</label>
                 <div className="resolution-options">
                   {RESOLUTION_PRESETS.map((preset) => (
                     <button
@@ -162,7 +164,7 @@ export const ProjectSettings: React.FC<Props> = ({
                     className={`resolution-option ${useCustomResolution ? "selected" : ""}`}
                     onClick={() => setUseCustomResolution(true)}
                   >
-                    Custom
+                    {t("projectWizard.custom")}
                   </button>
                 </div>
               </div>
@@ -170,7 +172,7 @@ export const ProjectSettings: React.FC<Props> = ({
               {useCustomResolution && (
                 <div className="custom-resolution">
                   <div className="form-field">
-                    <label>Width</label>
+                    <label>{t("projectWizard.width")}</label>
                     <input
                       type="number"
                       value={customWidth}
@@ -180,7 +182,7 @@ export const ProjectSettings: React.FC<Props> = ({
                     />
                   </div>
                   <div className="form-field">
-                    <label>Height</label>
+                    <label>{t("projectWizard.height")}</label>
                     <input
                       type="number"
                       value={customHeight}
@@ -197,7 +199,7 @@ export const ProjectSettings: React.FC<Props> = ({
           {activeTab === "scenarios" && (
             <div className="settings-tab-content">
               <div className="form-field">
-                <label>Entry Scenario</label>
+                <label>{t("projectSettings.entryScenario")}</label>
                 <select
                   value={entryScenario}
                   onChange={(e) => setEntryScenario(e.target.value)}
@@ -209,12 +211,12 @@ export const ProjectSettings: React.FC<Props> = ({
                   ))}
                 </select>
                 <p className="field-help">
-                  The scenario that plays when the game starts
+                  {t("projectSettings.entryScenarioHelp")}
                 </p>
               </div>
 
               <div className="scenarios-list">
-                <label>Scenarios in Project</label>
+                <label>{t("projectSettings.scenariosInProject")}</label>
                 <div className="scenario-items">
                   {config.scenarios.map((s) => (
                     <div
@@ -223,12 +225,12 @@ export const ProjectSettings: React.FC<Props> = ({
                     >
                       <div className="scenario-info">
                         <span className="scenario-chapter">
-                          {s.chapter || "Untitled"}
+                          {s.chapter || t("projectSettings.untitled")}
                         </span>
                         <span className="scenario-path">{s.path}</span>
                       </div>
                       {s.path === entryScenario && (
-                        <span className="entry-badge">Entry</span>
+                        <span className="entry-badge">{t("projectSettings.entry")}</span>
                       )}
                     </div>
                   ))}
@@ -239,13 +241,13 @@ export const ProjectSettings: React.FC<Props> = ({
         </div>
 
         <div className="settings-actions">
-          <button onClick={onClose}>Cancel</button>
+          <button onClick={onClose}>{t("common.cancel")}</button>
           <button
             className="primary"
             onClick={handleSave}
             disabled={!name.trim() || !hasChanges}
           >
-            Save Changes
+            {t("projectSettings.saveChanges")}
           </button>
         </div>
       </div>

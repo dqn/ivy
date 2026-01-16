@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 interface Props {
   canRollback: boolean;
   isEnded: boolean;
@@ -25,6 +27,8 @@ export const PlaytestControls: React.FC<Props> = ({
   onToggleAutoMode,
   onToggleSkipMode,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="playtest-controls">
       <div className="playtest-controls-row">
@@ -32,49 +36,49 @@ export const PlaytestControls: React.FC<Props> = ({
           className="playtest-button rollback"
           onClick={onRollback}
           disabled={!canRollback}
-          title="Rollback (Backspace / ↑)"
+          title={t("playtestControls.rollbackTitle")}
         >
-          ← Back
+          {t("playtestControls.back")}
         </button>
         <button
           className="playtest-button advance"
           onClick={onAdvance}
           disabled={isEnded || isBlocked}
-          title="Advance (Enter / Space / →)"
+          title={t("playtestControls.advanceTitle")}
         >
-          Next →
+          {t("playtestControls.nextArrow")}
         </button>
       </div>
       <div className="playtest-controls-row">
         <button
           className={`playtest-button mode-toggle ${isAutoMode ? "active" : ""}`}
           onClick={onToggleAutoMode}
-          title="Auto Mode (A)"
+          title={t("playtestControls.autoModeTitle")}
         >
-          Auto
+          {t("playtestControls.auto")}
         </button>
         <button
           className={`playtest-button mode-toggle ${isSkipMode ? "active" : ""}`}
           onClick={onToggleSkipMode}
-          title="Skip Mode (S)"
+          title={t("playtestControls.skipModeTitle")}
         >
-          Skip
+          {t("playtestControls.skip")}
         </button>
         <button
           className="playtest-button restart"
           onClick={onRestart}
-          title="Restart (Ctrl+R)"
+          title={t("playtestControls.restartTitle")}
         >
-          Restart
+          {t("playtestControls.restart")}
         </button>
       </div>
       <div className="playtest-controls-row">
         <span className="playtest-history-count">
-          History: {historyCount}
+          {t("playtestControls.history", { count: historyCount })}
         </span>
       </div>
       <div className="playtest-shortcuts-hint">
-        Keys: Enter/Space = Next, Backspace = Back, A = Auto, S = Skip, 1-9 = Choice
+        {t("playtestControls.shortcutsHint")}
       </div>
     </div>
   );

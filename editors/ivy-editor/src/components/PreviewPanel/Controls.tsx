@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 interface Props {
   currentIndex: number;
   totalCommands: number;
@@ -11,16 +13,18 @@ export const Controls: React.FC<Props> = ({
   onPrev,
   onNext,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="preview-controls">
       <button onClick={onPrev} disabled={currentIndex <= 0}>
-        Prev
+        {t("previewControls.prev")}
       </button>
       <span className="position-indicator">
         {currentIndex + 1} / {totalCommands}
       </span>
       <button onClick={onNext} disabled={currentIndex >= totalCommands - 1}>
-        Next
+        {t("previewControls.next")}
       </button>
     </div>
   );
