@@ -1,0 +1,290 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "delete": "Delete",
+    "add": "Add",
+    "remove": "Remove",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "refresh": "Refresh",
+    "search": "Search...",
+    "loading": "Loading...",
+    "or": "or",
+    "required": "*"
+  },
+  "header": {
+    "settings": "Settings",
+    "export": "Export",
+    "new": "New",
+    "open": "Open",
+    "save": "Save",
+    "saveAs": "Save As",
+    "validate": "Validate",
+    "list": "List",
+    "flowchart": "Flowchart"
+  },
+  "sidebar": {
+    "scenarios": "Scenarios",
+    "commands": "Commands",
+    "assets": "Assets",
+    "characters": "Characters",
+    "translations": "Translations"
+  },
+  "welcome": {
+    "title": "ivy Editor",
+    "subtitle": "Visual Novel Editor",
+    "newProject": "New Project",
+    "newProjectDescription": "Create a new visual novel project",
+    "openProject": "Open Project",
+    "openProjectDescription": "Open an existing project folder",
+    "recentProjects": "Recent Projects",
+    "removeFromRecent": "Remove from recent",
+    "openSingleFile": "Open single scenario file (legacy mode)",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago"
+  },
+  "projectWizard": {
+    "title": "Create New Project",
+    "step1": "1. Basic Info",
+    "step2": "2. Display",
+    "step3": "3. Summary",
+    "projectName": "Project Name",
+    "projectNamePlaceholder": "My Visual Novel",
+    "location": "Location",
+    "locationPlaceholder": "Select a folder...",
+    "browse": "Browse",
+    "projectWillBeCreated": "Project will be created at: {{path}}",
+    "author": "Author",
+    "authorPlaceholder": "Your name",
+    "description": "Description",
+    "descriptionPlaceholder": "A brief description of your project...",
+    "displayResolution": "Display Resolution",
+    "custom": "Custom",
+    "width": "Width",
+    "height": "Height",
+    "projectSummary": "Project Summary",
+    "name": "Name",
+    "resolution": "Resolution",
+    "filesToBeCreated": "Files to be created",
+    "creating": "Creating...",
+    "createProject": "Create Project"
+  },
+  "projectSettings": {
+    "title": "Project Settings",
+    "general": "General",
+    "display": "Display",
+    "scenariosTab": "Scenarios",
+    "version": "Version",
+    "entryScenario": "Entry Scenario",
+    "entryScenarioHelp": "The scenario that plays when the game starts",
+    "scenariosInProject": "Scenarios in Project",
+    "untitled": "Untitled",
+    "entry": "Entry",
+    "saveChanges": "Save Changes"
+  },
+  "commandList": {
+    "commands": "Commands ({{count}})",
+    "addCommand": "Add command at end"
+  },
+  "commandForm": {
+    "basic": "Basic",
+    "label": "Label",
+    "labelPlaceholder": "Label name for jump targets",
+    "speaker": "Speaker",
+    "speakerPlaceholder": "Character name",
+    "text": "Text",
+    "textPlaceholder": "Dialogue or narration text",
+    "visual": "Visual",
+    "background": "Background",
+    "character": "Character",
+    "position": "Position",
+    "positionLeft": "Left",
+    "positionCenter": "Center",
+    "positionRight": "Right",
+    "audio": "Audio",
+    "bgm": "BGM",
+    "soundEffect": "Sound Effect",
+    "voice": "Voice",
+    "flow": "Flow",
+    "jump": "Jump",
+    "noJump": "-- No jump --",
+    "choices": "Choices",
+    "choiceTextPlaceholder": "Choice text *",
+    "jumpToPlaceholder": "-- Jump to * --",
+    "addChoice": "+ Add Choice",
+    "advanced": "Advanced",
+    "waitSeconds": "Wait (seconds)",
+    "timeoutSeconds": "Timeout (seconds)",
+    "nvlMode": "NVL Mode",
+    "nvlClear": "NVL Clear",
+    "cinematicMode": "Cinematic Mode"
+  },
+  "previewPanel": {
+    "loadScenario": "Load a scenario to see preview",
+    "preview": "Preview",
+    "playtest": "Playtest",
+    "endOfScenario": "[End of scenario]",
+    "scenarioEnded": "Scenario Ended",
+    "restart": "Restart"
+  },
+  "previewControls": {
+    "prev": "Prev",
+    "next": "Next"
+  },
+  "playtestControls": {
+    "back": "← Back",
+    "nextArrow": "Next →",
+    "auto": "Auto",
+    "skip": "Skip",
+    "restart": "Restart",
+    "history": "History: {{count}}",
+    "rollbackTitle": "Rollback (Backspace / ↑)",
+    "advanceTitle": "Advance (Enter / Space / →)",
+    "autoModeTitle": "Auto Mode (A)",
+    "skipModeTitle": "Skip Mode (S)",
+    "restartTitle": "Restart (Ctrl+R)",
+    "shortcutsHint": "Keys: Enter/Space = Next, Backspace = Back, A = Auto, S = Skip, 1-9 = Choice"
+  },
+  "assetBrowser": {
+    "openScenario": "Open a scenario to browse assets",
+    "refresh": "Refresh",
+    "findUnused": "Find Unused",
+    "showAll": "Show All"
+  },
+  "assetInfo": {
+    "use": "Use",
+    "findUsages": "Find Usages",
+    "size": "Size",
+    "dimensions": "Dimensions",
+    "duration": "Duration"
+  },
+  "characterDatabase": {
+    "selectToEdit": "Select a character to edit",
+    "addCharacter": "Add Character",
+    "characterNamePlaceholder": "Character name (e.g., sakura)",
+    "deleteCharacter": "Delete Character",
+    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "characterAlreadyExists": "Character '{{name}}' already exists"
+  },
+  "characterEditor": {
+    "displayName": "Display Name",
+    "displayNamePlaceholder": "Character's display name",
+    "aliases": "Aliases",
+    "aliasesPlaceholder": "Alternative names (comma-separated)",
+    "baseSprite": "Base Sprite",
+    "layers": "Layers",
+    "addLayer": "Add Layer",
+    "layerName": "Layer Name",
+    "layerNamePlaceholder": "e.g., expression, outfit",
+    "images": "Images"
+  },
+  "characterList": {
+    "characters": "Characters",
+    "noCharacters": "No characters defined"
+  },
+  "speakerMapping": {
+    "title": "Speaker Mapping",
+    "unmappedSpeakers": "Unmapped Speakers",
+    "noUnmapped": "All speakers are mapped",
+    "createCharacter": "Create Character"
+  },
+  "translationTable": {
+    "title": "Translation Table",
+    "noScenario": "No scenario loaded",
+    "all": "All ({{count}})",
+    "missingTranslations": "Missing translations",
+    "fullyTranslated": "Fully translated",
+    "missing": "Missing",
+    "choice": "Choice {{index}}",
+    "noMatching": "No matching entries",
+    "allComplete": "All translations complete!",
+    "noContent": "No translatable content"
+  },
+  "playtestDebug": {
+    "debug": "Debug",
+    "history": "History ({{count}})",
+    "labels": "Labels ({{count}})",
+    "variables": "Vars ({{count}})",
+    "noHistory": "No history yet",
+    "noLabels": "No labels defined",
+    "noVariables": "No variables set",
+    "clickToRollback": "Click to rollback to this point",
+    "clickToJump": "Click to jump to this label",
+    "clickToEdit": "Click to edit",
+    "current": "current"
+  },
+  "exportWizard": {
+    "title": "Export Project",
+    "step1": "1. Target",
+    "step2": "2. Options",
+    "step3": "3. Build",
+    "selectTarget": "Select Export Target",
+    "buildEnvironment": "Build Environment",
+    "rustNotFound": "Not found",
+    "installed": "Installed",
+    "wasmPackRequired": "Not found (required for Web export)",
+    "rustRequired": "Rust is required for native builds.",
+    "installRust": "Install Rust",
+    "exportOptions": "Export Options",
+    "outputDirectory": "Output Directory",
+    "selectOutputDirectory": "Select output directory...",
+    "releaseBuild": "Release Build (optimized, slower to build)",
+    "optimizeAssets": "Optimize Assets",
+    "compressImages": "Compress Images",
+    "format": "Format",
+    "quality": "Quality",
+    "convertAudio": "Convert Audio",
+    "bitrate": "Bitrate",
+    "excludeUnused": "Exclude Unused Assets",
+    "packageFormat": "Package Format",
+    "export": "Export",
+    "exporting": "Exporting...",
+    "exportComplete": "Export Complete",
+    "exportFailed": "Export Failed",
+    "exportSuccess": "{{name}} has been exported successfully!",
+    "output": "Output",
+    "exportFailedMessage": "Export failed",
+    "warnings": "Warnings:",
+    "checkingEnvironment": "Checking build environment..."
+  },
+  "validation": {
+    "errors": "Errors",
+    "warnings": "Warnings",
+    "noIssues": "No validation issues"
+  },
+  "variableWatcher": {
+    "title": "Variables",
+    "noVariables": "No variables"
+  },
+  "storyPath": {
+    "title": "Story Path Analyzer",
+    "analyze": "Analyze",
+    "paths": "Paths",
+    "endings": "Endings"
+  },
+  "saveDataValidator": {
+    "title": "Save Data Validator",
+    "validate": "Validate",
+    "valid": "Valid",
+    "invalid": "Invalid"
+  },
+  "scenarioList": {
+    "scenarios": "Scenarios",
+    "addScenario": "Add Scenario"
+  },
+  "dialog": {
+    "newScenario": "New Scenario",
+    "scenarioTitle": "Scenario title"
+  },
+  "emptyState": {
+    "selectScenario": "Select a scenario",
+    "noScenarioLoaded": "No scenario loaded",
+    "createNew": "Create New",
+    "openFile": "Open File",
+    "selectCommand": "Select a command to edit"
+  }
+}

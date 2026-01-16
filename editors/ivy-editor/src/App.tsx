@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useScenario } from "./hooks/useScenario";
 import { usePreview } from "./hooks/usePreview";
 import { usePlaytest } from "./hooks/usePlaytest";
@@ -25,7 +26,9 @@ import { ProjectWizard } from "./components/ProjectWizard";
 import { ProjectSettings } from "./components/ProjectSettings";
 import { ScenarioList } from "./components/ScenarioList";
 import { PlaytestDebugPanel } from "./components/PlaytestDebugPanel";
+import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import type { Resolution, ProjectConfig } from "./types/project";
+import "./i18n";
 import "./App.css";
 
 type EditorMode =
@@ -34,6 +37,7 @@ type EditorMode =
   | { type: "standalone" };
 
 const App: React.FC = () => {
+  const { t } = useTranslation();
   const { showToast } = useToast();
   const [mode, setMode] = useState<EditorMode>({ type: "welcome" });
 
@@ -399,27 +403,27 @@ const App: React.FC = () => {
           {mode.type === "project" && (
             <>
               <button onClick={() => setShowProjectSettings(true)}>
-                Settings
+                {t("header.settings")}
               </button>
               <button onClick={() => setShowExportWizard(true)}>
-                Export
+                {t("header.export")}
               </button>
             </>
           )}
           {mode.type === "standalone" && (
             <>
-              <button onClick={handleNew}>New</button>
-              <button onClick={() => void openFile()}>Open</button>
+              <button onClick={handleNew}>{t("header.new")}</button>
+              <button onClick={() => void openFile()}>{t("header.open")}</button>
             </>
           )}
           <button onClick={() => void saveFile()} disabled={!scenario}>
-            Save
+            {t("header.save")}
           </button>
           <button onClick={() => void saveFileAs()} disabled={!scenario}>
-            Save As
+            {t("header.saveAs")}
           </button>
           <button onClick={() => void validate()} disabled={!scenario}>
-            Validate
+            {t("header.validate")}
           </button>
           <div className="view-toggle">
             <button
@@ -427,16 +431,17 @@ const App: React.FC = () => {
               onClick={() => setView("list")}
               disabled={!scenario}
             >
-              List
+              {t("header.list")}
             </button>
             <button
               className={view === "flowchart" ? "active" : ""}
               onClick={() => setView("flowchart")}
               disabled={!scenario}
             >
-              Flowchart
+              {t("header.flowchart")}
             </button>
           </div>
+          <LanguageSwitcher />
         </div>
       </header>
 
@@ -451,31 +456,31 @@ const App: React.FC = () => {
                   className={sidebarTab === "scenarios" ? "active" : ""}
                   onClick={() => setSidebarTab("scenarios")}
                 >
-                  Scenarios
+                  {t("sidebar.scenarios")}
                 </button>
                 <button
                   className={sidebarTab === "commands" ? "active" : ""}
                   onClick={() => setSidebarTab("commands")}
                 >
-                  Commands
+                  {t("sidebar.commands")}
                 </button>
                 <button
                   className={sidebarTab === "assets" ? "active" : ""}
                   onClick={() => setSidebarTab("assets")}
                 >
-                  Assets
+                  {t("sidebar.assets")}
                 </button>
                 <button
                   className={sidebarTab === "characters" ? "active" : ""}
                   onClick={() => setSidebarTab("characters")}
                 >
-                  Characters
+                  {t("sidebar.characters")}
                 </button>
                 <button
                   className={sidebarTab === "translations" ? "active" : ""}
                   onClick={() => setSidebarTab("translations")}
                 >
-                  Translations
+                  {t("sidebar.translations")}
                 </button>
               </div>
               {sidebarTab === "scenarios" ? (
@@ -536,7 +541,7 @@ const App: React.FC = () => {
                 />
               ) : (
                 <div className="empty-state">
-                  <p>Select a scenario</p>
+                  <p>{t("emptyState.selectScenario")}</p>
                 </div>
               )}
             </>
@@ -547,19 +552,19 @@ const App: React.FC = () => {
                   className={sidebarTab === "commands" ? "active" : ""}
                   onClick={() => setSidebarTab("commands")}
                 >
-                  Commands
+                  {t("sidebar.commands")}
                 </button>
                 <button
                   className={sidebarTab === "assets" ? "active" : ""}
                   onClick={() => setSidebarTab("assets")}
                 >
-                  Assets
+                  {t("sidebar.assets")}
                 </button>
                 <button
                   className={sidebarTab === "translations" ? "active" : ""}
                   onClick={() => setSidebarTab("translations")}
                 >
-                  Translations
+                  {t("sidebar.translations")}
                 </button>
               </div>
               {sidebarTab === "commands" ? (
@@ -597,9 +602,9 @@ const App: React.FC = () => {
             </>
           ) : (
             <div className="empty-state">
-              <p>No scenario loaded</p>
-              <button onClick={handleNew}>Create New</button>
-              <button onClick={() => void openFile()}>Open File</button>
+              <p>{t("emptyState.noScenarioLoaded")}</p>
+              <button onClick={handleNew}>{t("emptyState.createNew")}</button>
+              <button onClick={() => void openFile()}>{t("emptyState.openFile")}</button>
             </div>
           )}
         </div>
@@ -638,7 +643,7 @@ const App: React.FC = () => {
             </>
           ) : scenario ? (
             <div className="empty-state">
-              <p>Select a command to edit</p>
+              <p>{t("emptyState.selectCommand")}</p>
             </div>
           ) : null}
         </div>
@@ -650,14 +655,14 @@ const App: React.FC = () => {
               className={previewMode === "preview" ? "active" : ""}
               onClick={() => previewMode !== "preview" && void handleTogglePreviewMode()}
             >
-              Preview
+              {t("previewPanel.preview")}
             </button>
             <button
               className={previewMode === "playtest" ? "active" : ""}
               onClick={() => previewMode !== "playtest" && void handleTogglePreviewMode()}
               disabled={!scenario}
             >
-              Playtest
+              {t("previewPanel.playtest")}
             </button>
           </div>
           {previewMode === "preview" ? (
@@ -731,12 +736,12 @@ const App: React.FC = () => {
       {showNewDialog && (
         <div className="dialog-overlay">
           <div className="dialog">
-            <h2>New Scenario</h2>
+            <h2>{t("dialog.newScenario")}</h2>
             <input
               type="text"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="Scenario title"
+              placeholder={t("dialog.scenarioTitle")}
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -745,9 +750,9 @@ const App: React.FC = () => {
               }}
             />
             <div className="dialog-actions">
-              <button onClick={() => setShowNewDialog(false)}>Cancel</button>
+              <button onClick={() => setShowNewDialog(false)}>{t("common.cancel")}</button>
               <button onClick={handleCreateNew} disabled={!newTitle.trim()}>
-                Create
+                {t("common.create")}
               </button>
             </div>
           </div>

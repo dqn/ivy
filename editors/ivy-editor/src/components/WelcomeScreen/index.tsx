@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { RecentProject } from "../../types/project";
 import "./WelcomeScreen.css";
 
@@ -18,6 +19,8 @@ export const WelcomeScreen: React.FC<Props> = ({
   onRemoveRecentProject,
   onOpenFile,
 }) => {
+  const { t } = useTranslation();
+
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -25,13 +28,13 @@ export const WelcomeScreen: React.FC<Props> = ({
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
     if (days === 0) {
-      return "Today";
+      return t("welcome.today");
     }
     if (days === 1) {
-      return "Yesterday";
+      return t("welcome.yesterday");
     }
     if (days < 7) {
-      return `${days} days ago`;
+      return t("welcome.daysAgo", { count: days });
     }
     return date.toLocaleDateString();
   };
@@ -40,17 +43,17 @@ export const WelcomeScreen: React.FC<Props> = ({
     <div className="welcome-screen">
       <div className="welcome-content">
         <div className="welcome-header">
-          <h1>ivy Editor</h1>
-          <p className="welcome-subtitle">Visual Novel Editor</p>
+          <h1>{t("welcome.title")}</h1>
+          <p className="welcome-subtitle">{t("welcome.subtitle")}</p>
         </div>
 
         <div className="welcome-actions">
           <button className="welcome-action primary" onClick={onNewProject}>
             <span className="action-icon">+</span>
             <span className="action-text">
-              <span className="action-title">New Project</span>
+              <span className="action-title">{t("welcome.newProject")}</span>
               <span className="action-description">
-                Create a new visual novel project
+                {t("welcome.newProjectDescription")}
               </span>
             </span>
           </button>
@@ -58,9 +61,9 @@ export const WelcomeScreen: React.FC<Props> = ({
           <button className="welcome-action" onClick={onOpenProject}>
             <span className="action-icon">📁</span>
             <span className="action-text">
-              <span className="action-title">Open Project</span>
+              <span className="action-title">{t("welcome.openProject")}</span>
               <span className="action-description">
-                Open an existing project folder
+                {t("welcome.openProjectDescription")}
               </span>
             </span>
           </button>
@@ -68,7 +71,7 @@ export const WelcomeScreen: React.FC<Props> = ({
 
         {recentProjects.length > 0 && (
           <div className="recent-projects">
-            <h2>Recent Projects</h2>
+            <h2>{t("welcome.recentProjects")}</h2>
             <div className="recent-list">
               {recentProjects.map((project) => (
                 <div
@@ -90,7 +93,7 @@ export const WelcomeScreen: React.FC<Props> = ({
                         e.stopPropagation();
                         onRemoveRecentProject(project.path);
                       }}
-                      title="Remove from recent"
+                      title={t("welcome.removeFromRecent")}
                     >
                       ×
                     </button>
@@ -102,11 +105,11 @@ export const WelcomeScreen: React.FC<Props> = ({
         )}
 
         <div className="welcome-divider">
-          <span>or</span>
+          <span>{t("common.or")}</span>
         </div>
 
         <button className="open-file-link" onClick={onOpenFile}>
-          Open single scenario file (legacy mode)
+          {t("welcome.openSingleFile")}
         </button>
       </div>
     </div>

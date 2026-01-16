@@ -1,0 +1,290 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "create": "作成",
+    "delete": "削除",
+    "add": "追加",
+    "remove": "削除",
+    "back": "戻る",
+    "next": "次へ",
+    "close": "閉じる",
+    "refresh": "更新",
+    "search": "検索...",
+    "loading": "読み込み中...",
+    "or": "または",
+    "required": "*"
+  },
+  "header": {
+    "settings": "設定",
+    "export": "エクスポート",
+    "new": "新規",
+    "open": "開く",
+    "save": "保存",
+    "saveAs": "名前を付けて保存",
+    "validate": "検証",
+    "list": "リスト",
+    "flowchart": "フローチャート"
+  },
+  "sidebar": {
+    "scenarios": "シナリオ",
+    "commands": "コマンド",
+    "assets": "アセット",
+    "characters": "キャラクター",
+    "translations": "翻訳"
+  },
+  "welcome": {
+    "title": "ivy Editor",
+    "subtitle": "ビジュアルノベルエディタ",
+    "newProject": "新規プロジェクト",
+    "newProjectDescription": "新しいビジュアルノベルプロジェクトを作成",
+    "openProject": "プロジェクトを開く",
+    "openProjectDescription": "既存のプロジェクトフォルダを開く",
+    "recentProjects": "最近のプロジェクト",
+    "removeFromRecent": "履歴から削除",
+    "openSingleFile": "単一シナリオファイルを開く（レガシーモード）",
+    "today": "今日",
+    "yesterday": "昨日",
+    "daysAgo": "{{count}}日前"
+  },
+  "projectWizard": {
+    "title": "新規プロジェクト作成",
+    "step1": "1. 基本情報",
+    "step2": "2. 表示設定",
+    "step3": "3. 確認",
+    "projectName": "プロジェクト名",
+    "projectNamePlaceholder": "私のビジュアルノベル",
+    "location": "保存場所",
+    "locationPlaceholder": "フォルダを選択...",
+    "browse": "参照",
+    "projectWillBeCreated": "プロジェクト作成先: {{path}}",
+    "author": "作者",
+    "authorPlaceholder": "あなたの名前",
+    "description": "説明",
+    "descriptionPlaceholder": "プロジェクトの簡単な説明...",
+    "displayResolution": "表示解像度",
+    "custom": "カスタム",
+    "width": "幅",
+    "height": "高さ",
+    "projectSummary": "プロジェクト概要",
+    "name": "名前",
+    "resolution": "解像度",
+    "filesToBeCreated": "作成されるファイル",
+    "creating": "作成中...",
+    "createProject": "プロジェクト作成"
+  },
+  "projectSettings": {
+    "title": "プロジェクト設定",
+    "general": "一般",
+    "display": "表示",
+    "scenariosTab": "シナリオ",
+    "version": "バージョン",
+    "entryScenario": "開始シナリオ",
+    "entryScenarioHelp": "ゲーム開始時に再生されるシナリオ",
+    "scenariosInProject": "プロジェクト内のシナリオ",
+    "untitled": "無題",
+    "entry": "開始",
+    "saveChanges": "変更を保存"
+  },
+  "commandList": {
+    "commands": "コマンド ({{count}})",
+    "addCommand": "末尾にコマンドを追加"
+  },
+  "commandForm": {
+    "basic": "基本",
+    "label": "ラベル",
+    "labelPlaceholder": "ジャンプ先のラベル名",
+    "speaker": "話者",
+    "speakerPlaceholder": "キャラクター名",
+    "text": "テキスト",
+    "textPlaceholder": "セリフまたはナレーション",
+    "visual": "ビジュアル",
+    "background": "背景",
+    "character": "キャラクター",
+    "position": "位置",
+    "positionLeft": "左",
+    "positionCenter": "中央",
+    "positionRight": "右",
+    "audio": "オーディオ",
+    "bgm": "BGM",
+    "soundEffect": "効果音",
+    "voice": "ボイス",
+    "flow": "フロー",
+    "jump": "ジャンプ",
+    "noJump": "-- ジャンプなし --",
+    "choices": "選択肢",
+    "choiceTextPlaceholder": "選択肢テキスト *",
+    "jumpToPlaceholder": "-- ジャンプ先 * --",
+    "addChoice": "+ 選択肢を追加",
+    "advanced": "詳細設定",
+    "waitSeconds": "待機（秒）",
+    "timeoutSeconds": "タイムアウト（秒）",
+    "nvlMode": "NVLモード",
+    "nvlClear": "NVLクリア",
+    "cinematicMode": "シネマティックモード"
+  },
+  "previewPanel": {
+    "loadScenario": "シナリオを読み込むとプレビューが表示されます",
+    "preview": "プレビュー",
+    "playtest": "プレイテスト",
+    "endOfScenario": "[シナリオ終了]",
+    "scenarioEnded": "シナリオ終了",
+    "restart": "最初から"
+  },
+  "previewControls": {
+    "prev": "前へ",
+    "next": "次へ"
+  },
+  "playtestControls": {
+    "back": "← 戻る",
+    "nextArrow": "次へ →",
+    "auto": "オート",
+    "skip": "スキップ",
+    "restart": "最初から",
+    "history": "履歴: {{count}}",
+    "rollbackTitle": "ロールバック (Backspace / ↑)",
+    "advanceTitle": "進む (Enter / Space / →)",
+    "autoModeTitle": "オートモード (A)",
+    "skipModeTitle": "スキップモード (S)",
+    "restartTitle": "最初から (Ctrl+R)",
+    "shortcutsHint": "キー: Enter/Space = 次へ, Backspace = 戻る, A = オート, S = スキップ, 1-9 = 選択肢"
+  },
+  "assetBrowser": {
+    "openScenario": "シナリオを開くとアセットを閲覧できます",
+    "refresh": "更新",
+    "findUnused": "未使用を検索",
+    "showAll": "すべて表示"
+  },
+  "assetInfo": {
+    "use": "使用",
+    "findUsages": "使用箇所を検索",
+    "size": "サイズ",
+    "dimensions": "寸法",
+    "duration": "再生時間"
+  },
+  "characterDatabase": {
+    "selectToEdit": "編集するキャラクターを選択",
+    "addCharacter": "キャラクター追加",
+    "characterNamePlaceholder": "キャラクター名（例: sakura）",
+    "deleteCharacter": "キャラクター削除",
+    "deleteConfirm": "「{{name}}」を削除しますか？この操作は取り消せません。",
+    "characterAlreadyExists": "キャラクター「{{name}}」は既に存在します"
+  },
+  "characterEditor": {
+    "displayName": "表示名",
+    "displayNamePlaceholder": "キャラクターの表示名",
+    "aliases": "別名",
+    "aliasesPlaceholder": "代替名（カンマ区切り）",
+    "baseSprite": "ベーススプライト",
+    "layers": "レイヤー",
+    "addLayer": "レイヤー追加",
+    "layerName": "レイヤー名",
+    "layerNamePlaceholder": "例: expression, outfit",
+    "images": "画像"
+  },
+  "characterList": {
+    "characters": "キャラクター",
+    "noCharacters": "キャラクターが定義されていません"
+  },
+  "speakerMapping": {
+    "title": "話者マッピング",
+    "unmappedSpeakers": "未マッピングの話者",
+    "noUnmapped": "すべての話者がマッピング済みです",
+    "createCharacter": "キャラクター作成"
+  },
+  "translationTable": {
+    "title": "翻訳テーブル",
+    "noScenario": "シナリオが読み込まれていません",
+    "all": "すべて ({{count}})",
+    "missingTranslations": "未翻訳",
+    "fullyTranslated": "翻訳済み",
+    "missing": "未入力",
+    "choice": "選択肢 {{index}}",
+    "noMatching": "一致するエントリがありません",
+    "allComplete": "すべての翻訳が完了しています！",
+    "noContent": "翻訳可能なコンテンツがありません"
+  },
+  "playtestDebug": {
+    "debug": "デバッグ",
+    "history": "履歴 ({{count}})",
+    "labels": "ラベル ({{count}})",
+    "variables": "変数 ({{count}})",
+    "noHistory": "履歴がありません",
+    "noLabels": "ラベルが定義されていません",
+    "noVariables": "変数が設定されていません",
+    "clickToRollback": "クリックでこの地点にロールバック",
+    "clickToJump": "クリックでこのラベルにジャンプ",
+    "clickToEdit": "クリックで編集",
+    "current": "現在"
+  },
+  "exportWizard": {
+    "title": "プロジェクトをエクスポート",
+    "step1": "1. ターゲット",
+    "step2": "2. オプション",
+    "step3": "3. ビルド",
+    "selectTarget": "エクスポート先を選択",
+    "buildEnvironment": "ビルド環境",
+    "rustNotFound": "見つかりません",
+    "installed": "インストール済み",
+    "wasmPackRequired": "見つかりません（Webエクスポートに必要）",
+    "rustRequired": "ネイティブビルドにはRustが必要です。",
+    "installRust": "Rustをインストール",
+    "exportOptions": "エクスポートオプション",
+    "outputDirectory": "出力ディレクトリ",
+    "selectOutputDirectory": "出力ディレクトリを選択...",
+    "releaseBuild": "リリースビルド（最適化、ビルド時間長め）",
+    "optimizeAssets": "アセットを最適化",
+    "compressImages": "画像を圧縮",
+    "format": "形式",
+    "quality": "品質",
+    "convertAudio": "オーディオを変換",
+    "bitrate": "ビットレート",
+    "excludeUnused": "未使用アセットを除外",
+    "packageFormat": "パッケージ形式",
+    "export": "エクスポート",
+    "exporting": "エクスポート中...",
+    "exportComplete": "エクスポート完了",
+    "exportFailed": "エクスポート失敗",
+    "exportSuccess": "{{name}}のエクスポートが完了しました！",
+    "output": "出力先",
+    "exportFailedMessage": "エクスポートに失敗しました",
+    "warnings": "警告:",
+    "checkingEnvironment": "ビルド環境を確認中..."
+  },
+  "validation": {
+    "errors": "エラー",
+    "warnings": "警告",
+    "noIssues": "検証で問題は見つかりませんでした"
+  },
+  "variableWatcher": {
+    "title": "変数",
+    "noVariables": "変数なし"
+  },
+  "storyPath": {
+    "title": "ストーリーパス解析",
+    "analyze": "解析",
+    "paths": "パス",
+    "endings": "エンディング"
+  },
+  "saveDataValidator": {
+    "title": "セーブデータ検証",
+    "validate": "検証",
+    "valid": "有効",
+    "invalid": "無効"
+  },
+  "scenarioList": {
+    "scenarios": "シナリオ",
+    "addScenario": "シナリオ追加"
+  },
+  "dialog": {
+    "newScenario": "新規シナリオ",
+    "scenarioTitle": "シナリオタイトル"
+  },
+  "emptyState": {
+    "selectScenario": "シナリオを選択",
+    "noScenarioLoaded": "シナリオが読み込まれていません",
+    "createNew": "新規作成",
+    "openFile": "ファイルを開く",
+    "selectCommand": "編集するコマンドを選択"
+  }
+}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api/core";
 import { AssetTree } from "./AssetTree";
 import { AssetPreview } from "./AssetPreview";
@@ -20,6 +21,7 @@ export const AssetBrowser: React.FC<Props> = ({
   onSelectAsset,
   onShowUsages,
 }) => {
+  const { t } = useTranslation();
   const [tree, setTree] = useState<AssetTreeData | null>(null);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [assetInfo, setAssetInfo] = useState<AssetInfo | null>(null);
@@ -118,7 +120,7 @@ export const AssetBrowser: React.FC<Props> = ({
   if (!baseDir) {
     return (
       <div className="asset-browser empty">
-        <p>Open a scenario to browse assets</p>
+        <p>{t("assetBrowser.openScenario")}</p>
       </div>
     );
   }
@@ -126,10 +128,10 @@ export const AssetBrowser: React.FC<Props> = ({
   return (
     <div className="asset-browser">
       <div className="asset-browser-toolbar">
-        <button onClick={() => void handleRefresh()}>Refresh</button>
-        <button onClick={() => void handleFindUnused()}>Find Unused</button>
+        <button onClick={() => void handleRefresh()}>{t("assetBrowser.refresh")}</button>
+        <button onClick={() => void handleFindUnused()}>{t("assetBrowser.findUnused")}</button>
         {showUnusedOnly && (
-          <button onClick={() => setShowUnusedOnly(false)}>Show All</button>
+          <button onClick={() => setShowUnusedOnly(false)}>{t("assetBrowser.showAll")}</button>
         )}
       </div>
 

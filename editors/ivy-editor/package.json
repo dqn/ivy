@@ -18,8 +18,10 @@
     "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-opener": "^2",
     "@xyflow/react": "^12.10.0",
+    "i18next": "^25.7.4",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-i18next": "^16.5.3"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
