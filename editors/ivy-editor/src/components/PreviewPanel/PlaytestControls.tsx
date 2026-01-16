@@ -1,6 +1,7 @@
 interface Props {
   canRollback: boolean;
   isEnded: boolean;
+  isBlocked: boolean;
   historyCount: number;
   isAutoMode: boolean;
   isSkipMode: boolean;
@@ -14,6 +15,7 @@ interface Props {
 export const PlaytestControls: React.FC<Props> = ({
   canRollback,
   isEnded,
+  isBlocked,
   historyCount,
   isAutoMode,
   isSkipMode,
@@ -37,7 +39,7 @@ export const PlaytestControls: React.FC<Props> = ({
         <button
           className="playtest-button advance"
           onClick={onAdvance}
-          disabled={isEnded}
+          disabled={isEnded || isBlocked}
           title="Advance (Enter / Space / →)"
         >
           Next →

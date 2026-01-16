@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 interface Props {
   prompt: string;
@@ -8,6 +8,10 @@ interface Props {
 
 export const InputForm: React.FC<Props> = ({ prompt, defaultValue, onSubmit }) => {
   const [value, setValue] = useState(defaultValue ?? "");
+
+  useEffect(() => {
+    setValue(defaultValue ?? "");
+  }, [defaultValue]);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {

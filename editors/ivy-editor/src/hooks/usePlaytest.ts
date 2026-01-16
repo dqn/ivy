@@ -134,7 +134,10 @@ export function usePlaytest(
 
   const start = useCallback(
     async (lang?: string, scenarioPath?: string) => {
-      if (!scenario) return;
+      if (!scenario || scenario.script.length === 0) {
+        console.warn("Cannot start playtest with empty scenario");
+        return;
+      }
 
       try {
         const newState = await invoke<PlaytestState>("playtest_start", {

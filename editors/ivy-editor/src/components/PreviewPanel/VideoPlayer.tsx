@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { join } from "@tauri-apps/api/path";
 
 interface Props {
   path: string;
@@ -22,15 +23,20 @@ export const VideoPlayer: React.FC<Props> = ({
 
   // Resolve video path
   useEffect(() => {
-    if (!baseDir || !path) {
-      setError("Invalid video path");
-      return;
-    }
+    const resolvePath = async () => {
+      if (!baseDir || !path) {
+        setError("Invalid video path");
+        return;
+      }
 
-    const fullPath = path.startsWith("/") ? path : `${baseDir}/${path}`;
-    const src = convertFileSrc(fullPath);
-    setVideoSrc(src);
-    setError(null);
+      // Check for absolute paths (Unix and Windows)
+      const isAbsolute = path.startsWith("/") || /^[A-Za-z]:[\\/]/.test(path);
+      const fullPath = isAbsolute ? path : await join(baseDir, path);
+      const src = convertFileSrc(fullPath);
+      setVideoSrc(src);
+      setError(null);
+    };
+    void resolvePath();
   }, [path, baseDir]);
 
   const handleEnded = useCallback(() => {

@@ -223,6 +223,12 @@ export const PreviewPanel: React.FC<Props> = (props) => {
         <PlaytestControls
           canRollback={state.can_rollback}
           isEnded={state.is_ended}
+          isBlocked={
+            state.display.type === "choices" ||
+            state.display.type === "input" ||
+            state.display.type === "wait" ||
+            state.display.type === "video"
+          }
           historyCount={state.history_count}
           isAutoMode={props.isAutoMode}
           isSkipMode={props.isSkipMode}
