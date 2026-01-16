@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { Group, Panel, Separator } from "react-resizable-panels";
 import { useScenario } from "./hooks/useScenario";
 import { usePreview } from "./hooks/usePreview";
 import { usePlaytest } from "./hooks/usePlaytest";
@@ -442,8 +443,10 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <main className="app-main">
-        {/* Left Panel: Scenarios / Commands / Assets */}
-        <div className="panel panel-left">
+        <Group orientation="horizontal">
+          {/* Left Panel: Scenarios / Commands / Assets */}
+          <Panel defaultSize={20} minSize={15} maxSize={40}>
+            <div className="panel panel-left">
           {mode.type === "project" && project ? (
             <>
               <div className="sidebar-tabs">
@@ -602,10 +605,14 @@ const App: React.FC = () => {
               <button onClick={() => void openFile()}>Open File</button>
             </div>
           )}
-        </div>
+            </div>
+          </Panel>
 
-        {/* Center Panel: Editor */}
-        <div className="panel panel-center">
+          <Separator className="resize-handle" />
+
+          {/* Center Panel: Editor */}
+          <Panel defaultSize={50} minSize={30}>
+            <div className="panel panel-center">
           {scenario && selectedCommand ? (
             <>
               <div className="tab-bar">
@@ -641,90 +648,107 @@ const App: React.FC = () => {
               <p>Select a command to edit</p>
             </div>
           ) : null}
-        </div>
+            </div>
+          </Panel>
 
-        {/* Right Panel: Preview + Validation */}
-        <div className="panel panel-right">
-          <div className="preview-mode-toggle">
-            <button
-              className={previewMode === "preview" ? "active" : ""}
-              onClick={() => previewMode !== "preview" && void handleTogglePreviewMode()}
-            >
-              Preview
-            </button>
-            <button
-              className={previewMode === "playtest" ? "active" : ""}
-              onClick={() => previewMode !== "playtest" && void handleTogglePreviewMode()}
-              disabled={!scenario}
-            >
-              Playtest
-            </button>
-          </div>
-          {previewMode === "preview" ? (
-            <PreviewPanel
-              mode="preview"
-              state={previewState}
-              backgroundUrl={backgroundUrl}
-              characterUrl={characterUrl}
-              baseDir={baseDir}
-              language={previewLanguage}
-              onLanguageChange={setPreviewLanguage}
-              onPrev={previewPrev}
-              onNext={previewNext}
-              onGoto={handlePreviewGoto}
-            />
-          ) : (
-            <>
-              <PreviewPanel
-                mode="playtest"
-                state={playtestState}
-                backgroundUrl={playtestBackgroundUrl}
-                characterUrl={playtestCharacterUrl}
-                assetErrors={playtestAssetErrors}
-                baseDir={baseDir}
-                language={playtestLanguage}
-                isAutoMode={playtestIsAutoMode}
-                isSkipMode={playtestIsSkipMode}
-                onLanguageChange={(lang) => void setPlaytestLanguage(lang)}
-                onAdvance={() => void playtestAdvance()}
-                onSelectChoice={(index) => void playtestSelectChoice(index)}
-                onRollback={() => void playtestRollback()}
-                onRestart={() => void playtestRestart()}
-                onSubmitInput={(value) => void playtestSubmitInput(value)}
-                onToggleAutoMode={playtestToggleAutoMode}
-                onToggleSkipMode={playtestToggleSkipMode}
-              />
-              <PlaytestDebugPanel
-                state={playtestState}
-                onJumpToLabel={(label) => void playtestJumpToLabel(label)}
-                onSetVariable={(name, value) => void playtestSetVariable(name, value)}
-                onRollbackToIndex={(steps) => void playtestRollbackSteps(steps)}
-              />
-            </>
-          )}
-          <VariableWatcher
-            scenario={scenario}
-            variables={
-              previewMode === "playtest" && playtestState
-                ? (playtestState.variables as Record<string, string>)
-                : previewState?.variables || {}
-            }
-            currentIndex={
-              previewMode === "playtest" && playtestState
-                ? playtestState.command_index
-                : previewState?.command_index || 0
-            }
-          />
-          <StoryPathAnalyzer
-            scenario={scenario}
-            onSelectCommand={selectCommand}
-          />
-          <SaveDataValidator baseDir={baseDir} />
-          <ValidationErrors
-            result={validationResult}
-            onSelectCommand={selectCommand}
-          />
-        </div>
+          <Separator className="resize-handle" />
+
+          {/* Right Panel: Preview + Validation */}
+          <Panel defaultSize={30} minSize={20} maxSize={45}>
+            <div className="panel panel-right">
+              <div className="preview-mode-toggle">
+                <button
+                  className={previewMode === "preview" ? "active" : ""}
+                  onClick={() => previewMode !== "preview" && void handleTogglePreviewMode()}
+                >
+                  Preview
+                </button>
+                <button
+                  className={previewMode === "playtest" ? "active" : ""}
+                  onClick={() => previewMode !== "playtest" && void handleTogglePreviewMode()}
+                  disabled={!scenario}
+                >
+                  Playtest
+                </button>
+              </div>
+              <Group orientation="vertical">
+                <Panel defaultSize={50} minSize={30}>
+                  <div className="right-section preview-section">
+                    {previewMode === "preview" ? (
+                      <PreviewPanel
+                        mode="preview"
+                        state={previewState}
+                        backgroundUrl={backgroundUrl}
+                        characterUrl={characterUrl}
+                        baseDir={baseDir}
+                        language={previewLanguage}
+                        onLanguageChange={setPreviewLanguage}
+                        onPrev={previewPrev}
+                        onNext={previewNext}
+                        onGoto={handlePreviewGoto}
+                      />
+                    ) : (
+                      <>
+                        <PreviewPanel
+                          mode="playtest"
+                          state={playtestState}
+                          backgroundUrl={playtestBackgroundUrl}
+                          characterUrl={playtestCharacterUrl}
+                          assetErrors={playtestAssetErrors}
+                          baseDir={baseDir}
+                          language={playtestLanguage}
+                          isAutoMode={playtestIsAutoMode}
+                          isSkipMode={playtestIsSkipMode}
+                          onLanguageChange={(lang) => void setPlaytestLanguage(lang)}
+                          onAdvance={() => void playtestAdvance()}
+                          onSelectChoice={(index) => void playtestSelectChoice(index)}
+                          onRollback={() => void playtestRollback()}
+                          onRestart={() => void playtestRestart()}
+                          onSubmitInput={(value) => void playtestSubmitInput(value)}
+                          onToggleAutoMode={playtestToggleAutoMode}
+                          onToggleSkipMode={playtestToggleSkipMode}
+                        />
+                        <PlaytestDebugPanel
+                          state={playtestState}
+                          onJumpToLabel={(label) => void playtestJumpToLabel(label)}
+                          onSetVariable={(name, value) => void playtestSetVariable(name, value)}
+                          onRollbackToIndex={(steps) => void playtestRollbackSteps(steps)}
+                        />
+                      </>
+                    )}
+                  </div>
+                </Panel>
+                <Separator className="resize-handle vertical" />
+                <Panel defaultSize={50} minSize={20}>
+                  <div className="right-section tools-section">
+                    <VariableWatcher
+                      scenario={scenario}
+                      variables={
+                        previewMode === "playtest" && playtestState
+                          ? (playtestState.variables as Record<string, string>)
+                          : previewState?.variables || {}
+                      }
+                      currentIndex={
+                        previewMode === "playtest" && playtestState
+                          ? playtestState.command_index
+                          : previewState?.command_index || 0
+                      }
+                    />
+                    <StoryPathAnalyzer
+                      scenario={scenario}
+                      onSelectCommand={selectCommand}
+                    />
+                    <SaveDataValidator baseDir={baseDir} />
+                    <ValidationErrors
+                      result={validationResult}
+                      onSelectCommand={selectCommand}
+                    />
+                  </div>
+                </Panel>
+              </Group>
+            </div>
+          </Panel>
+        </Group>
       </main>
 
       {/* New Scenario Dialog */}
