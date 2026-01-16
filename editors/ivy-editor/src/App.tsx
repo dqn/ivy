@@ -17,6 +17,7 @@ import { CharacterDatabase } from "./components/CharacterDatabase";
 import { TranslationTable } from "./components/TranslationTable";
 import { VariableWatcher } from "./components/VariableWatcher";
 import { StoryPathAnalyzer } from "./components/StoryPathAnalyzer";
+import { SaveDataValidator } from "./components/SaveDataValidator";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { ProjectWizard } from "./components/ProjectWizard";
 import { ProjectSettings } from "./components/ProjectSettings";
@@ -709,6 +710,7 @@ const App: React.FC = () => {
             scenario={scenario}
             onSelectCommand={selectCommand}
           />
+          <SaveDataValidator baseDir={baseDir} />
           <ValidationErrors
             result={validationResult}
             onSelectCommand={selectCommand}

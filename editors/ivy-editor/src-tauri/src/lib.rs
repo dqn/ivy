@@ -52,6 +52,8 @@ pub fn run() {
             commands::scenario::validate,
             commands::scenario::scenario_to_yaml,
             commands::scenario::create_empty_scenario,
+            commands::savedata::list_save_data,
+            commands::savedata::validate_save_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
