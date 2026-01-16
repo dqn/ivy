@@ -108,13 +108,14 @@ export const ModularCharField: React.FC<Props> = ({
             <label>Position</label>
             <select
               value={charPos ?? "center"}
-              onChange={(e) =>
-                onCharPosChange(
-                  e.target.value === "center"
-                    ? undefined
-                    : (e.target.value as CharPosition)
-                )
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "center") {
+                  onCharPosChange(undefined);
+                } else if (value === "left" || value === "right") {
+                  onCharPosChange(value);
+                }
+              }}
             >
               <option value="left">Left</option>
               <option value="center">Center</option>
@@ -127,10 +128,9 @@ export const ModularCharField: React.FC<Props> = ({
               <div className="no-layers">No layers defined for this character</div>
             ) : (
               (selectedCharDef.layers ?? []).map((layer) => {
+                const variantValue = value[layer.name];
                 const currentVariant =
-                  typeof value[layer.name] === "number"
-                    ? (value[layer.name] as number)
-                    : 0;
+                  typeof variantValue === "number" ? variantValue : 0;
 
                 return (
                   <div key={layer.name} className="layer-variant-row">
