@@ -86,7 +86,6 @@ pub use camera::{calculate_camera_transform, pop_camera_transform, push_camera_t
 pub use character::{CharAnimationState, CharIdleState, draw_character_animated};
 pub use cinematic::CinematicState;
 pub use image::draw_background_with_offset;
-pub use lipsync::{LipSyncConfig, LipSyncManager, LipSyncState};
 pub use modular_char::draw_modular_char;
 pub use particles::{ParticleState, ParticleType};
 pub use shake::ShakeState;

@@ -215,8 +215,16 @@ files:
     .unwrap();
 
     // Create scenario files
-    fs::write(scenario_dir.join("chapter1.yaml"), "title: Chapter 1\nscript: []").unwrap();
-    fs::write(scenario_dir.join("chapter2.yaml"), "title: Chapter 2\nscript: []").unwrap();
+    fs::write(
+        scenario_dir.join("chapter1.yaml"),
+        "title: Chapter 1\nscript: []",
+    )
+    .unwrap();
+    fs::write(
+        scenario_dir.join("chapter2.yaml"),
+        "title: Chapter 2\nscript: []",
+    )
+    .unwrap();
 
     let mut loader = ModLoader::new();
     loader.discover(&test_dir).unwrap();
@@ -225,9 +233,11 @@ files:
 
     // Should find both files (one from files list, one from directory scan)
     assert!(scenarios.len() >= 1);
-    assert!(scenarios
-        .iter()
-        .any(|p| p.to_string_lossy().contains("chapter1.yaml")));
+    assert!(
+        scenarios
+            .iter()
+            .any(|p| p.to_string_lossy().contains("chapter1.yaml"))
+    );
 
     cleanup_test_dir(&test_dir);
 }

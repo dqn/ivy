@@ -18,7 +18,7 @@ use tower_lsp::{Client, LanguageServer, LspService, Server};
 
 use ivy::scenario::parser::parse_scenario;
 use ivy::scenario::position::PositionMap;
-use ivy::scenario::validator::{validate_scenario, Severity};
+use ivy::scenario::validator::{Severity, validate_scenario};
 
 /// Document state stored by the server.
 struct DocumentState {
@@ -107,10 +107,10 @@ fn extract_parse_error_position(error: &str) -> (u32, String) {
     // serde_yaml errors often contain "at line X column Y".
     if let Some(pos) = error.find("at line ") {
         let after_line = &error[pos + 8..];
-        if let Some(space_pos) = after_line.find(' ') {
-            if let Ok(line) = after_line[..space_pos].parse::<u32>() {
-                return (line.saturating_sub(1), error.to_string());
-            }
+        if let Some(space_pos) = after_line.find(' ')
+            && let Ok(line) = after_line[..space_pos].parse::<u32>()
+        {
+            return (line.saturating_sub(1), error.to_string());
         }
     }
     (0, error.to_string())
@@ -241,10 +241,7 @@ impl LanguageServer for IvyLanguageServer {
         })))
     }
 
-    async fn references(
-        &self,
-        params: ReferenceParams,
-    ) -> jsonrpc::Result<Option<Vec<Location>>> {
+    async fn references(&self, params: ReferenceParams) -> jsonrpc::Result<Option<Vec<Location>>> {
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
 

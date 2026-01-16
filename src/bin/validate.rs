@@ -15,7 +15,7 @@ use std::sync::mpsc::channel;
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::Duration;
 
-use ivy::scenario::{detect_circular_paths, parse_scenario, validate_scenario, Severity};
+use ivy::scenario::{Severity, detect_circular_paths, parse_scenario, validate_scenario};
 #[cfg(not(target_arch = "wasm32"))]
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use serde::Serialize;
@@ -269,18 +269,18 @@ fn validate_directory(path: &Path, check_cycles: bool, use_color: bool) -> (usiz
 
     for entry in entries.flatten() {
         let file_path = entry.path();
-        if let Some(ext) = file_path.extension() {
-            if ext == "yaml" || ext == "yml" {
-                if use_color {
-                    eprintln!("{}Validating:{} {}", CYAN, RESET, file_path.display());
-                } else {
-                    eprintln!("Validating: {}", file_path.display());
-                }
-                let (errors, warnings) = validate_file(&file_path, check_cycles, use_color);
-                total_errors += errors;
-                total_warnings += warnings;
-                files_checked += 1;
+        if let Some(ext) = file_path.extension()
+            && (ext == "yaml" || ext == "yml")
+        {
+            if use_color {
+                eprintln!("{}Validating:{} {}", CYAN, RESET, file_path.display());
+            } else {
+                eprintln!("Validating: {}", file_path.display());
             }
+            let (errors, warnings) = validate_file(&file_path, check_cycles, use_color);
+            total_errors += errors;
+            total_warnings += warnings;
+            files_checked += 1;
         }
     }
 
@@ -444,13 +444,13 @@ fn main() -> ExitCode {
             if let Ok(entries) = fs::read_dir(path) {
                 for entry in entries.flatten() {
                     let file_path = entry.path();
-                    if let Some(ext) = file_path.extension() {
-                        if ext == "yaml" || ext == "yml" {
-                            let result = validate_file_json(&file_path, check_cycles);
-                            total_errors += result.errors;
-                            total_warnings += result.warnings;
-                            results.push(result);
-                        }
+                    if let Some(ext) = file_path.extension()
+                        && (ext == "yaml" || ext == "yml")
+                    {
+                        let result = validate_file_json(&file_path, check_cycles);
+                        total_errors += result.errors;
+                        total_warnings += result.warnings;
+                        results.push(result);
                     }
                 }
             }

@@ -4,4 +4,4 @@
 
 mod types;
 
-pub use types::{ModInfo, ModLoader, ModLoadError, ModType};
+pub use types::{ModInfo, ModLoadError, ModLoader, ModType};

@@ -1,4 +1,4 @@
-use ivy::scenario::{parse_scenario, validate_scenario, detect_circular_paths, Severity};
+use ivy::scenario::{Severity, detect_circular_paths, parse_scenario, validate_scenario};
 
 #[test]
 fn test_validate_valid_scenario() {
@@ -309,8 +309,16 @@ script:
     let scenario = parse_scenario(yaml).unwrap();
     let result = validate_scenario(&scenario);
 
-    let errors: Vec<_> = result.issues.iter().filter(|i| i.severity == Severity::Error).collect();
-    let warnings: Vec<_> = result.issues.iter().filter(|i| i.severity == Severity::Warning).collect();
+    let errors: Vec<_> = result
+        .issues
+        .iter()
+        .filter(|i| i.severity == Severity::Error)
+        .collect();
+    let warnings: Vec<_> = result
+        .issues
+        .iter()
+        .filter(|i| i.severity == Severity::Warning)
+        .collect();
 
     assert!(!errors.is_empty());
     assert!(!warnings.is_empty());

@@ -249,5 +249,8 @@ fn test_accessibility_self_voicing_roundtrip() {
     let json = serde_json::to_string(&settings).unwrap();
     let deserialized: GameSettings = serde_json::from_str(&json).unwrap();
 
-    assert_eq!(deserialized.accessibility.self_voicing, SelfVoicingMode::Tts);
+    assert_eq!(
+        deserialized.accessibility.self_voicing,
+        SelfVoicingMode::Tts
+    );
 }

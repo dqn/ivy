@@ -47,10 +47,7 @@ fn default_zoom() -> f32 {
 impl CameraState {
     /// Check if camera is at default position.
     pub fn is_default(&self) -> bool {
-        self.pan_x == 0.0
-            && self.pan_y == 0.0
-            && self.zoom == 1.0
-            && self.tilt == 0.0
+        self.pan_x == 0.0 && self.pan_y == 0.0 && self.zoom == 1.0 && self.tilt == 0.0
     }
 }
 

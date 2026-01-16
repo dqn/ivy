@@ -53,10 +53,7 @@ pub struct CameraTransform {
 impl CameraTransform {
     /// Check if this is a default (identity) transform.
     pub fn is_identity(&self) -> bool {
-        self.pan_x == 0.0
-            && self.pan_y == 0.0
-            && self.zoom == 1.0
-            && self.tilt_radians == 0.0
+        self.pan_x == 0.0 && self.pan_y == 0.0 && self.zoom == 1.0 && self.tilt_radians == 0.0
     }
 
     /// Apply the transformation to a point.
@@ -113,12 +110,14 @@ pub fn push_camera_transform(transform: &CameraTransform) {
     let ty = pivot_y - pivot_x * m12 - pivot_y * m22 - transform.pan_y * zoom;
 
     unsafe {
-        get_internal_gl().quad_gl.push_model_matrix(glam::Mat4::from_cols(
-            glam::Vec4::new(m11, m12, 0.0, 0.0),
-            glam::Vec4::new(m21, m22, 0.0, 0.0),
-            glam::Vec4::new(0.0, 0.0, 1.0, 0.0),
-            glam::Vec4::new(tx, ty, 0.0, 1.0),
-        ));
+        get_internal_gl()
+            .quad_gl
+            .push_model_matrix(glam::Mat4::from_cols(
+                glam::Vec4::new(m11, m12, 0.0, 0.0),
+                glam::Vec4::new(m21, m22, 0.0, 0.0),
+                glam::Vec4::new(0.0, 0.0, 1.0, 0.0),
+                glam::Vec4::new(tx, ty, 0.0, 1.0),
+            ));
     }
 }
 

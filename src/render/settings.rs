@@ -559,7 +559,12 @@ pub fn draw_settings_screen(
             ..Default::default()
         }
     };
-    draw_text_ex("Font Type", slider_x, y + config.label_font_size, label_params);
+    draw_text_ex(
+        "Font Type",
+        slider_x,
+        y + config.label_font_size,
+        label_params,
+    );
 
     let font_btn_y = y + 5.0;
     for (i, font_type) in FontType::all().iter().enumerate() {
@@ -680,13 +685,7 @@ pub fn draw_settings_screen(
             Color::new(0.2, 0.2, 0.25, 0.8)
         };
 
-        draw_rectangle(
-            btn_x,
-            sv_btn_y,
-            sv_button_width,
-            sv_button_height,
-            bg_color,
-        );
+        draw_rectangle(btn_x, sv_btn_y, sv_button_width, sv_button_height, bg_color);
         draw_rectangle_lines(
             btn_x,
             sv_btn_y,

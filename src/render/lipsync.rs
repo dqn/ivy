@@ -95,7 +95,8 @@ impl LipSyncState {
         let base_wave = (self.elapsed * self.config.speed * std::f32::consts::TAU).sin();
 
         // Add a secondary faster wave for variation
-        let secondary_wave = (self.elapsed * self.config.speed * 1.7 * std::f32::consts::TAU).sin() * 0.3;
+        let secondary_wave =
+            (self.elapsed * self.config.speed * 1.7 * std::f32::consts::TAU).sin() * 0.3;
 
         // Combine and normalize to 0-1 range
         let combined = (base_wave + secondary_wave + 1.3) / 2.6;

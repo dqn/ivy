@@ -14,16 +14,16 @@ use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::path::Path;
 use std::process::ExitCode;
-use std::sync::mpsc::{channel, Sender};
+use std::sync::mpsc::{Sender, channel};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
 use ivy::i18n::{LocalizedString, Translations};
-use ivy::scenario::{parse_scenario, Scenario};
+use ivy::scenario::{Scenario, parse_scenario};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use serde::Serialize;
-use tungstenite::{accept, Message};
+use tungstenite::{Message, accept};
 
 /// Preview state sent to the client.
 #[derive(Clone, Serialize)]
@@ -55,7 +55,7 @@ struct ChoiceInfo {
 #[allow(dead_code)]
 enum WsMessage {
     #[serde(rename = "state")]
-    State(PreviewState),
+    State(Box<PreviewState>),
     #[serde(rename = "reload")]
     Reload { scenario: String },
     #[serde(rename = "error")]
@@ -79,7 +79,11 @@ fn resolve_localized(s: &LocalizedString) -> String {
     s.resolve("en", &empty_translations)
 }
 
-fn build_preview_state(scenario: &Scenario, index: usize, variables: &HashMap<String, String>) -> PreviewState {
+fn build_preview_state(
+    scenario: &Scenario,
+    index: usize,
+    variables: &HashMap<String, String>,
+) -> PreviewState {
     let commands = &scenario.script;
     let total = commands.len();
     let idx = index.min(total.saturating_sub(1));
@@ -127,8 +131,12 @@ fn build_preview_state(scenario: &Scenario, index: usize, variables: &HashMap<St
     }
 
     let current_cmd = commands.get(idx);
-    let text = current_cmd.and_then(|c| c.text.as_ref()).map(resolve_localized);
-    let speaker = current_cmd.and_then(|c| c.speaker.as_ref()).map(resolve_localized);
+    let text = current_cmd
+        .and_then(|c| c.text.as_ref())
+        .map(resolve_localized);
+    let speaker = current_cmd
+        .and_then(|c| c.speaker.as_ref())
+        .map(resolve_localized);
     let choices: Vec<ChoiceInfo> = current_cmd
         .and_then(|c| c.choices.as_ref())
         .map(|choices| {
@@ -160,7 +168,8 @@ fn build_preview_state(scenario: &Scenario, index: usize, variables: &HashMap<St
 }
 
 fn generate_html(_http_port: u16, ws_port: u16) -> String {
-    format!(r#"<!DOCTYPE html>
+    format!(
+        r#"<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -535,7 +544,9 @@ fn generate_html(_http_port: u16, ws_port: u16) -> String {
     </script>
 </body>
 </html>
-"#, ws_port = ws_port)
+"#,
+        ws_port = ws_port
+    )
 }
 
 fn handle_http(mut stream: TcpStream, http_port: u16, ws_port: u16, scenario_dir: &Path) {
@@ -552,7 +563,11 @@ fn handle_http(mut stream: TcpStream, http_port: u16, ws_port: u16, scenario_dir
         .unwrap_or("/");
 
     let (status, content_type, body) = if path == "/" || path == "/index.html" {
-        ("200 OK", "text/html", generate_html(http_port, ws_port).into_bytes())
+        (
+            "200 OK",
+            "text/html",
+            generate_html(http_port, ws_port).into_bytes(),
+        )
     } else if path.starts_with("/asset/") {
         let asset_path = path.strip_prefix("/asset/").unwrap_or("");
         let full_path = scenario_dir.join(asset_path);
@@ -571,7 +586,11 @@ fn handle_http(mut stream: TcpStream, http_port: u16, ws_port: u16, scenario_dir
             };
             match fs::read(&full_path) {
                 Ok(data) => ("200 OK", mime, data),
-                Err(_) => ("500 Internal Server Error", "text/plain", b"Error reading file".to_vec()),
+                Err(_) => (
+                    "500 Internal Server Error",
+                    "text/plain",
+                    b"Error reading file".to_vec(),
+                ),
             }
         } else {
             ("404 Not Found", "text/plain", b"Asset not found".to_vec())
@@ -612,59 +631,61 @@ fn handle_websocket(
             break;
         }
 
-        if let Message::Text(text) = msg {
-            if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
-                let msg_type = json.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        if let Message::Text(text) = msg
+            && let Ok(json) = serde_json::from_str::<serde_json::Value>(&text)
+        {
+            let msg_type = json.get("type").and_then(|t| t.as_str()).unwrap_or("");
 
-                match msg_type {
-                    "get_state" => {
+            match msg_type {
+                "get_state" => {
+                    let scn = scenario.lock().unwrap();
+                    let st = state.lock().unwrap();
+                    let preview = build_preview_state(&scn, st.0, &st.1);
+                    let response = WsMessage::State(Box::new(preview));
+                    if let Ok(json) = serde_json::to_string(&response) {
+                        let _ = websocket.write(Message::Text(json));
+                    }
+                }
+                "goto" => {
+                    if let Some(idx) = json.get("index").and_then(|i| i.as_u64()) {
+                        let mut st = state.lock().unwrap();
+                        st.0 = idx as usize;
+                        drop(st);
+
                         let scn = scenario.lock().unwrap();
                         let st = state.lock().unwrap();
                         let preview = build_preview_state(&scn, st.0, &st.1);
-                        let response = WsMessage::State(preview);
+                        let response = WsMessage::State(Box::new(preview));
                         if let Ok(json) = serde_json::to_string(&response) {
                             let _ = websocket.write(Message::Text(json));
                         }
                     }
-                    "goto" => {
-                        if let Some(idx) = json.get("index").and_then(|i| i.as_u64()) {
+                }
+                "jump" => {
+                    if let Some(label) = json.get("label").and_then(|l| l.as_str()) {
+                        let scn = scenario.lock().unwrap();
+                        // Find label index
+                        if let Some(idx) = scn
+                            .script
+                            .iter()
+                            .position(|cmd| cmd.label.as_deref() == Some(label))
+                        {
+                            drop(scn);
                             let mut st = state.lock().unwrap();
-                            st.0 = idx as usize;
+                            st.0 = idx;
                             drop(st);
 
                             let scn = scenario.lock().unwrap();
                             let st = state.lock().unwrap();
                             let preview = build_preview_state(&scn, st.0, &st.1);
-                            let response = WsMessage::State(preview);
+                            let response = WsMessage::State(Box::new(preview));
                             if let Ok(json) = serde_json::to_string(&response) {
                                 let _ = websocket.write(Message::Text(json));
                             }
                         }
                     }
-                    "jump" => {
-                        if let Some(label) = json.get("label").and_then(|l| l.as_str()) {
-                            let scn = scenario.lock().unwrap();
-                            // Find label index
-                            if let Some(idx) = scn.script.iter().position(|cmd| {
-                                cmd.label.as_ref().map(|l| l.as_str()) == Some(label)
-                            }) {
-                                drop(scn);
-                                let mut st = state.lock().unwrap();
-                                st.0 = idx;
-                                drop(st);
-
-                                let scn = scenario.lock().unwrap();
-                                let st = state.lock().unwrap();
-                                let preview = build_preview_state(&scn, st.0, &st.1);
-                                let response = WsMessage::State(preview);
-                                if let Ok(json) = serde_json::to_string(&response) {
-                                    let _ = websocket.write(Message::Text(json));
-                                }
-                            }
-                        }
-                    }
-                    _ => {}
                 }
+                _ => {}
             }
         }
     }
@@ -755,7 +776,10 @@ fn main() -> ExitCode {
             Err(_) => return,
         };
 
-        if watcher.watch(&watch_path, RecursiveMode::NonRecursive).is_err() {
+        if watcher
+            .watch(&watch_path, RecursiveMode::NonRecursive)
+            .is_err()
+        {
             return;
         }
 
@@ -764,18 +788,18 @@ fn main() -> ExitCode {
                 Ok(Ok(event)) => {
                     if event.paths.iter().any(|p| p == &watch_path) {
                         thread::sleep(Duration::from_millis(100)); // Debounce
-                        if let Ok(content) = fs::read_to_string(&watch_path) {
-                            if let Ok(new_scenario) = parse_scenario(&content) {
-                                let mut scn = scenario_clone.lock().unwrap();
-                                *scn = new_scenario;
-                                drop(scn);
+                        if let Ok(content) = fs::read_to_string(&watch_path)
+                            && let Ok(new_scenario) = parse_scenario(&content)
+                        {
+                            let mut scn = scenario_clone.lock().unwrap();
+                            *scn = new_scenario;
+                            drop(scn);
 
-                                // Reset to beginning on reload
-                                let mut st = state_clone.lock().unwrap();
-                                st.0 = 0;
+                            // Reset to beginning on reload
+                            let mut st = state_clone.lock().unwrap();
+                            st.0 = 0;
 
-                                eprintln!("Scenario reloaded: {}", watch_path.display());
-                            }
+                            eprintln!("Scenario reloaded: {}", watch_path.display());
                         }
                     }
                 }

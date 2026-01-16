@@ -67,14 +67,14 @@ impl<'a> InputDetector<'a> {
     /// Check if advance action is triggered (click, enter, gamepad A).
     pub fn is_advance_pressed(&self) -> bool {
         is_mouse_button_pressed(MouseButton::Left)
-            || self.keybinds.is_pressed_with_gamepad(Action::Advance, self.gamepad)
+            || self
+                .keybinds
+                .is_pressed_with_gamepad(Action::Advance, self.gamepad)
     }
 
     /// Check if skip mode should be active (Ctrl held or skip mode on).
     pub fn is_skip_active(&self, skip_mode: bool) -> bool {
-        skip_mode
-            || is_key_down(KeyCode::LeftControl)
-            || is_key_down(KeyCode::RightControl)
+        skip_mode || is_key_down(KeyCode::LeftControl) || is_key_down(KeyCode::RightControl)
     }
 
     /// Detect all triggered actions this frame.
@@ -82,24 +82,42 @@ impl<'a> InputDetector<'a> {
         let mut actions = Vec::new();
 
         // Quick save/load
-        if self.keybinds.is_pressed_with_gamepad(Action::QuickSave, self.gamepad) {
+        if self
+            .keybinds
+            .is_pressed_with_gamepad(Action::QuickSave, self.gamepad)
+        {
             actions.push(PlayerAction::QuickSave);
         }
-        if self.keybinds.is_pressed_with_gamepad(Action::QuickLoad, self.gamepad) {
+        if self
+            .keybinds
+            .is_pressed_with_gamepad(Action::QuickLoad, self.gamepad)
+        {
             actions.push(PlayerAction::QuickLoad);
         }
 
         // Toggle actions
-        if self.keybinds.is_pressed_with_gamepad(Action::Backlog, self.gamepad) {
+        if self
+            .keybinds
+            .is_pressed_with_gamepad(Action::Backlog, self.gamepad)
+        {
             actions.push(PlayerAction::ToggleBacklog);
         }
-        if self.keybinds.is_pressed_with_gamepad(Action::AutoMode, self.gamepad) {
+        if self
+            .keybinds
+            .is_pressed_with_gamepad(Action::AutoMode, self.gamepad)
+        {
             actions.push(PlayerAction::ToggleAuto);
         }
-        if self.keybinds.is_pressed_with_gamepad(Action::SkipMode, self.gamepad) {
+        if self
+            .keybinds
+            .is_pressed_with_gamepad(Action::SkipMode, self.gamepad)
+        {
             actions.push(PlayerAction::ToggleSkip);
         }
-        if self.keybinds.is_pressed_with_gamepad(Action::Debug, self.gamepad) {
+        if self
+            .keybinds
+            .is_pressed_with_gamepad(Action::Debug, self.gamepad)
+        {
             actions.push(PlayerAction::ToggleDebug);
         }
 
@@ -110,7 +128,9 @@ impl<'a> InputDetector<'a> {
 
         // Rollback (keybind or mouse wheel up)
         let wheel = mouse_wheel();
-        if self.keybinds.is_pressed_with_gamepad(Action::Rollback, self.gamepad)
+        if self
+            .keybinds
+            .is_pressed_with_gamepad(Action::Rollback, self.gamepad)
             || wheel.1 > 0.0
         {
             actions.push(PlayerAction::Rollback);
@@ -155,7 +175,11 @@ impl<'a> InputDetector<'a> {
     }
 
     /// Detect choice navigation actions.
-    pub fn detect_choice_nav(&self, last_mouse_pos: (f32, f32), stick_debounce: f32) -> Option<ChoiceNavAction> {
+    pub fn detect_choice_nav(
+        &self,
+        last_mouse_pos: (f32, f32),
+        stick_debounce: f32,
+    ) -> Option<ChoiceNavAction> {
         let mouse_pos = mouse_position();
         if mouse_pos != last_mouse_pos {
             return Some(ChoiceNavAction::MouseMoved);

@@ -14,5 +14,5 @@ pub use types::{
 };
 #[allow(unused_imports)]
 pub use validator::{
-    ValidationIssue, ValidationResult, Severity, detect_circular_paths, validate_scenario,
+    Severity, ValidationIssue, ValidationResult, detect_circular_paths, validate_scenario,
 };

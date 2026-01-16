@@ -162,18 +162,17 @@ pub fn validate_scenario(scenario: &Scenario) -> ValidationResult {
 
     // Check for circular jumps (simple case: self-referencing)
     for (index, cmd) in scenario.script.iter().enumerate() {
-        if let Some(ref label) = cmd.label {
-            if let Some(ref jump) = cmd.jump {
-                if label == jump {
-                    result.issues.push(
-                        ValidationIssue::error(
-                            format!("Self-referencing jump at label '{}'", label),
-                            Some(index),
-                        )
-                        .with_label(label.clone()),
-                    );
-                }
-            }
+        if let Some(ref label) = cmd.label
+            && let Some(ref jump) = cmd.jump
+            && label == jump
+        {
+            result.issues.push(
+                ValidationIssue::error(
+                    format!("Self-referencing jump at label '{}'", label),
+                    Some(index),
+                )
+                .with_label(label.clone()),
+            );
         }
     }
 

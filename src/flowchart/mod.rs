@@ -3,5 +3,5 @@ mod layout;
 mod types;
 
 pub use builder::build_flowchart;
-pub use layout::{calculate_layout, LayoutConfig, NodeLayout};
-pub use types::{EdgeType, Flowchart, FlowchartEdge, FlowchartNode, NodeId, NodeType};
+pub use layout::{LayoutConfig, NodeLayout, calculate_layout};
+pub use types::{EdgeType, Flowchart, NodeId, NodeType};

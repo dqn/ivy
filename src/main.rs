@@ -40,6 +40,7 @@ use runtime::{Action, CameraState, DisplayState, GameState, SaveData, VisualStat
 use scenario::{CharPosition, ModularCharDef, load_scenario};
 
 /// Draw visual elements (background and character) with shake offset and character animation.
+#[allow(clippy::too_many_arguments)]
 async fn draw_visual(
     visual: &VisualState,
     cache: &mut TextureCache,
@@ -282,7 +283,8 @@ async fn main() {
                 // Apply volume settings to audio manager
                 ctx.audio_manager.set_bgm_volume(ctx.settings.bgm_volume);
                 ctx.audio_manager.set_se_volume(ctx.settings.se_volume);
-                ctx.audio_manager.set_voice_volume(ctx.settings.voice_volume);
+                ctx.audio_manager
+                    .set_voice_volume(ctx.settings.voice_volume);
 
                 // Screenshot
                 if ctx.settings.keybinds.is_pressed(Action::Screenshot) {
@@ -603,7 +605,10 @@ async fn main() {
 
                     // Start enter animation if specified
                     if let Some(enter) = &char_state.enter {
-                        ctx.char_anim_states.get_mut(&pos).unwrap().start_enter(enter);
+                        ctx.char_anim_states
+                            .get_mut(&pos)
+                            .unwrap()
+                            .start_enter(enter);
                         // Store pending idle to start after enter completes
                         if let Some(idle) = &char_state.idle {
                             ctx.pending_idles.insert(pos, idle.clone());
@@ -653,8 +658,16 @@ async fn main() {
             // Start camera animation if specified
             if let Some(camera_cmd) = state.current_camera() {
                 let target = CameraState {
-                    pan_x: camera_cmd.pan.as_ref().map(|p| p.x).unwrap_or(ctx.camera_state.pan_x),
-                    pan_y: camera_cmd.pan.as_ref().map(|p| p.y).unwrap_or(ctx.camera_state.pan_y),
+                    pan_x: camera_cmd
+                        .pan
+                        .as_ref()
+                        .map(|p| p.x)
+                        .unwrap_or(ctx.camera_state.pan_x),
+                    pan_y: camera_cmd
+                        .pan
+                        .as_ref()
+                        .map(|p| p.y)
+                        .unwrap_or(ctx.camera_state.pan_y),
                     zoom: camera_cmd.zoom.unwrap_or(ctx.camera_state.zoom),
                     tilt: camera_cmd.tilt.unwrap_or(ctx.camera_state.tilt),
                     focus: camera_cmd.focus,
@@ -708,7 +721,8 @@ async fn main() {
         }
 
         // Check if enter animations completed and start pending idles
-        let completed_positions: Vec<CharPosition> = ctx.char_anim_states
+        let completed_positions: Vec<CharPosition> = ctx
+            .char_anim_states
             .iter()
             .filter(|(_, anim_state)| {
                 !anim_state.is_active()
@@ -741,11 +755,8 @@ async fn main() {
         let shake_offset = ctx.shake_state.offset();
 
         // Calculate camera transform
-        let camera_transform = calculate_camera_transform(
-            &ctx.camera_state,
-            screen_width(),
-            screen_height(),
-        );
+        let camera_transform =
+            calculate_camera_transform(&ctx.camera_state, screen_width(), screen_height());
 
         match state.display_state() {
             DisplayState::Text {
@@ -787,9 +798,9 @@ async fn main() {
                 let interpolated_text = interpolate_variables(&resolved_text, state.variables());
 
                 // Resolve speaker name
-                let resolved_speaker = speaker
-                    .as_ref()
-                    .map(|name| interpolate_variables(&ctx.language_config.resolve(name), state.variables()));
+                let resolved_speaker = speaker.as_ref().map(|name| {
+                    interpolate_variables(&ctx.language_config.resolve(name), state.variables())
+                });
 
                 // Reset typewriter if text changed
                 if ctx.last_text.as_ref() != Some(&interpolated_text) {
@@ -825,7 +836,12 @@ async fn main() {
                     }
 
                     // Draw text box with typewriter effect
-                    draw_text_box_typewriter(&text_config, &interpolated_text, font_ref, char_limit);
+                    draw_text_box_typewriter(
+                        &text_config,
+                        &interpolated_text,
+                        font_ref,
+                        char_limit,
+                    );
 
                     // Only show continue indicator when text is complete
                     if ctx.typewriter_state.is_complete() {
@@ -873,9 +889,11 @@ async fn main() {
                             ctx.typewriter_state.complete();
                             // In NVL mode, add completed text to buffer before advancing
                             if is_nvl_mode {
-                                ctx.nvl_state.push(resolved_speaker.clone(), interpolated_text.clone());
+                                ctx.nvl_state
+                                    .push(resolved_speaker.clone(), interpolated_text.clone());
                             }
-                            ctx.read_state.mark_read(SCENARIO_PATH, state.current_index());
+                            ctx.read_state
+                                .mark_read(SCENARIO_PATH, state.current_index());
                             state.advance();
                             ctx.auto_timer = 0.0;
                         } else {
@@ -888,9 +906,11 @@ async fn main() {
                             // Text is complete, advance to next
                             // In NVL mode, add completed text to buffer before advancing
                             if is_nvl_mode {
-                                ctx.nvl_state.push(resolved_speaker.clone(), interpolated_text.clone());
+                                ctx.nvl_state
+                                    .push(resolved_speaker.clone(), interpolated_text.clone());
                             }
-                            ctx.read_state.mark_read(SCENARIO_PATH, state.current_index());
+                            ctx.read_state
+                                .mark_read(SCENARIO_PATH, state.current_index());
                             state.advance();
                             ctx.auto_timer = 0.0;
                         } else {
@@ -916,7 +936,13 @@ async fn main() {
                     draw_text("AUTO", 750.0, indicator_y, 20.0, YELLOW);
                 }
                 if is_nvl_mode {
-                    draw_text("NVL", 750.0, indicator_y + 22.0, 20.0, Color::new(0.5, 1.0, 0.5, 1.0));
+                    draw_text(
+                        "NVL",
+                        750.0,
+                        indicator_y + 22.0,
+                        20.0,
+                        Color::new(0.5, 1.0, 0.5, 1.0),
+                    );
                 }
             }
             DisplayState::Choices {
@@ -1002,7 +1028,8 @@ async fn main() {
                             if *remaining <= 0.0 {
                                 // Auto-select default choice
                                 if let Some(idx) = default_choice {
-                                    ctx.read_state.mark_read(SCENARIO_PATH, state.current_index());
+                                    ctx.read_state
+                                        .mark_read(SCENARIO_PATH, state.current_index());
                                     state.select_choice(idx);
                                     ctx.choice_timer = None;
                                     ctx.choice_total_time = None;
@@ -1031,7 +1058,8 @@ async fn main() {
                                     }
                                     if let Some(idx) = ctx.choice_nav_state.focus_index {
                                         if nav_action == ChoiceNavAction::Up {
-                                            ctx.choice_nav_state.focus_index = Some(idx.saturating_sub(1));
+                                            ctx.choice_nav_state.focus_index =
+                                                Some(idx.saturating_sub(1));
                                         } else {
                                             ctx.choice_nav_state.focus_index =
                                                 Some((idx + 1).min(choice_count - 1));
@@ -1060,7 +1088,8 @@ async fn main() {
                             // Mouse click
                             Some(index)
                         } else if ctx.choice_nav_state.input_source == InputSource::Gamepad
-                            && input.detect_choice_nav(ctx.last_mouse_pos, 0.0) == Some(ChoiceNavAction::Confirm)
+                            && input.detect_choice_nav(ctx.last_mouse_pos, 0.0)
+                                == Some(ChoiceNavAction::Confirm)
                             && let Some(idx) = ctx.choice_nav_state.focus_index
                         {
                             // Gamepad A button
@@ -1070,7 +1099,8 @@ async fn main() {
                         };
 
                         if let Some(index) = selected_index {
-                            ctx.read_state.mark_read(SCENARIO_PATH, state.current_index());
+                            ctx.read_state
+                                .mark_read(SCENARIO_PATH, state.current_index());
                             state.select_choice(index);
                             ctx.choice_timer = None;
                             ctx.choice_total_time = None;
@@ -1113,13 +1143,11 @@ async fn main() {
                 // Check if wait is complete or skipped
                 let skip_active = input.is_skip_active(ctx.skip_mode);
 
-                if ctx.wait_timer >= duration
-                    || skip_active
-                    || input.is_advance_pressed()
-                {
+                if ctx.wait_timer >= duration || skip_active || input.is_advance_pressed() {
                     ctx.in_wait = false;
                     ctx.wait_timer = 0.0;
-                    ctx.read_state.mark_read(SCENARIO_PATH, state.current_index());
+                    ctx.read_state
+                        .mark_read(SCENARIO_PATH, state.current_index());
                     state.advance();
                 }
 
@@ -1175,7 +1203,8 @@ async fn main() {
                     let value = runtime::Value::String(ctx.input_state.text.clone());
                     state.set_variable(&input.var, value);
                     ctx.awaiting_input = None;
-                    ctx.read_state.mark_read(SCENARIO_PATH, state.current_index());
+                    ctx.read_state
+                        .mark_read(SCENARIO_PATH, state.current_index());
                     state.advance();
                 } else if result.cancelled {
                     // Use default value or empty string
@@ -1183,7 +1212,8 @@ async fn main() {
                     let value = runtime::Value::String(default_value);
                     state.set_variable(&input.var, value);
                     ctx.awaiting_input = None;
-                    ctx.read_state.mark_read(SCENARIO_PATH, state.current_index());
+                    ctx.read_state
+                        .mark_read(SCENARIO_PATH, state.current_index());
                     state.advance();
                 }
             }
@@ -1210,13 +1240,13 @@ async fn main() {
                 ctx.video_state.draw();
 
                 // Check for skip input
-                let skip_pressed = input.is_advance_pressed()
-                    || is_key_pressed(KeyCode::Escape);
+                let skip_pressed = input.is_advance_pressed() || is_key_pressed(KeyCode::Escape);
 
                 // Advance when video finishes or is skipped
                 if ctx.video_state.is_finished() || (skip_pressed && ctx.video_state.can_skip()) {
                     ctx.video_state.stop();
-                    ctx.read_state.mark_read(SCENARIO_PATH, state.current_index());
+                    ctx.read_state
+                        .mark_read(SCENARIO_PATH, state.current_index());
                     state.advance();
                 }
             }

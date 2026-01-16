@@ -89,7 +89,10 @@ pub enum ModLoadError {
     /// Mod file not found.
     FileNotFound(PathBuf),
     /// Version requirement not met.
-    VersionMismatch { mod_name: String, requirement: String },
+    VersionMismatch {
+        mod_name: String,
+        requirement: String,
+    },
 }
 
 impl std::fmt::Display for ModLoadError {
@@ -99,7 +102,10 @@ impl std::fmt::Display for ModLoadError {
             ModLoadError::MetadataRead(e) => write!(f, "Failed to read mod.yaml: {}", e),
             ModLoadError::MetadataParse(e) => write!(f, "Failed to parse mod.yaml: {}", e),
             ModLoadError::FileNotFound(path) => write!(f, "Mod file not found: {}", path.display()),
-            ModLoadError::VersionMismatch { mod_name, requirement } => {
+            ModLoadError::VersionMismatch {
+                mod_name,
+                requirement,
+            } => {
                 write!(f, "Mod '{}' requires version {}", mod_name, requirement)
             }
         }
@@ -133,10 +139,10 @@ impl ModLoader {
 
         for entry in entries.flatten() {
             let path = entry.path();
-            if path.is_dir() {
-                if let Err(e) = self.load_mod(&path) {
-                    eprintln!("Warning: Failed to load mod at {}: {}", path.display(), e);
-                }
+            if path.is_dir()
+                && let Err(e) = self.load_mod(&path)
+            {
+                eprintln!("Warning: Failed to load mod at {}: {}", path.display(), e);
             }
         }
 
@@ -151,7 +157,8 @@ impl ModLoader {
             return Err(ModLoadError::FileNotFound(metadata_path));
         }
 
-        let content = std::fs::read_to_string(&metadata_path).map_err(ModLoadError::MetadataRead)?;
+        let content =
+            std::fs::read_to_string(&metadata_path).map_err(ModLoadError::MetadataRead)?;
 
         let mut info: ModInfo =
             serde_yaml::from_str(&content).map_err(ModLoadError::MetadataParse)?;
@@ -236,15 +243,15 @@ impl ModLoader {
 
             // Also check scenario/ subdirectory
             let scenario_dir = mod_info.path.join("scenario");
-            if scenario_dir.exists() {
-                if let Ok(entries) = std::fs::read_dir(&scenario_dir) {
-                    for entry in entries.flatten() {
-                        let path = entry.path();
-                        if let Some(ext) = path.extension() {
-                            if ext == "yaml" || ext == "yml" {
-                                scenarios.push(path);
-                            }
-                        }
+            if scenario_dir.exists()
+                && let Ok(entries) = std::fs::read_dir(&scenario_dir)
+            {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    if let Some(ext) = path.extension()
+                        && (ext == "yaml" || ext == "yml")
+                    {
+                        scenarios.push(path);
                     }
                 }
             }

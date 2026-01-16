@@ -138,7 +138,14 @@ pub fn draw_nvl_text_box(
     for entry in state.entries() {
         // Draw speaker name if present
         if let Some(ref speaker) = entry.speaker {
-            draw_text_line(speaker, box_x, y, config.font_size, config.speaker_color, font);
+            draw_text_line(
+                speaker,
+                box_x,
+                y,
+                config.font_size,
+                config.speaker_color,
+                font,
+            );
             y += config.line_height;
         }
 
@@ -168,7 +175,14 @@ pub fn draw_nvl_text_box(
     if y <= box_y + config.height {
         // Draw speaker name if present
         if let Some(speaker) = current_speaker {
-            draw_text_line(speaker, box_x, y, config.font_size, config.speaker_color, font);
+            draw_text_line(
+                speaker,
+                box_x,
+                y,
+                config.font_size,
+                config.speaker_color,
+                font,
+            );
             y += config.line_height;
         }
 

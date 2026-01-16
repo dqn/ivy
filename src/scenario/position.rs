@@ -54,12 +54,15 @@ impl PositionMap {
             }
 
             // Exit script section when encountering another top-level key.
-            if in_script && !line.starts_with(' ') && !line.starts_with('\t') && !trimmed.is_empty()
+            if in_script
+                && !line.starts_with(' ')
+                && !line.starts_with('\t')
+                && !trimmed.is_empty()
+                && !trimmed.starts_with('-')
+                && !trimmed.starts_with('#')
             {
-                if !trimmed.starts_with('-') && !trimmed.starts_with('#') {
-                    in_script = false;
-                    continue;
-                }
+                in_script = false;
+                continue;
             }
 
             if !in_script {
@@ -77,8 +80,10 @@ impl PositionMap {
             // Detect label definition.
             if let Some(label) = extract_label_definition(trimmed) {
                 let column = line.find("label:").unwrap_or(0) as u32;
-                map.labels
-                    .insert(label.to_string(), LinePosition::new(line_num as u32, column));
+                map.labels.insert(
+                    label.to_string(),
+                    LinePosition::new(line_num as u32, column),
+                );
             }
 
             // Detect jump references.

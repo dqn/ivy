@@ -212,89 +212,89 @@ impl GameContext {
                 // Hot reloader
                 hot_reloader,
 
-            // Settings
-            settings,
+                // Settings
+                settings,
 
-            // Configs
-            title_config: TitleConfig::default(),
-            settings_config: SettingsConfig::default(),
-            base_text_config: TextBoxConfig::default(),
-            choice_config: ChoiceButtonConfig::default(),
-            backlog_config: BacklogConfig::default(),
-            input_config: InputConfig::default(),
-            gallery_config: GalleryConfig::default(),
-            achievement_config: AchievementConfig::default(),
-            debug_config: DebugConfig::default(),
-            chapter_select_config: ChapterSelectConfig::default(),
-            flowchart_config: FlowchartConfig::default(),
-            layout_config: LayoutConfig::default(),
-            nvl_config: NvlConfig::default(),
+                // Configs
+                title_config: TitleConfig::default(),
+                settings_config: SettingsConfig::default(),
+                base_text_config: TextBoxConfig::default(),
+                choice_config: ChoiceButtonConfig::default(),
+                backlog_config: BacklogConfig::default(),
+                input_config: InputConfig::default(),
+                gallery_config: GalleryConfig::default(),
+                achievement_config: AchievementConfig::default(),
+                debug_config: DebugConfig::default(),
+                chapter_select_config: ChapterSelectConfig::default(),
+                flowchart_config: FlowchartConfig::default(),
+                layout_config: LayoutConfig::default(),
+                nvl_config: NvlConfig::default(),
 
-            // UI States
-            backlog_state: BacklogState::default(),
-            debug_state: DebugState::default(),
-            input_state: InputState::default(),
-            gallery_state: GalleryState::default(),
-            chapter_select_state: ChapterSelectState::default(),
-            flowchart_state: FlowchartState::new(),
-            flowchart_cache: None,
+                // UI States
+                backlog_state: BacklogState::default(),
+                debug_state: DebugState::default(),
+                input_state: InputState::default(),
+                gallery_state: GalleryState::default(),
+                chapter_select_state: ChapterSelectState::default(),
+                flowchart_state: FlowchartState::new(),
+                flowchart_cache: None,
 
-            // Game systems
-            chapter_manager,
-            unlocks: Unlocks::load(),
-            achievements: Achievements::load(),
-            read_state: ReadState::load(),
-            achievement_notifier: AchievementNotifier::default(),
-            language_config: LanguageConfig::default(),
+                // Game systems
+                chapter_manager,
+                unlocks: Unlocks::load(),
+                achievements: Achievements::load(),
+                read_state: ReadState::load(),
+                achievement_notifier: AchievementNotifier::default(),
+                language_config: LanguageConfig::default(),
 
-            // Resource management
-            texture_cache: TextureCache::new(),
-            audio_manager: AudioManager::new(),
-            gamepad_state: GamepadState::new(),
+                // Resource management
+                texture_cache: TextureCache::new(),
+                audio_manager: AudioManager::new(),
+                gamepad_state: GamepadState::new(),
 
-            // Animation and visual states
-            transition_state: TransitionState::default(),
-            shake_state: ShakeState::default(),
-            typewriter_state: TypewriterState::default(),
-            last_text: None,
+                // Animation and visual states
+                transition_state: TransitionState::default(),
+                shake_state: ShakeState::default(),
+                typewriter_state: TypewriterState::default(),
+                last_text: None,
 
-            // Wait state
-            wait_timer: 0.0,
-            in_wait: false,
+                // Wait state
+                wait_timer: 0.0,
+                in_wait: false,
 
-            // Character animation states (single character)
-            char_anim_state: CharAnimationState::default(),
-            char_idle_state: CharIdleState::default(),
-            pending_idle: None,
+                // Character animation states (single character)
+                char_anim_state: CharAnimationState::default(),
+                char_idle_state: CharIdleState::default(),
+                pending_idle: None,
 
-            // Character animation states (multiple characters)
-            char_anim_states: HashMap::new(),
-            char_idle_states: HashMap::new(),
-            pending_idles: HashMap::new(),
+                // Character animation states (multiple characters)
+                char_anim_states: HashMap::new(),
+                char_idle_states: HashMap::new(),
+                pending_idles: HashMap::new(),
 
-            // Particle and cinematic states
-            particle_state: ParticleState::default(),
-            cinematic_state: CinematicState::default(),
+                // Particle and cinematic states
+                particle_state: ParticleState::default(),
+                cinematic_state: CinematicState::default(),
 
-            // Video states
-            video_state: VideoState::new(),
-            video_bg_state: VideoBackgroundState::new(),
+                // Video states
+                video_state: VideoState::new(),
+                video_bg_state: VideoBackgroundState::new(),
 
-            // NVL mode state
-            nvl_state: NvlState::new(),
+                // NVL mode state
+                nvl_state: NvlState::new(),
 
-            // Choice state
-            choice_timer: None,
-            choice_total_time: None,
-            choice_nav_state: ChoiceNavState::default(),
-            last_mouse_pos: (0.0, 0.0),
+                // Choice state
+                choice_timer: None,
+                choice_total_time: None,
+                choice_nav_state: ChoiceNavState::default(),
+                last_mouse_pos: (0.0, 0.0),
 
-            // Camera state
-            camera_state: CameraState::default(),
-            camera_anim_state: CameraAnimationState::default(),
+                // Camera state
+                camera_state: CameraState::default(),
+                camera_anim_state: CameraAnimationState::default(),
 
-            // Input state
-            awaiting_input: None,
+                // Input state
+                awaiting_input: None,
             },
             custom_font,
         ))
