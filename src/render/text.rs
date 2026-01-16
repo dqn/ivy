@@ -785,4 +785,141 @@ mod tests {
             "{color:red}text{/color}"
         );
     }
+
+    #[test]
+    fn test_count_visible_chars_deeply_nested_colors() {
+        // Multiple levels of nesting
+        assert_eq!(
+            count_visible_chars("{color:red}{color:blue}{color:green}ABC{/color}{/color}{/color}"),
+            3
+        );
+    }
+
+    #[test]
+    fn test_count_visible_chars_mixed_content() {
+        // Mix of color tags, regular text, and unrecognized tags
+        // "hello" (5) + " " (1) + "{unknown}" (9) + " " (1) + "world" (5) = 21
+        assert_eq!(
+            count_visible_chars("{color:red}hello{/color} {unknown} {color:blue}world{/color}"),
+            21
+        );
+    }
+
+    #[test]
+    fn test_interpolate_variables_combined_with_color() {
+        let mut vars = Variables::new();
+        vars.set("name", crate::types::Value::String("Alice".to_string()));
+
+        // Variable inside color tag should be expanded
+        assert_eq!(
+            interpolate_variables("{color:blue}Hello {var:name}!{/color}", &vars),
+            "{color:blue}Hello Alice!{/color}"
+        );
+    }
+
+    #[test]
+    fn test_interpolate_variables_multiple_vars() {
+        let mut vars = Variables::new();
+        vars.set("a", crate::types::Value::String("X".to_string()));
+        vars.set("b", crate::types::Value::String("Y".to_string()));
+        vars.set("c", crate::types::Value::String("Z".to_string()));
+
+        assert_eq!(
+            interpolate_variables("{var:a}-{var:b}-{var:c}", &vars),
+            "X-Y-Z"
+        );
+    }
+
+    #[test]
+    fn test_interpolate_variables_empty_text() {
+        let vars = Variables::new();
+        assert_eq!(interpolate_variables("", &vars), "");
+    }
+
+    #[test]
+    fn test_interpolate_variables_no_tags() {
+        let vars = Variables::new();
+        assert_eq!(
+            interpolate_variables("plain text without tags", &vars),
+            "plain text without tags"
+        );
+    }
+
+    #[test]
+    fn test_count_visible_chars_long_text() {
+        // Performance test with long text
+        let long_text = "a".repeat(10000);
+        assert_eq!(count_visible_chars(&long_text), 10000);
+    }
+
+    #[test]
+    fn test_count_visible_chars_long_text_with_tags() {
+        // Long text with many color tags
+        let segment = "{color:red}hello{/color}";
+        let long_text = segment.repeat(1000);
+        assert_eq!(count_visible_chars(&long_text), 5000); // 5 chars * 1000
+    }
+
+    #[test]
+    fn test_count_visible_chars_malformed_tags() {
+        // Unclosed tag - the implementation consumes all remaining chars as tag content
+        // so an unclosed tag results in 0 visible chars
+        assert_eq!(count_visible_chars("{color:red"), 0);
+        // Empty braces - "{}" is not a recognized tag, so braces + empty content = 2
+        assert_eq!(count_visible_chars("{}text"), 6);
+    }
+
+    #[test]
+    fn test_strip_tags_basic() {
+        assert_eq!(strip_tags("{color:red}hello{/color}"), "hello");
+        assert_eq!(strip_tags("{color:#ff0000}test{/color}"), "test");
+    }
+
+    #[test]
+    fn test_strip_tags_with_ruby() {
+        assert_eq!(strip_tags("{ruby:漢字:かんじ}"), "漢字");
+        assert_eq!(
+            strip_tags("text {ruby:東京:とうきょう} more"),
+            "text 東京 more"
+        );
+    }
+
+    #[test]
+    fn test_strip_tags_combined() {
+        assert_eq!(
+            strip_tags("{color:red}{ruby:漢字:かんじ}{/color}"),
+            "漢字"
+        );
+    }
+
+    #[test]
+    fn test_strip_tags_unknown_tags_preserved() {
+        assert_eq!(strip_tags("{unknown}text"), "{unknown}text");
+    }
+
+    #[test]
+    fn test_parse_color_named() {
+        assert!(parse_color("red").is_some());
+        assert!(parse_color("blue").is_some());
+        assert!(parse_color("invalid_color").is_none());
+    }
+
+    #[test]
+    fn test_parse_color_hex() {
+        let color = parse_color("#ff0000").unwrap();
+        assert!((color.r - 1.0).abs() < 0.01);
+        assert!(color.g < 0.01);
+        assert!(color.b < 0.01);
+
+        let color = parse_color("#00ff00").unwrap();
+        assert!(color.r < 0.01);
+        assert!((color.g - 1.0).abs() < 0.01);
+        assert!(color.b < 0.01);
+    }
+
+    #[test]
+    fn test_parse_color_invalid_hex() {
+        assert!(parse_color("#fff").is_none()); // Too short
+        assert!(parse_color("#gggggg").is_none()); // Invalid hex
+    }
 }
