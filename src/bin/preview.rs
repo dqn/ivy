@@ -610,6 +610,47 @@ fn handle_http(mut stream: TcpStream, http_port: u16, ws_port: u16, scenario_dir
     let _ = stream.write_all(&body);
 }
 
+/// Helper to send an error message to the WebSocket client.
+fn send_ws_error(
+    websocket: &mut tungstenite::WebSocket<TcpStream>,
+    message: &str,
+) {
+    let response = WsMessage::Error {
+        message: message.to_string(),
+    };
+    if let Ok(json) = serde_json::to_string(&response) {
+        let _ = websocket.write(Message::Text(json));
+    }
+}
+
+/// Helper to send state to the WebSocket client. Returns false on lock error.
+fn send_state(
+    websocket: &mut tungstenite::WebSocket<TcpStream>,
+    scenario: &Arc<Mutex<Scenario>>,
+    state: &Arc<Mutex<(usize, HashMap<String, String>)>>,
+) -> bool {
+    let scn = match scenario.lock() {
+        Ok(s) => s,
+        Err(e) => {
+            send_ws_error(websocket, &format!("Scenario lock poisoned: {}", e));
+            return false;
+        }
+    };
+    let st = match state.lock() {
+        Ok(s) => s,
+        Err(e) => {
+            send_ws_error(websocket, &format!("State lock poisoned: {}", e));
+            return false;
+        }
+    };
+    let preview = build_preview_state(&scn, st.0, &st.1);
+    let response = WsMessage::State(Box::new(preview));
+    if let Ok(json) = serde_json::to_string(&response) {
+        let _ = websocket.write(Message::Text(json));
+    }
+    true
+}
+
 fn handle_websocket(
     stream: TcpStream,
     scenario: Arc<Mutex<Scenario>>,
@@ -638,49 +679,59 @@ fn handle_websocket(
 
             match msg_type {
                 "get_state" => {
-                    let scn = scenario.lock().unwrap();
-                    let st = state.lock().unwrap();
-                    let preview = build_preview_state(&scn, st.0, &st.1);
-                    let response = WsMessage::State(Box::new(preview));
-                    if let Ok(json) = serde_json::to_string(&response) {
-                        let _ = websocket.write(Message::Text(json));
-                    }
+                    send_state(&mut websocket, &scenario, &state);
                 }
                 "goto" => {
                     if let Some(idx) = json.get("index").and_then(|i| i.as_u64()) {
-                        let mut st = state.lock().unwrap();
-                        st.0 = idx as usize;
-                        drop(st);
-
-                        let scn = scenario.lock().unwrap();
-                        let st = state.lock().unwrap();
-                        let preview = build_preview_state(&scn, st.0, &st.1);
-                        let response = WsMessage::State(Box::new(preview));
-                        if let Ok(json) = serde_json::to_string(&response) {
-                            let _ = websocket.write(Message::Text(json));
+                        let update_ok = match state.lock() {
+                            Ok(mut st) => {
+                                st.0 = idx as usize;
+                                true
+                            }
+                            Err(e) => {
+                                send_ws_error(
+                                    &mut websocket,
+                                    &format!("State lock poisoned: {}", e),
+                                );
+                                false
+                            }
+                        };
+                        if update_ok {
+                            send_state(&mut websocket, &scenario, &state);
                         }
                     }
                 }
                 "jump" => {
                     if let Some(label) = json.get("label").and_then(|l| l.as_str()) {
-                        let scn = scenario.lock().unwrap();
-                        // Find label index
-                        if let Some(idx) = scn
-                            .script
-                            .iter()
-                            .position(|cmd| cmd.label.as_deref() == Some(label))
-                        {
-                            drop(scn);
-                            let mut st = state.lock().unwrap();
-                            st.0 = idx;
-                            drop(st);
-
-                            let scn = scenario.lock().unwrap();
-                            let st = state.lock().unwrap();
-                            let preview = build_preview_state(&scn, st.0, &st.1);
-                            let response = WsMessage::State(Box::new(preview));
-                            if let Ok(json) = serde_json::to_string(&response) {
-                                let _ = websocket.write(Message::Text(json));
+                        let label_idx = match scenario.lock() {
+                            Ok(scn) => scn
+                                .script
+                                .iter()
+                                .position(|cmd| cmd.label.as_deref() == Some(label)),
+                            Err(e) => {
+                                send_ws_error(
+                                    &mut websocket,
+                                    &format!("Scenario lock poisoned: {}", e),
+                                );
+                                continue;
+                            }
+                        };
+                        if let Some(idx) = label_idx {
+                            let update_ok = match state.lock() {
+                                Ok(mut st) => {
+                                    st.0 = idx;
+                                    true
+                                }
+                                Err(e) => {
+                                    send_ws_error(
+                                        &mut websocket,
+                                        &format!("State lock poisoned: {}", e),
+                                    );
+                                    false
+                                }
+                            };
+                            if update_ok {
+                                send_state(&mut websocket, &scenario, &state);
                             }
                         }
                     }
@@ -791,13 +842,31 @@ fn main() -> ExitCode {
                         if let Ok(content) = fs::read_to_string(&watch_path)
                             && let Ok(new_scenario) = parse_scenario(&content)
                         {
-                            let mut scn = scenario_clone.lock().unwrap();
-                            *scn = new_scenario;
-                            drop(scn);
+                            match scenario_clone.lock() {
+                                Ok(mut scn) => {
+                                    *scn = new_scenario;
+                                }
+                                Err(e) => {
+                                    eprintln!(
+                                        "Warning: Scenario lock poisoned during reload: {}",
+                                        e
+                                    );
+                                    continue;
+                                }
+                            }
 
                             // Reset to beginning on reload
-                            let mut st = state_clone.lock().unwrap();
-                            st.0 = 0;
+                            match state_clone.lock() {
+                                Ok(mut st) => {
+                                    st.0 = 0;
+                                }
+                                Err(e) => {
+                                    eprintln!(
+                                        "Warning: State lock poisoned during reload: {}",
+                                        e
+                                    );
+                                }
+                            }
 
                             eprintln!("Scenario reloaded: {}", watch_path.display());
                         }
