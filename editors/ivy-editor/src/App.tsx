@@ -6,6 +6,7 @@ import { usePlaytestKeyboard } from "./hooks/usePlaytestKeyboard";
 import { useProject } from "./hooks/useProject";
 import { useRecentProjects } from "./hooks/useRecentProjects";
 import { useCharacters } from "./hooks/useCharacters";
+import { useToast } from "./components/Toast";
 import { CommandList } from "./components/CommandList";
 import { CommandForm } from "./components/CommandForm";
 import { YamlPreview } from "./components/YamlPreview";
@@ -33,6 +34,7 @@ type EditorMode =
   | { type: "standalone" };
 
 const App: React.FC = () => {
+  const { showToast } = useToast();
   const [mode, setMode] = useState<EditorMode>({ type: "welcome" });
 
   const {
@@ -52,7 +54,7 @@ const App: React.FC = () => {
     removeCommand,
     reorderCommand,
     validate,
-  } = useScenario();
+  } = useScenario({ showToast });
 
   const {
     project,
@@ -65,7 +67,7 @@ const App: React.FC = () => {
     closeProject,
     updateConfig,
     setActiveScenario,
-  } = useProject();
+  } = useProject({ showToast });
 
   const {
     recentProjects,
@@ -279,7 +281,7 @@ const App: React.FC = () => {
     } catch (e) {
       console.error("Failed to open project:", e);
       removeRecentProject(path);
-      alert(`Failed to open project: ${e}`);
+      showToast(`Failed to open project: ${e}`, "error");
     }
   };
 
