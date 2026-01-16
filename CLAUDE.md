@@ -18,28 +18,72 @@ Rust製ビジュアルノベルエンジン。
 
 ```
 src/
-├── main.rs              # エントリポイント、画像キャッシュ管理
-├── scenario/            # シナリオ関連
-│   ├── types.rs         # Scenario, Command, Choice, CharPosition
-│   └── parser.rs        # YAML読み込み
-├── runtime/             # 実行エンジン
-│   └── state.rs         # GameState, DisplayState, VisualState, SaveData
-├── render/              # 描画
-│   ├── image.rs         # 背景・スプライト描画
-│   ├── text.rs          # テキストボックス
-│   ├── transition.rs    # トランジション効果
-│   └── ui.rs            # 選択肢ボタン
+├── main.rs              # エントリポイント
+├── lib.rs               # ライブラリエントリ
+├── types.rs             # 共通型定義
+├── cache.rs             # 画像キャッシュ管理
+├── accessibility/       # アクセシビリティ機能
+│   └── mod.rs           # TTS、ハイコントラスト、フォントサイズ
+├── audio/               # オーディオ管理
+│   └── mod.rs           # BGM、SE、ボイス、アンビエント
+├── bin/                 # CLIツール
+│   ├── validate.rs      # ivy-validate
+│   ├── preview.rs       # ivy-preview
+│   └── lsp.rs           # ivy-lsp
+├── flowchart/           # フローチャート生成
+│   ├── types.rs         # Flowchart, FlowchartNode
+│   ├── builder.rs       # シナリオからグラフ構築
+│   └── layout.rs        # ノードレイアウト計算
+├── game/                # ゲームループ・設定
+│   ├── mode.rs          # GameMode（タイトル、プレイ、設定等）
+│   ├── config.rs        # GameConfig、設定永続化
+│   ├── actions.rs       # ユーザーアクション処理
+│   └── initialization.rs # ゲーム初期化
 ├── hotreload/           # ホットリロード（開発用）
 │   └── mod.rs           # ファイル監視、シナリオ再読込
 ├── i18n/                # 多言語対応
 │   ├── mod.rs           # 翻訳システム
 │   └── localized.rs     # LocalizedString型
+├── input/               # 入力処理
+│   ├── mod.rs           # InputProviderトレイト
+│   └── gamepad.rs       # ゲームパッド定義
 ├── modding/             # コミュニティMod対応
-│   ├── mod.rs           # モジュールエントリ
-│   └── types.rs         # ModInfo, ModLoader
-└── input/               # 入力処理
-    ├── mod.rs           # InputProviderトレイト
-    └── gamepad.rs       # ゲームパッド定義
+│   ├── mod.rs           # ModLoader
+│   └── types.rs         # ModInfo, ModKind
+├── platform/            # プラットフォーム抽象化
+│   └── mod.rs           # Native/WASM分岐
+├── render/              # 描画（20+ファイル）
+│   ├── mod.rs           # レンダラーエントリ
+│   ├── image.rs         # 背景・スプライト
+│   ├── text.rs          # テキストボックス
+│   ├── transition.rs    # トランジション効果
+│   ├── ui.rs            # 選択肢ボタン
+│   ├── camera.rs        # ダイナミックカメラ
+│   ├── particles.rs     # パーティクルエフェクト
+│   ├── lipsync.rs       # リップシンク
+│   └── ...              # その他多数
+├── runtime/             # 実行エンジン
+│   ├── state.rs         # GameState
+│   ├── display.rs       # DisplayState
+│   ├── visual.rs        # VisualState
+│   ├── save.rs          # SaveData、セーブ/ロード
+│   ├── variables.rs     # 変数システム
+│   ├── keybinds.rs      # キーバインド設定
+│   ├── chapters.rs      # チャプター管理
+│   ├── achievements.rs  # 実績システム
+│   ├── unlocks.rs       # アンロック管理
+│   └── read_state.rs    # 既読管理
+├── scenario/            # シナリオ関連
+│   ├── types.rs         # Scenario, Command, Choice
+│   ├── parser.rs        # YAML読み込み
+│   ├── easing.rs        # イージング関数
+│   ├── position.rs      # CharPosition
+│   └── validator.rs     # シナリオ検証
+└── video/               # 動画再生（optional）
+    ├── mod.rs           # 動画システムエントリ
+    ├── native.rs        # FFmpegバックエンド
+    ├── wasm.rs          # HTML5 videoバックエンド
+    └── stub.rs          # 無効時のスタブ
 
 assets/                  # ゲームアセット
 ├── *.yaml               # シナリオファイル
@@ -52,37 +96,11 @@ tests/                   # テスト
 ├── fixtures/            # テスト用YAMLシナリオ
 ├── snapshots/           # Instaスナップショット
 ├── e2e/                 # Playwright E2Eテスト
-│   ├── specs/           # テストファイル
-│   └── helpers/         # ヘルパー関数
-├── snapshot_test.rs     # DisplayStateスナップショット
-├── state_test.rs        # GameState統合テスト
-├── parser_test.rs       # YAMLパーサーテスト
-├── variables_test.rs    # 変数システムテスト
-├── keybinds_test.rs     # キーバインドテスト
-└── integration_test.rs  # シナリオ実行テスト
+└── *_test.rs            # 統合テスト
 
 editors/                 # エディタ拡張
-├── vscode/              # VSCode拡張
-│   ├── package.json     # 拡張メタデータ
-│   ├── syntaxes/        # シンタックスハイライト
-│   └── snippets/        # コードスニペット
+├── vscode/              # VSCode拡張（LSP対応）
 └── ivy-editor/          # GUI エディタ（Tauri + React）
-    └── src/
-        ├── lib/         # 共通ユーティリティ
-        │   ├── tauri.ts       # Tauri invoke ラッパー
-        │   └── ValueType.ts   # 値型変換ユーティリティ
-        ├── config/      # 設定ファイル
-        │   └── keybindings.ts # キーバインド定義
-        ├── hooks/       # カスタムフック
-        │   ├── useScenario.ts
-        │   ├── useProject.ts
-        │   ├── useAssetPicker.ts
-        │   └── usePlaytestKeyboard.ts
-        ├── features/    # 機能別コンポーネント
-        │   └── editor/
-        │       ├── EditorHeader.tsx
-        │       └── useEditorState.ts
-        └── components/  # 共通コンポーネント
 ```
 
 ## シナリオ形式（YAML）
@@ -435,91 +453,12 @@ cargo build --bin ivy-lsp                              # LSPサーバーをビ�
 - Spine対応: Spine Runtime とライセンスが必要
 - クラウドセーブ: バックエンドサーバーの構築・運用が必要
 
-### 非エンジニア向けロードマップ
+### 非エンジニア向けツール（完了）
 
-ivy を「非エンジニアでもVNゲームを作れる」エンジンにするための改善計画。
+ivy を「非エンジニアでもVNゲームを作れる」エンジンにするための改善は完了。
 
-#### Phase 1: ドキュメント整備
-- [x] Getting Started ガイド（Rust インストール、ビルド、Hello World）
-- [x] よくあるエラーの FAQ
-- [x] YAML 構文ガイド（初心者向け）
-
-#### Phase 2: 配布の簡素化
-- [x] GitHub Releases にビルド済みバイナリを配布（Windows / macOS / Linux）
-- [x] GitHub Actions による自動ビルド
-- [x] WASM デモサイトの公開
-
-#### Phase 3: エラー体験の改善
-- [x] YAML パースエラーに行番号を追加
-- [x] よくあるエラーパターンの検出とヒント表示
-
-#### Phase 4: ツール統合の強化
-- [x] VSCode 拡張: CLI バイナリの自動検出・インストールガイド
-- [x] Language Server Protocol (LSP) 対応
-  - Diagnostics（リアルタイムバリデーション）
-  - Go to Definition（ラベルジャンプ）
-  - Find References（参照検索）
-  - Completion（キーワード、ラベル、char_pos、easing）
-  - Hover（フィールドドキュメント）
-
-#### Phase 5: ビジュアルエディタ
-
-非エンジニアでも YAML を知らずにビジュアルノベルを作成できる GUI エディタ。
-技術スタック: Tauri + React + TypeScript
-
-- [x] Phase 5.1: コマンドエディタ MVP
-  - [x] Tauri プロジェクト scaffold (`editors/ivy-editor/`)
-  - [x] YAML 読み込み・保存（既存パーサー再利用）
-  - [x] コマンドリスト表示（テーブル形式）
-  - [x] 単一コマンド編集フォーム
-  - [x] リアルタイム YAML プレビュー（読み取り専用）
-  - [x] バリデーションエラー表示
-- [x] Phase 5.2: フローチャート表示
-  - [x] 既存 `Flowchart` 型を React Flow で描画
-  - [x] ノードクリックでコマンドにジャンプ
-  - [x] ズーム・パン操作
-- [x] Phase 5.3: プレビュー統合（完全統合方式）
-  - [x] `PreviewState` を Tauri コマンドとして実装
-  - [x] プレビューレンダリングを React コンポーネントに移植
-  - [x] エディタ ↔ プレビューの同期
-- [x] Phase 5.4: ドラッグ＆ドロップ
-  - [x] コマンドリストの順序変更
-  - [x] アセットファイルのドロップでパス自動入力
-- [x] Phase 5.5: アセット管理
-  - [x] アセットブラウザ（ファイルツリー）
-  - [x] 画像・音声プレビュー
-  - [x] 未使用アセット検出
-
-#### Phase 6: プロジェクト管理
-
-- [x] プロジェクト作成ウィザード
-- [x] プロジェクト設定画面（タイトル、解像度、作者情報）
-- [x] マルチシナリオ/チャプター管理
-- [x] 最近開いたプロジェクト一覧
-
-#### Phase 7-11: 完全開発ツール化（長期目標）
-
-ivy-editor を VN ゲーム開発の全工程をカバーするツールに拡張する。
-
-- [x] Phase 7: キャラクターシステム
-  - [x] キャラクターデータベース UI
-  - [x] モジュラーキャラクターの GUI 設定
-  - [x] スピーカー名との自動関連付け
-- [x] Phase 8: 高度なコマンドエディタ
-  - [x] トランジション効果ビジュアルピッカー
-  - [x] カメラコマンド GUI（パン/ズーム/チルト）
-  - [x] パーティクルエフェクトプレビュー
-  - [x] 変数エディタ（set/if の視覚的編集）
-- [x] Phase 9: 多言語サポート
-  - [x] LocalizedString の GUI 編集
-  - [x] 翻訳テーブル管理画面
-  - [x] 言語切替プレビュー
-- [x] Phase 10: テスト＆デバッグ
-  - [x] エディタ内プレイテストモード
-  - [x] 変数ウォッチャー/デバッガー
-  - [x] ストーリーパス分析（未到達分岐検出）
-  - [x] セーブデータ検証ツール
-- [x] Phase 11: ビルド＆配布
-  - [x] エクスポートウィザード（Windows/macOS/Linux/Web）
-  - [x] アセット最適化（画像圧縮、音声変換）
-  - [x] リリースパッケージ生成
+- ドキュメント整備（Getting Started、FAQ）
+- 配布の簡素化（GitHub Releases、WASM デモ）
+- エラー体験の改善（行番号、ヒント表示）
+- ツール統合（VSCode拡張、LSP）
+- ビジュアルエディタ（ivy-editor）

@@ -288,8 +288,8 @@ The web build will be in `web/`.
 
 ## Next Steps
 
-- Check the [YAML Syntax Guide](yaml-syntax.md) for all available commands
 - See [FAQ](faq.md) for common issues and solutions
+- Check `CLAUDE.md` in the project root for detailed YAML syntax documentation
 - Explore the `assets/` folder for example scenarios
 
 ## Getting Help
