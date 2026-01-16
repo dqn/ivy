@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useScenario } from "./hooks/useScenario";
 import { usePreview } from "./hooks/usePreview";
+import { usePlaytest } from "./hooks/usePlaytest";
+import { usePlaytestKeyboard } from "./hooks/usePlaytestKeyboard";
 import { useProject } from "./hooks/useProject";
 import { useRecentProjects } from "./hooks/useRecentProjects";
 import { useCharacters } from "./hooks/useCharacters";
@@ -19,6 +21,7 @@ import { WelcomeScreen } from "./components/WelcomeScreen";
 import { ProjectWizard } from "./components/ProjectWizard";
 import { ProjectSettings } from "./components/ProjectSettings";
 import { ScenarioList } from "./components/ScenarioList";
+import { PlaytestDebugPanel } from "./components/PlaytestDebugPanel";
 import type { Resolution, ProjectConfig } from "./types/project";
 import "./App.css";
 
@@ -105,6 +108,9 @@ const App: React.FC = () => {
     return lastSlash >= 0 ? filePath.substring(0, lastSlash) : null;
   }, [mode.type, project, filePath]);
 
+  // Preview/Playtest mode toggle
+  const [previewMode, setPreviewMode] = useState<"preview" | "playtest">("preview");
+
   // Preview state
   const {
     state: previewState,
@@ -116,6 +122,66 @@ const App: React.FC = () => {
     next: previewNext,
     prev: previewPrev,
   } = usePreview(scenario, baseDir, selectedIndex);
+
+  // Playtest state
+  const {
+    state: playtestState,
+    backgroundUrl: playtestBackgroundUrl,
+    characterUrl: playtestCharacterUrl,
+    assetErrors: playtestAssetErrors,
+    language: playtestLanguage,
+    isAutoMode: playtestIsAutoMode,
+    isSkipMode: playtestIsSkipMode,
+    start: startPlaytest,
+    stop: stopPlaytest,
+    advance: playtestAdvance,
+    selectChoice: playtestSelectChoice,
+    rollback: playtestRollback,
+    rollbackSteps: playtestRollbackSteps,
+    jumpToLabel: playtestJumpToLabel,
+    setVariable: playtestSetVariable,
+    restart: playtestRestart,
+    setLanguage: setPlaytestLanguage,
+    submitInput: playtestSubmitInput,
+    toggleAutoMode: playtestToggleAutoMode,
+    toggleSkipMode: playtestToggleSkipMode,
+    save: playtestSave,
+    load: playtestLoad,
+  } = usePlaytest(scenario, baseDir);
+
+  // Handle mode toggle
+  const handleTogglePreviewMode = useCallback(async () => {
+    if (previewMode === "preview") {
+      await startPlaytest(previewLanguage);
+      setPreviewMode("playtest");
+    } else {
+      await stopPlaytest();
+      setPreviewMode("preview");
+    }
+  }, [previewMode, startPlaytest, stopPlaytest, previewLanguage]);
+
+  // Keyboard shortcuts for playtest mode
+  const playtestChoiceCount =
+    previewMode === "playtest" &&
+    playtestState?.display.type === "choices"
+      ? playtestState.display.choices.length
+      : 0;
+
+  usePlaytestKeyboard({
+    isActive: previewMode === "playtest" && playtestState !== null,
+    canRollback: playtestState?.can_rollback ?? false,
+    isEnded: playtestState?.is_ended ?? false,
+    hasChoices: playtestChoiceCount > 0,
+    choiceCount: playtestChoiceCount,
+    onAdvance: () => void playtestAdvance(),
+    onRollback: () => void playtestRollback(),
+    onSelectChoice: (index) => void playtestSelectChoice(index),
+    onRestart: () => void playtestRestart(),
+    onToggleAutoMode: playtestToggleAutoMode,
+    onToggleSkipMode: playtestToggleSkipMode,
+    onSave: () => void playtestSave(),
+    onLoad: () => void playtestLoad(),
+  });
 
   // Sync: when preview navigates, update editor selection
   const handlePreviewGoto = useCallback(
@@ -569,20 +635,75 @@ const App: React.FC = () => {
 
         {/* Right Panel: Preview + Validation */}
         <div className="panel panel-right">
-          <PreviewPanel
-            state={previewState}
-            backgroundUrl={backgroundUrl}
-            characterUrl={characterUrl}
-            language={previewLanguage}
-            onLanguageChange={setPreviewLanguage}
-            onPrev={previewPrev}
-            onNext={previewNext}
-            onGoto={handlePreviewGoto}
-          />
+          <div className="preview-mode-toggle">
+            <button
+              className={previewMode === "preview" ? "active" : ""}
+              onClick={() => previewMode !== "preview" && void handleTogglePreviewMode()}
+            >
+              Preview
+            </button>
+            <button
+              className={previewMode === "playtest" ? "active" : ""}
+              onClick={() => previewMode !== "playtest" && void handleTogglePreviewMode()}
+              disabled={!scenario}
+            >
+              Playtest
+            </button>
+          </div>
+          {previewMode === "preview" ? (
+            <PreviewPanel
+              mode="preview"
+              state={previewState}
+              backgroundUrl={backgroundUrl}
+              characterUrl={characterUrl}
+              baseDir={baseDir}
+              language={previewLanguage}
+              onLanguageChange={setPreviewLanguage}
+              onPrev={previewPrev}
+              onNext={previewNext}
+              onGoto={handlePreviewGoto}
+            />
+          ) : (
+            <>
+              <PreviewPanel
+                mode="playtest"
+                state={playtestState}
+                backgroundUrl={playtestBackgroundUrl}
+                characterUrl={playtestCharacterUrl}
+                assetErrors={playtestAssetErrors}
+                baseDir={baseDir}
+                language={playtestLanguage}
+                isAutoMode={playtestIsAutoMode}
+                isSkipMode={playtestIsSkipMode}
+                onLanguageChange={(lang) => void setPlaytestLanguage(lang)}
+                onAdvance={() => void playtestAdvance()}
+                onSelectChoice={(index) => void playtestSelectChoice(index)}
+                onRollback={() => void playtestRollback()}
+                onRestart={() => void playtestRestart()}
+                onSubmitInput={(value) => void playtestSubmitInput(value)}
+                onToggleAutoMode={playtestToggleAutoMode}
+                onToggleSkipMode={playtestToggleSkipMode}
+              />
+              <PlaytestDebugPanel
+                state={playtestState}
+                onJumpToLabel={(label) => void playtestJumpToLabel(label)}
+                onSetVariable={(name, value) => void playtestSetVariable(name, value)}
+                onRollbackToIndex={(steps) => void playtestRollbackSteps(steps)}
+              />
+            </>
+          )}
           <VariableWatcher
             scenario={scenario}
-            variables={previewState?.variables || {}}
-            currentIndex={previewState?.command_index || 0}
+            variables={
+              previewMode === "playtest" && playtestState
+                ? (playtestState.variables as Record<string, string>)
+                : previewState?.variables || {}
+            }
+            currentIndex={
+              previewMode === "playtest" && playtestState
+                ? playtestState.command_index
+                : previewState?.command_index || 0
+            }
           />
           <StoryPathAnalyzer
             scenario={scenario}

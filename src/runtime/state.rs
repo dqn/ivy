@@ -310,6 +310,27 @@ impl GameState {
         }
     }
 
+    /// Submit input value and advance to the next command.
+    pub fn submit_input(&mut self, value: String) {
+        if self.current_index >= self.scenario.script.len() {
+            return;
+        }
+
+        // Get the variable name from the input command
+        let var_name = self.scenario.script[self.current_index]
+            .input
+            .as_ref()
+            .map(|input| input.var.clone());
+
+        // Set the variable if this is an input command
+        if let Some(name) = var_name {
+            self.variables.set(name, crate::types::Value::String(value));
+        }
+
+        // Advance to the next command
+        self.advance();
+    }
+
     /// Jump to a labeled command (public wrapper).
     pub fn jump_to_label(&mut self, label: &str) {
         self.jump_to(label);

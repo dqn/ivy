@@ -168,3 +168,573 @@
   background: #2a2a3e;
   color: white;
 }
+
+/* Playtest Mode */
+.preview-panel.playtest .choice-button {
+  cursor: pointer;
+  opacity: 1;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.preview-panel.playtest .choice-button:hover:not(:disabled) {
+  background: rgba(74, 74, 106, 0.8);
+  border-color: #6a6a8a;
+}
+
+.preview-panel.playtest .choice-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Playtest Controls */
+.playtest-controls {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 8px 15px;
+  border-radius: 8px;
+}
+
+.playtest-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.playtest-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.playtest-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.playtest-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.playtest-button.advance {
+  background: rgba(74, 106, 74, 0.6);
+  border-color: rgba(74, 206, 74, 0.4);
+}
+
+.playtest-button.advance:hover:not(:disabled) {
+  background: rgba(74, 156, 74, 0.7);
+}
+
+.playtest-button.rollback {
+  background: rgba(106, 74, 74, 0.6);
+  border-color: rgba(206, 74, 74, 0.4);
+}
+
+.playtest-button.rollback:hover:not(:disabled) {
+  background: rgba(156, 74, 74, 0.7);
+}
+
+.playtest-history-count {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+}
+
+.playtest-shortcuts-hint {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 9px;
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* Playtest Ended Overlay */
+.playtest-ended-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.playtest-ended-overlay p {
+  color: white;
+  font-size: 18px;
+}
+
+.playtest-ended-overlay button {
+  background: rgba(74, 106, 74, 0.8);
+  border: 1px solid rgba(74, 206, 74, 0.4);
+  color: white;
+  padding: 10px 25px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.playtest-ended-overlay button:hover {
+  background: rgba(74, 156, 74, 0.9);
+}
+
+/* Input Form */
+.input-form-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.input-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(26, 26, 46, 0.95);
+  border: 2px solid #4a4a6a;
+  border-radius: 8px;
+  padding: 20px 30px;
+  min-width: 280px;
+}
+
+.input-form-prompt {
+  color: white;
+  font-size: 14px;
+  text-align: center;
+}
+
+.input-form-field {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  color: white;
+  font-size: 14px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.input-form-field:focus {
+  border-color: rgba(255, 215, 0, 0.6);
+}
+
+.input-form-submit {
+  background: rgba(74, 106, 74, 0.8);
+  border: 1px solid rgba(74, 206, 74, 0.4);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.input-form-submit:hover {
+  background: rgba(74, 156, 74, 0.9);
+}
+
+/* Wait Overlay */
+.wait-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.wait-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: rgba(26, 26, 46, 0.95);
+  border: 2px solid #4a4a6a;
+  border-radius: 8px;
+  padding: 20px 30px;
+  min-width: 200px;
+}
+
+.wait-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.wait-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.wait-time {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+.wait-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.wait-progress-fill {
+  height: 100%;
+  background: rgba(74, 206, 74, 0.8);
+  border-radius: 3px;
+  transition: width 0.05s linear;
+}
+
+.wait-skip-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.wait-skip-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Video Player */
+.video-player-overlay {
+  position: absolute;
+  inset: 0;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+}
+
+.video-player {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.video-skip-button,
+.video-continue-button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.video-skip-button:hover,
+.video-continue-button:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.video-loading {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.video-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 100, 100, 0.9);
+  font-size: 14px;
+}
+
+.video-error button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Choice Timeout */
+.choice-timeout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  width: 200px;
+}
+
+.choice-timeout-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.choice-timeout-fill {
+  height: 100%;
+  background: rgba(255, 215, 0, 0.8);
+  border-radius: 2px;
+  transition: width 0.05s linear;
+}
+
+.choice-timeout-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.choice-button.default-choice {
+  border-color: rgba(255, 215, 0, 0.6);
+}
+
+.default-indicator {
+  margin-left: 4px;
+  color: rgba(255, 215, 0, 0.8);
+  font-size: 12px;
+}
+
+/* Mode Toggle Buttons */
+.playtest-button.mode-toggle {
+  background: rgba(100, 100, 120, 0.4);
+  border-color: rgba(150, 150, 170, 0.3);
+}
+
+.playtest-button.mode-toggle:hover:not(:disabled) {
+  background: rgba(100, 100, 120, 0.6);
+}
+
+.playtest-button.mode-toggle.active {
+  background: rgba(255, 215, 0, 0.3);
+  border-color: rgba(255, 215, 0, 0.5);
+  color: rgba(255, 215, 0, 0.9);
+}
+
+.playtest-button.mode-toggle.active:hover {
+  background: rgba(255, 215, 0, 0.4);
+}
+
+/* Asset Error Badges */
+.asset-error-badge {
+  position: absolute;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 20;
+  cursor: help;
+}
+
+.asset-error-badge.background-error {
+  top: 10px;
+  left: 10px;
+}
+
+.asset-error-badge.character-error {
+  top: 10px;
+  right: 10px;
+}
+
+/* Typewriter Effect */
+.text-box.typing {
+  cursor: pointer;
+}
+
+.typing-cursor {
+  display: inline-block;
+  animation: blink 0.7s infinite;
+  color: rgba(255, 215, 0, 0.8);
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Transition Overlay */
+.transition-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.transition-label {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+/* Blinds transition */
+.blinds-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.blind-strip {
+  flex: 1;
+  background: black;
+  animation: blind-close 0.5s ease-out forwards;
+}
+
+@keyframes blind-close {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Fade transition */
+@keyframes transition-fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Dissolve transition */
+@keyframes transition-dissolve {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  50% {
+    opacity: 0.8;
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(0);
+  }
+}
+
+/* Wipe transitions */
+@keyframes transition-wipe-lefttoright {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes transition-wipe-righttoleft {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+@keyframes transition-wipe-toptobottom {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(100% 0 0 0);
+  }
+}
+
+@keyframes transition-wipe-bottomtotop {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+/* Slide transitions */
+@keyframes transition-slide-lefttoright {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes transition-slide-righttoleft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* Pixelate transition */
+@keyframes transition-pixelate {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  50% {
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(0);
+  }
+}
+
+/* Iris transition */
+@keyframes transition-iris {
+  from {
+    clip-path: circle(0% at 50% 50%);
+  }
+  to {
+    clip-path: circle(100% at 50% 50%);
+  }
+}
