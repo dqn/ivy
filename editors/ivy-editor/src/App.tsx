@@ -18,6 +18,7 @@ import { TranslationTable } from "./components/TranslationTable";
 import { VariableWatcher } from "./components/VariableWatcher";
 import { StoryPathAnalyzer } from "./components/StoryPathAnalyzer";
 import { SaveDataValidator } from "./components/SaveDataValidator";
+import { ExportWizard } from "./components/ExportWizard";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { ProjectWizard } from "./components/ProjectWizard";
 import { ProjectSettings } from "./components/ProjectSettings";
@@ -98,6 +99,7 @@ const App: React.FC = () => {
   const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
   const [showProjectWizard, setShowProjectWizard] = useState(false);
   const [showProjectSettings, setShowProjectSettings] = useState(false);
+  const [showExportWizard, setShowExportWizard] = useState(false);
 
   // Compute base directory for asset loading
   const baseDir = useMemo(() => {
@@ -393,9 +395,14 @@ const App: React.FC = () => {
         </div>
         <div className="header-actions">
           {mode.type === "project" && (
-            <button onClick={() => setShowProjectSettings(true)}>
-              Settings
-            </button>
+            <>
+              <button onClick={() => setShowProjectSettings(true)}>
+                Settings
+              </button>
+              <button onClick={() => setShowExportWizard(true)}>
+                Export
+              </button>
+            </>
           )}
           {mode.type === "standalone" && (
             <>
@@ -751,6 +758,15 @@ const App: React.FC = () => {
           config={project.config}
           onClose={() => setShowProjectSettings(false)}
           onSave={handleSaveProjectConfig}
+        />
+      )}
+
+      {/* Export Wizard Dialog */}
+      {showExportWizard && project && (
+        <ExportWizard
+          projectPath={project.root_path}
+          projectName={project.config.name}
+          onClose={() => setShowExportWizard(false)}
         />
       )}
     </div>

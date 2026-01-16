@@ -88,8 +88,8 @@ pub fn list_save_data(base_dir: &str) -> Result<Vec<SaveDataInfo>, String> {
         return Ok(vec![]);
     }
 
-    let entries = fs::read_dir(&saves_dir)
-        .map_err(|e| format!("Failed to read saves directory: {}", e))?;
+    let entries =
+        fs::read_dir(&saves_dir).map_err(|e| format!("Failed to read saves directory: {}", e))?;
 
     let mut save_files: Vec<SaveDataInfo> = Vec::new();
 
@@ -128,13 +128,11 @@ pub fn list_save_data(base_dir: &str) -> Result<Vec<SaveDataInfo>, String> {
     }
 
     // Sort by slot number first, then by timestamp (newest first)
-    save_files.sort_by(|a, b| {
-        match (a.slot, b.slot) {
-            (Some(slot_a), Some(slot_b)) => slot_a.cmp(&slot_b),
-            (Some(_), None) => std::cmp::Ordering::Less,
-            (None, Some(_)) => std::cmp::Ordering::Greater,
-            (None, None) => b.timestamp.cmp(&a.timestamp),
-        }
+    save_files.sort_by(|a, b| match (a.slot, b.slot) {
+        (Some(slot_a), Some(slot_b)) => slot_a.cmp(&slot_b),
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (None, None) => b.timestamp.cmp(&a.timestamp),
     });
 
     Ok(save_files)
@@ -303,7 +301,10 @@ pub fn validate_save_data(save_path: &str, base_dir: Option<&str>) -> SaveDataVa
             issues.push(ValidationIssue {
                 severity: IssueSeverity::Warning,
                 code: "UNUSED_VARIABLE".to_string(),
-                message: format!("Variable '{}' in save data is not referenced in scenario", var),
+                message: format!(
+                    "Variable '{}' in save data is not referenced in scenario",
+                    var
+                ),
                 details: None,
             });
         }
@@ -315,7 +316,10 @@ pub fn validate_save_data(save_path: &str, base_dir: Option<&str>) -> SaveDataVa
         issues.push(ValidationIssue {
             severity: IssueSeverity::Info,
             code: "UNDEFINED_VARIABLE".to_string(),
-            message: format!("Variable '{}' referenced in scenario but not in save data", var),
+            message: format!(
+                "Variable '{}' referenced in scenario but not in save data",
+                var
+            ),
             details: Some("This variable may be set after the current position".to_string()),
         });
     }

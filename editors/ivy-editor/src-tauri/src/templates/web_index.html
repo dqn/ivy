@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ivy Visual Novel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 1920px;
+            aspect-ratio: 16 / 9;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-family: sans-serif;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        #loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top-color: #fff;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #loading.hidden {
+            display: none;
+        }
+
+        #error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #f44;
+            font-family: monospace;
+            font-size: 14px;
+            text-align: center;
+            max-width: 80%;
+            display: none;
+        }
+
+        #error.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="loading">
+            <div class="spinner"></div>
+            <div>Loading...</div>
+        </div>
+        <div id="error"></div>
+        <canvas id="glcanvas"></canvas>
+    </div>
+
+    <script type="module">
+        import init from './pkg/ivy.js';
+
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+
+        async function run() {
+            try {
+                await init();
+                loading.classList.add('hidden');
+            } catch (e) {
+                loading.classList.add('hidden');
+                error.classList.add('visible');
+                error.textContent = 'Failed to load: ' + e.message;
+                console.error('Failed to initialize:', e);
+            }
+        }
+
+        run();
+    </script>
+</body>
+</html>

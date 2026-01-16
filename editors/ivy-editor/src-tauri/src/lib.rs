@@ -54,6 +54,9 @@ pub fn run() {
             commands::scenario::create_empty_scenario,
             commands::savedata::list_save_data,
             commands::savedata::validate_save_data,
+            commands::export::check_build_environment,
+            commands::export::start_export,
+            commands::export::cancel_export,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
