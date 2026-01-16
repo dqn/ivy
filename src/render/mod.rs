@@ -82,7 +82,7 @@ pub use text::{
 pub use ui::{ChoiceButtonConfig, ChoiceNavState, InputSource, draw_choices_with_timer};
 
 // Visual Effects
-pub use camera::{calculate_camera_transform, pop_camera_transform, push_camera_transform};
+pub use camera::{CameraTransform, calculate_camera_transform, pop_camera_transform, push_camera_transform};
 pub use character::{CharAnimationState, CharIdleState, draw_character_animated};
 pub use cinematic::CinematicState;
 pub use image::draw_background_with_offset;

@@ -53,6 +53,28 @@ pub enum ChoiceNavAction {
     MouseMoved,
 }
 
+/// Captured input state for a single frame.
+/// This struct holds the results of input detection, allowing the InputDetector
+/// to be dropped before the results are used.
+#[derive(Debug, Clone, Default)]
+pub struct DetectedInput {
+    /// Actions triggered this frame
+    pub actions: Vec<PlayerAction>,
+    /// Whether advance was pressed
+    pub advance_pressed: bool,
+    /// Whether skip should be active (Ctrl held)
+    pub ctrl_held: bool,
+    /// Choice navigation action (if any)
+    pub choice_nav: Option<ChoiceNavAction>,
+}
+
+impl DetectedInput {
+    /// Check if skip mode should be active.
+    pub fn is_skip_active(&self, skip_mode: bool) -> bool {
+        skip_mode || self.ctrl_held
+    }
+}
+
 /// Input detection context.
 pub struct InputDetector<'a> {
     pub keybinds: &'a KeyBindings,
@@ -62,6 +84,16 @@ pub struct InputDetector<'a> {
 impl<'a> InputDetector<'a> {
     pub fn new(keybinds: &'a KeyBindings, gamepad: &'a GamepadState) -> Self {
         Self { keybinds, gamepad }
+    }
+
+    /// Capture all input for this frame into a DetectedInput struct.
+    pub fn capture(&self, last_mouse_pos: (f32, f32), stick_debounce: f32) -> DetectedInput {
+        DetectedInput {
+            actions: self.detect_actions(),
+            advance_pressed: self.is_advance_pressed(),
+            ctrl_held: is_key_down(KeyCode::LeftControl) || is_key_down(KeyCode::RightControl),
+            choice_nav: self.detect_choice_nav(last_mouse_pos, stick_debounce),
+        }
     }
 
     /// Check if advance action is triggered (click, enter, gamepad A).
