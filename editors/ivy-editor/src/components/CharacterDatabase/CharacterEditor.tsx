@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { LayerEditor } from "./LayerEditor";
 import { CharacterPreview } from "./CharacterPreview";
+import { useToast } from "../Toast";
 import type { CharacterDef } from "../../types/character";
 import type { LayerDef } from "../../types/scenario";
 
@@ -27,6 +28,7 @@ export const CharacterEditor: React.FC<Props> = ({
   onRemoveLayer,
   onReorderLayers,
 }) => {
+  const { showToast } = useToast();
   const [newAlias, setNewAlias] = useState("");
   const [previewVariants, setPreviewVariants] = useState<Record<string, number>>(
     {}
@@ -76,13 +78,13 @@ export const CharacterEditor: React.FC<Props> = ({
 
     const currentAliases = character.aliases ?? [];
     if (currentAliases.includes(alias)) {
-      alert("This alias already exists");
+      showToast("This alias already exists", "warning");
       return;
     }
 
     onChange({ ...character, aliases: [...currentAliases, alias] });
     setNewAlias("");
-  }, [newAlias, character, onChange]);
+  }, [newAlias, character, onChange, showToast]);
 
   const handleRemoveAlias = useCallback(
     (index: number) => {
