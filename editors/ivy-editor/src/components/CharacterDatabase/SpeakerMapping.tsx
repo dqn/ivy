@@ -20,7 +20,7 @@ export const SpeakerMapping: React.FC<Props> = ({
   onSelectCharacter,
 }) => {
   const speakerInfos = useMemo((): SpeakerInfo[] => {
-    if (!scenario) return [];
+    if (!scenario) {return [];}
 
     // Extract all speakers from scenario
     const speakerCounts = new Map<string, number>();
@@ -61,8 +61,8 @@ export const SpeakerMapping: React.FC<Props> = ({
 
     // Sort: unmapped first, then by usage count
     infos.sort((a, b) => {
-      if (a.mappedCharacter === null && b.mappedCharacter !== null) return -1;
-      if (a.mappedCharacter !== null && b.mappedCharacter === null) return 1;
+      if (a.mappedCharacter === null && b.mappedCharacter !== null) {return -1;}
+      if (a.mappedCharacter !== null && b.mappedCharacter === null) {return 1;}
       return b.usageCount - a.usageCount;
     });
 

@@ -28,7 +28,7 @@ interface UseProjectReturn {
   closeProject: () => void;
 
   // Config operations
-  updateConfig: (config: ProjectConfig) => Promise<void>;
+  updateConfig: (config: ProjectConfig) => void;
 
   // Scenario operations
   setActiveScenario: (path: string) => void;
@@ -94,7 +94,7 @@ export function useProject(options: UseProjectOptions = {}): UseProjectReturn {
   }, []);
 
   const saveProject = useCallback(async () => {
-    if (!project) return;
+    if (!project) {return;}
 
     const result = await invokeCommandSafe("save_project", {
       rootPath: project.root_path,
@@ -112,8 +112,8 @@ export function useProject(options: UseProjectOptions = {}): UseProjectReturn {
   }, []);
 
   const updateConfig = useCallback(
-    async (config: ProjectConfig) => {
-      if (!project) return;
+    (config: ProjectConfig) => {
+      if (!project) {return;}
 
       const updatedProject = { ...project, config };
       setProject(updatedProject);
@@ -128,7 +128,7 @@ export function useProject(options: UseProjectOptions = {}): UseProjectReturn {
 
   const addScenario = useCallback(
     async (scenarioPath: string, chapterName?: string) => {
-      if (!project) return;
+      if (!project) {return;}
 
       const updatedConfig = await invokeCommand<ProjectConfig>(
         "add_scenario_to_project",
@@ -145,7 +145,7 @@ export function useProject(options: UseProjectOptions = {}): UseProjectReturn {
 
   const removeScenario = useCallback(
     async (scenarioPath: string) => {
-      if (!project) return;
+      if (!project) {return;}
 
       const updatedConfig = await invokeCommand<ProjectConfig>(
         "remove_scenario_from_project",

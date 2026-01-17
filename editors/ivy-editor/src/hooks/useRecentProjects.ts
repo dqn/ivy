@@ -8,7 +8,7 @@ function loadRecentProjects(): RecentProject[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      return JSON.parse(stored) as RecentProject[];
     }
   } catch (e) {
     console.error("Failed to load recent projects:", e);

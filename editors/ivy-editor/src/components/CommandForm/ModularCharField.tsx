@@ -22,7 +22,7 @@ export const ModularCharField: React.FC<Props> = ({
   }, [characterDatabase]);
 
   const selectedCharDef: CharacterDef | null = useMemo(() => {
-    if (!value?.name) return null;
+    if (!value?.name) {return null;}
     return characterDatabase.characters[value.name] ?? null;
   }, [value?.name, characterDatabase]);
 
@@ -52,7 +52,7 @@ export const ModularCharField: React.FC<Props> = ({
 
   const handleVariantChange = useCallback(
     (layerName: string, variantIndex: number) => {
-      if (!value) return;
+      if (!value) {return;}
 
       const updated: ModularCharRef = {
         ...value,

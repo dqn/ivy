@@ -40,7 +40,7 @@ export const PlaytestDebugPanel: React.FC<Props> = ({
   };
 
   const handleVariableSave = () => {
-    if (!editingVar) return;
+    if (!editingVar) {return;}
 
     // Try to parse the value
     let value: Value;

@@ -34,7 +34,7 @@ export function usePlaytestKeyboard({
 }: UsePlaytestKeyboardProps) {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      if (!isActive) return;
+      if (!isActive) {return;}
 
       // Don't handle if user is typing in an input field
       const target = event.target;
@@ -50,7 +50,7 @@ export function usePlaytestKeyboard({
       }
 
       const action = getActionForKey(event);
-      if (!action) return;
+      if (!action) {return;}
 
       switch (action) {
         case "advance_or_select_first":

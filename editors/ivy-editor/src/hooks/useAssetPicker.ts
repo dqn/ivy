@@ -15,7 +15,7 @@ export function useAssetPicker({
 }: UseAssetPickerOptions) {
   const getRelativePath = useCallback(
     async (filePath: string): Promise<string> => {
-      if (!baseDir) return filePath;
+      if (!baseDir) {return filePath;}
 
       const result = await invokeCommandSafe<string>("get_relative_path", {
         baseDir,
@@ -32,7 +32,7 @@ export function useAssetPicker({
       e.stopPropagation();
 
       const files = e.dataTransfer.files;
-      if (files.length === 0) return;
+      if (files.length === 0) {return;}
 
       const file = files[0];
       const filePath =

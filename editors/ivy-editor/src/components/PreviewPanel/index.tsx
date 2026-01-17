@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { PreviewState } from "../../types/preview";
-import type { PlaytestState, InputDisplay, WaitDisplay, VideoDisplay } from "../../types/playtest";
+import type { PlaytestState } from "../../types/playtest";
 import type { AssetError } from "../../hooks/usePlaytest";
 import { SceneView } from "./SceneView";
 import { TextBox } from "./TextBox";
@@ -186,15 +186,15 @@ export const PreviewPanel: React.FC<Props> = (props) => {
 
       {mode === "playtest" && state.display.type === "input" && (
         <InputForm
-          prompt={(state.display as InputDisplay).prompt}
-          defaultValue={(state.display as InputDisplay).default_value}
+          prompt={(state.display).prompt}
+          defaultValue={(state.display).default_value}
           onSubmit={props.onSubmitInput}
         />
       )}
 
       {mode === "playtest" && state.display.type === "wait" && (
         <WaitOverlay
-          duration={(state.display as WaitDisplay).duration}
+          duration={(state.display).duration}
           onComplete={props.onAdvance}
           onSkip={props.onAdvance}
         />
@@ -202,10 +202,10 @@ export const PreviewPanel: React.FC<Props> = (props) => {
 
       {mode === "playtest" && state.display.type === "video" && (
         <VideoPlayer
-          path={(state.display as VideoDisplay).path}
+          path={(state.display).path}
           baseDir={baseDir}
-          skippable={(state.display as VideoDisplay).skippable}
-          loopVideo={(state.display as VideoDisplay).loop_video}
+          skippable={(state.display).skippable}
+          loopVideo={(state.display).loop_video}
           onComplete={props.onAdvance}
         />
       )}

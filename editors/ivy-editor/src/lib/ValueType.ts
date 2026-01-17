@@ -4,9 +4,9 @@ export type ValueType = "string" | "number" | "boolean";
 
 export const ValueTypeUtils = {
   detect(value: Value | undefined): ValueType {
-    if (value === undefined) return "string";
-    if (typeof value === "boolean") return "boolean";
-    if (typeof value === "number") return "number";
+    if (value === undefined) {return "string";}
+    if (typeof value === "boolean") {return "boolean";}
+    if (typeof value === "number") {return "number";}
     return "string";
   },
 
@@ -22,7 +22,7 @@ export const ValueTypeUtils = {
   },
 
   toString(value: Value | undefined): string {
-    if (value === undefined) return "";
+    if (value === undefined) {return "";}
     return String(value);
   },
 } as const;

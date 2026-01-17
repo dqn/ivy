@@ -99,7 +99,7 @@ export function usePreview(
 
   const goto = useCallback(
     (newIndex: number) => {
-      if (!state) return;
+      if (!state) {return;}
       const clamped = Math.max(0, Math.min(newIndex, state.total_commands - 1));
       setIndex(clamped);
     },

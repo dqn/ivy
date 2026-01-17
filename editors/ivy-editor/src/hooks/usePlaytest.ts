@@ -57,7 +57,7 @@ export function usePlaytest(
 
   // Extract background and character from display state
   const getVisualState = useCallback(() => {
-    if (!state) return { background: null, character: null };
+    if (!state) {return { background: null, character: null };}
 
     const display = state.display;
     if (
@@ -166,7 +166,7 @@ export function usePlaytest(
   }, []);
 
   const advance = useCallback(async () => {
-    if (!isActive) return;
+    if (!isActive) {return;}
 
     try {
       const newState = await invoke<PlaytestState>("playtest_advance");
@@ -178,7 +178,7 @@ export function usePlaytest(
 
   const selectChoice = useCallback(
     async (choiceIndex: number) => {
-      if (!isActive) return;
+      if (!isActive) {return;}
 
       try {
         const newState = await invoke<PlaytestState>("playtest_select_choice", {
@@ -193,7 +193,7 @@ export function usePlaytest(
   );
 
   const rollback = useCallback(async () => {
-    if (!isActive) return;
+    if (!isActive) {return;}
 
     try {
       const newState = await invoke<PlaytestState>("playtest_rollback");
@@ -205,7 +205,7 @@ export function usePlaytest(
 
   const rollbackSteps = useCallback(
     async (steps: number) => {
-      if (!isActive || steps <= 0) return;
+      if (!isActive || steps <= 0) {return;}
 
       try {
         let newState: PlaytestState | null = null;
@@ -224,7 +224,7 @@ export function usePlaytest(
 
   const jumpToLabel = useCallback(
     async (label: string) => {
-      if (!isActive) return;
+      if (!isActive) {return;}
 
       try {
         const newState = await invoke<PlaytestState>("playtest_jump_to_label", {
@@ -240,7 +240,7 @@ export function usePlaytest(
 
   const setVariable = useCallback(
     async (name: string, value: Value) => {
-      if (!isActive) return;
+      if (!isActive) {return;}
 
       try {
         const newState = await invoke<PlaytestState>("playtest_set_variable", {
@@ -256,7 +256,7 @@ export function usePlaytest(
   );
 
   const restart = useCallback(async () => {
-    if (!isActive) return;
+    if (!isActive) {return;}
 
     try {
       const newState = await invoke<PlaytestState>("playtest_restart");
@@ -267,7 +267,7 @@ export function usePlaytest(
   }, [isActive]);
 
   const reloadScenario = useCallback(async () => {
-    if (!isActive || !scenario) return;
+    if (!isActive || !scenario) {return;}
 
     try {
       const newState = await invoke<PlaytestState>(
@@ -301,7 +301,7 @@ export function usePlaytest(
 
   const submitInput = useCallback(
     async (value: string) => {
-      if (!isActive) return;
+      if (!isActive) {return;}
 
       try {
         const newState = await invoke<PlaytestState>("playtest_submit_input", {
@@ -335,7 +335,7 @@ export function usePlaytest(
 
   const save = useCallback(
     async (slot: number = 1) => {
-      if (!isActive) return;
+      if (!isActive) {return;}
 
       try {
         await invoke("playtest_save", { slot });
@@ -348,7 +348,7 @@ export function usePlaytest(
 
   const load = useCallback(
     async (slot: number = 1) => {
-      if (!isActive) return;
+      if (!isActive) {return;}
 
       try {
         const newState = await invoke<PlaytestState>("playtest_load", { slot });
@@ -362,7 +362,7 @@ export function usePlaytest(
 
   // Auto mode effect
   useEffect(() => {
-    if (!isActive || !isAutoMode || !state) return;
+    if (!isActive || !isAutoMode || !state) {return;}
 
     const displayType = state.display.type;
 
@@ -386,7 +386,7 @@ export function usePlaytest(
 
   // Skip mode effect
   useEffect(() => {
-    if (!isActive || !isSkipMode || !state) return;
+    if (!isActive || !isSkipMode || !state) {return;}
 
     const displayType = state.display.type;
 

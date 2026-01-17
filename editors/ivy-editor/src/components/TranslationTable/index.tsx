@@ -30,13 +30,13 @@ function isLocalizedMap(value: LocalizedString | undefined): value is Record<str
 }
 
 function getSimpleValue(value: LocalizedString | undefined): string {
-  if (!value) return "";
-  if (typeof value === "string") return value;
+  if (!value) {return "";}
+  if (typeof value === "string") {return value;}
   return Object.values(value)[0] || "";
 }
 
 function getLocalizedValue(value: LocalizedString | undefined, lang: string): string {
-  if (!value) return "";
+  if (!value) {return "";}
   if (typeof value === "string") {
     return lang === "en" ? value : "";
   }
@@ -61,22 +61,26 @@ function setLocalizedValue(
       ? { en: original }
       : {};
 
+  const updated: Record<string, string> = {};
+  Object.keys(map).forEach((key) => {
+    if (key !== lang) {
+      updated[key] = map[key];
+    }
+  });
   if (newValue) {
-    map[lang] = newValue;
-  } else {
-    delete map[lang];
+    updated[lang] = newValue;
   }
 
   // If only one entry and it's "en", convert back to simple string
-  const keys = Object.keys(map);
+  const keys = Object.keys(updated);
   if (keys.length === 0) {
     return undefined;
   }
   if (keys.length === 1 && keys[0] === "en") {
-    return map.en;
+    return updated.en;
   }
 
-  return map;
+  return updated;
 }
 
 export const TranslationTable: React.FC<TranslationTableProps> = ({
@@ -90,7 +94,7 @@ export const TranslationTable: React.FC<TranslationTableProps> = ({
 
   // Extract all translatable strings
   const entries = useMemo<TranslationEntry[]>(() => {
-    if (!scenario) return [];
+    if (!scenario) {return [];}
 
     const result: TranslationEntry[] = [];
 
@@ -166,7 +170,7 @@ export const TranslationTable: React.FC<TranslationTableProps> = ({
     lang: string,
     newValue: string
   ) => {
-    if (!scenario) return;
+    if (!scenario) {return;}
 
     const cmd = scenario.script[entry.commandIndex];
     const updatedValue = setLocalizedValue(entry.value, lang, newValue, selectedLanguages);

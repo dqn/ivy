@@ -45,7 +45,7 @@ export const LayerEditor: React.FC<Props> = ({
       multiple: true,
     });
 
-    if (!paths) return;
+    if (!paths) {return;}
 
     const pathArray = Array.isArray(paths) ? paths : [paths];
     const newImages = [...layer.images];
@@ -55,14 +55,14 @@ export const LayerEditor: React.FC<Props> = ({
         try {
           const relativePath = await invoke<string>("get_relative_path", {
             baseDir,
-            filePath: path as string,
+            filePath: path,
           });
           newImages.push(relativePath);
         } catch {
-          newImages.push(path as string);
+          newImages.push(path);
         }
       } else {
-        newImages.push(path as string);
+        newImages.push(path);
       }
     }
 
@@ -95,7 +95,7 @@ export const LayerEditor: React.FC<Props> = ({
             onChange={(e) => setTempName(e.target.value)}
             onBlur={handleNameSave}
             onKeyDown={(e) => {
-              if (e.key === "Enter") handleNameSave();
+              if (e.key === "Enter") {handleNameSave();}
               if (e.key === "Escape") {
                 setTempName(layer.name);
                 setEditingName(false);

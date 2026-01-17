@@ -28,14 +28,14 @@ function isLocalizedMap(value: LocalizedString | undefined): value is Record<str
 }
 
 function getSimpleValue(value: LocalizedString | undefined): string {
-  if (!value) return "";
-  if (typeof value === "string") return value;
+  if (!value) {return "";}
+  if (typeof value === "string") {return value;}
   return Object.values(value)[0] || "";
 }
 
 function getLocalizedMap(value: LocalizedString | undefined): Record<string, string> {
-  if (!value) return {};
-  if (typeof value === "string") return { en: value };
+  if (!value) {return {};}
+  if (typeof value === "string") {return { en: value };}
   return value;
 }
 
@@ -79,16 +79,17 @@ export const LocalizedStringEditor: React.FC<LocalizedStringEditorProps> = ({
     const updated = { ...currentMap, [langCode]: newValue };
 
     // Remove empty entries
+    const filtered: Record<string, string> = {};
     Object.keys(updated).forEach((key) => {
-      if (!updated[key]) {
-        delete updated[key];
+      if (updated[key]) {
+        filtered[key] = updated[key];
       }
     });
 
-    if (Object.keys(updated).length === 0) {
+    if (Object.keys(filtered).length === 0) {
       onChange(undefined);
     } else {
-      onChange(updated);
+      onChange(filtered);
     }
   };
 
@@ -99,18 +100,22 @@ export const LocalizedStringEditor: React.FC<LocalizedStringEditorProps> = ({
   };
 
   const removeLanguage = (langCode: string) => {
-    if (languages.length <= 1) return;
+    if (languages.length <= 1) {return;}
 
     setLanguages(languages.filter((l) => l !== langCode));
 
     const currentMap = getLocalizedMap(value);
-    const updated = { ...currentMap };
-    delete updated[langCode];
+    const filtered: Record<string, string> = {};
+    Object.keys(currentMap).forEach((key) => {
+      if (key !== langCode) {
+        filtered[key] = currentMap[key];
+      }
+    });
 
-    if (Object.keys(updated).length === 0) {
+    if (Object.keys(filtered).length === 0) {
       onChange(undefined);
     } else {
-      onChange(updated);
+      onChange(filtered);
     }
   };
 

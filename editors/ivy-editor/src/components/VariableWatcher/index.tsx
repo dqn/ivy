@@ -25,7 +25,7 @@ export const VariableWatcher: React.FC<VariableWatcherProps> = ({
 
   // Analyze variable usage in scenario
   const variableInfo = useMemo<VariableInfo[]>(() => {
-    if (!scenario) return [];
+    if (!scenario) {return [];}
 
     const info: Map<string, VariableInfo> = new Map();
 
@@ -91,7 +91,7 @@ export const VariableWatcher: React.FC<VariableWatcherProps> = ({
   }, [scenario, variables]);
 
   const filteredVariables = useMemo(() => {
-    if (!filter) return variableInfo;
+    if (!filter) {return variableInfo;}
     const lowerFilter = filter.toLowerCase();
     return variableInfo.filter(
       (v) =>

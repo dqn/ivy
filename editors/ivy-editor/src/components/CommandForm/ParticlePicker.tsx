@@ -131,10 +131,10 @@ export const ParticlePicker: React.FC<ParticlePickerProps> = ({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !particleType) return;
+    if (!canvas || !particleType) {return;}
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {return;}
 
     const width = canvas.width;
     const height = canvas.height;

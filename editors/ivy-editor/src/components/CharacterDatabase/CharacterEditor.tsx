@@ -42,7 +42,7 @@ export const CharacterEditor: React.FC<Props> = ({
   );
 
   const handleBaseChange = useCallback(
-    async (path: string | undefined) => {
+    (path: string | undefined) => {
       onChange({ ...character, base: path ?? "" });
     },
     [character, onChange]
@@ -61,20 +61,20 @@ export const CharacterEditor: React.FC<Props> = ({
       try {
         const relativePath = await invoke<string>("get_relative_path", {
           baseDir,
-          filePath: path as string,
+          filePath: path,
         });
-        await handleBaseChange(relativePath);
+        handleBaseChange(relativePath);
       } catch {
-        await handleBaseChange(path as string);
+        handleBaseChange(path);
       }
     } else if (path) {
-      await handleBaseChange(path as string);
+      handleBaseChange(path);
     }
   }, [baseDir, handleBaseChange]);
 
   const handleAddAlias = useCallback(() => {
     const alias = newAlias.trim();
-    if (!alias) return;
+    if (!alias) {return;}
 
     const currentAliases = character.aliases ?? [];
     if (currentAliases.includes(alias)) {
@@ -112,12 +112,12 @@ export const CharacterEditor: React.FC<Props> = ({
           <input
             type="text"
             value={character.base}
-            onChange={(e) => void handleBaseChange(e.target.value || undefined)}
+            onChange={(e) => { handleBaseChange(e.target.value || undefined); }}
             placeholder="assets/characters/base.png"
           />
-          <button onClick={() => void handleBrowseBase()}>Browse</button>
+          <button onClick={() => { void handleBrowseBase(); }}>Browse</button>
           {character.base && (
-            <button onClick={() => void handleBaseChange(undefined)}>Clear</button>
+            <button onClick={() => { handleBaseChange(undefined); }}>Clear</button>
           )}
         </div>
       </div>

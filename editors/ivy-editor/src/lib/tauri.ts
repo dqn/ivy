@@ -21,7 +21,8 @@ export async function invokeCommand<T>(
     if (!options?.silent) {
       console.error(`Failed to invoke ${command}:`, e);
     }
-    options?.showToast?.(`Failed: ${e}`, "error");
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    options?.showToast?.(`Failed: ${errorMessage}`, "error");
     throw e;
   }
 }
@@ -37,7 +38,8 @@ export async function invokeCommandSafe<T>(
     if (!options?.silent) {
       console.error(`Failed to invoke ${command}:`, e);
     }
-    options?.showToast?.(`Failed: ${e}`, "error");
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    options?.showToast?.(`Failed: ${errorMessage}`, "error");
     return null;
   }
 }

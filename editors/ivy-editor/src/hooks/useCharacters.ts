@@ -138,13 +138,13 @@ export function useCharacters(): UseCharactersReturn {
 
   const renameCharacter = useCallback(
     (oldName: string, newName: string) => {
-      if (oldName === newName) return;
+      if (oldName === newName) {return;}
       if (database.characters[newName]) {
         throw new Error(`Character '${newName}' already exists`);
       }
 
       const charDef = database.characters[oldName];
-      if (!charDef) return;
+      if (!charDef) {return;}
 
       const { [oldName]: _, ...rest } = database.characters;
       const newDatabase: CharacterDatabase = {
@@ -167,7 +167,7 @@ export function useCharacters(): UseCharactersReturn {
   const addLayer = useCallback(
     (charName: string, layer?: LayerDef) => {
       const charDef = database.characters[charName];
-      if (!charDef) return;
+      if (!charDef) {return;}
 
       const newLayers = [...(charDef.layers ?? []), layer ?? createEmptyLayerDef()];
       updateCharacter(charName, { ...charDef, layers: newLayers });
@@ -178,7 +178,7 @@ export function useCharacters(): UseCharactersReturn {
   const updateLayer = useCallback(
     (charName: string, index: number, layer: LayerDef) => {
       const charDef = database.characters[charName];
-      if (!charDef) return;
+      if (!charDef) {return;}
 
       const newLayers = [...(charDef.layers ?? [])];
       newLayers[index] = layer;
@@ -190,7 +190,7 @@ export function useCharacters(): UseCharactersReturn {
   const removeLayer = useCallback(
     (charName: string, index: number) => {
       const charDef = database.characters[charName];
-      if (!charDef) return;
+      if (!charDef) {return;}
 
       const newLayers = (charDef.layers ?? []).filter((_, i) => i !== index);
       updateCharacter(charName, { ...charDef, layers: newLayers });
@@ -201,8 +201,8 @@ export function useCharacters(): UseCharactersReturn {
   const reorderLayers = useCallback(
     (charName: string, fromIndex: number, toIndex: number) => {
       const charDef = database.characters[charName];
-      if (!charDef) return;
-      if (fromIndex === toIndex) return;
+      if (!charDef) {return;}
+      if (fromIndex === toIndex) {return;}
 
       const newLayers = [...(charDef.layers ?? [])];
       const [removed] = newLayers.splice(fromIndex, 1);
@@ -215,7 +215,7 @@ export function useCharacters(): UseCharactersReturn {
   const addAlias = useCallback(
     (charName: string, alias: string) => {
       const charDef = database.characters[charName];
-      if (!charDef) return;
+      if (!charDef) {return;}
 
       const newAliases = [...(charDef.aliases ?? []), alias];
       updateCharacter(charName, { ...charDef, aliases: newAliases });
@@ -226,7 +226,7 @@ export function useCharacters(): UseCharactersReturn {
   const removeAlias = useCallback(
     (charName: string, aliasIndex: number) => {
       const charDef = database.characters[charName];
-      if (!charDef) return;
+      if (!charDef) {return;}
 
       const newAliases = (charDef.aliases ?? []).filter((_, i) => i !== aliasIndex);
       updateCharacter(charName, { ...charDef, aliases: newAliases });
@@ -237,7 +237,7 @@ export function useCharacters(): UseCharactersReturn {
   const updateAlias = useCallback(
     (charName: string, aliasIndex: number, newAlias: string) => {
       const charDef = database.characters[charName];
-      if (!charDef) return;
+      if (!charDef) {return;}
 
       const newAliases = [...(charDef.aliases ?? [])];
       newAliases[aliasIndex] = newAlias;

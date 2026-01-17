@@ -25,10 +25,10 @@ interface UseScenarioReturn {
 
   // Command operations
   selectCommand: (index: number | null) => void;
-  updateCommand: (index: number, command: Command) => void;
-  addCommand: (afterIndex?: number) => void;
-  removeCommand: (index: number) => void;
-  reorderCommand: (fromIndex: number, toIndex: number) => void;
+  updateCommand: (index: number, command: Command) => Promise<void>;
+  addCommand: (afterIndex?: number) => Promise<void>;
+  removeCommand: (index: number) => Promise<void>;
+  reorderCommand: (fromIndex: number, toIndex: number) => Promise<void>;
 
   // Validation
   validate: () => Promise<void>;
@@ -79,7 +79,7 @@ export function useScenario(options: UseScenarioOptions = {}): UseScenarioReturn
   }, [updateYamlPreview, showToast]);
 
   const saveFile = useCallback(async () => {
-    if (!scenario) return;
+    if (!scenario) {return;}
 
     if (!filePath) {
       await saveFileAs();
@@ -96,7 +96,7 @@ export function useScenario(options: UseScenarioOptions = {}): UseScenarioReturn
   }, [scenario, filePath, showToast]);
 
   const saveFileAs = useCallback(async () => {
-    if (!scenario) return;
+    if (!scenario) {return;}
 
     const selected = await save({
       filters: [{ name: "Scenario", extensions: ["yaml", "yml"] }],
@@ -136,7 +136,7 @@ export function useScenario(options: UseScenarioOptions = {}): UseScenarioReturn
 
   const updateCommand = useCallback(
     async (index: number, command: Command) => {
-      if (!scenario) return;
+      if (!scenario) {return;}
 
       const newScript = [...scenario.script];
       newScript[index] = command;
@@ -150,7 +150,7 @@ export function useScenario(options: UseScenarioOptions = {}): UseScenarioReturn
 
   const addCommand = useCallback(
     async (afterIndex?: number) => {
-      if (!scenario) return;
+      if (!scenario) {return;}
 
       const newCommand = createEmptyCommand();
       const newScript = [...scenario.script];
@@ -173,7 +173,7 @@ export function useScenario(options: UseScenarioOptions = {}): UseScenarioReturn
 
   const removeCommand = useCallback(
     async (index: number) => {
-      if (!scenario) return;
+      if (!scenario) {return;}
 
       const newScript = scenario.script.filter((_, i) => i !== index);
       const newScenario = { ...scenario, script: newScript };
@@ -195,8 +195,8 @@ export function useScenario(options: UseScenarioOptions = {}): UseScenarioReturn
 
   const reorderCommand = useCallback(
     async (fromIndex: number, toIndex: number) => {
-      if (!scenario) return;
-      if (fromIndex === toIndex) return;
+      if (!scenario) {return;}
+      if (fromIndex === toIndex) {return;}
 
       const newScript = [...scenario.script];
       const [removed] = newScript.splice(fromIndex, 1);
@@ -223,7 +223,7 @@ export function useScenario(options: UseScenarioOptions = {}): UseScenarioReturn
   );
 
   const validate = useCallback(async () => {
-    if (!scenario) return;
+    if (!scenario) {return;}
 
     const result = await invokeCommandSafe<ValidationResult>("validate", {
       scenario,

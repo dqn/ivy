@@ -35,7 +35,7 @@ export function matchesBinding(
   event: KeyboardEvent,
   binding: KeyBinding
 ): boolean {
-  if (event.key.toLowerCase() !== binding.key.toLowerCase()) return false;
+  if (event.key.toLowerCase() !== binding.key.toLowerCase()) {return false;}
 
   const modifiers = binding.modifiers ?? [];
   const hasCtrl = modifiers.includes("ctrl");
@@ -44,12 +44,12 @@ export function matchesBinding(
   const hasAlt = modifiers.includes("alt");
 
   if (binding.requireNoModifiers) {
-    if (event.ctrlKey || event.metaKey) return false;
+    if (event.ctrlKey || event.metaKey) {return false;}
   } else {
-    if (hasCtrl !== event.ctrlKey) return false;
-    if (hasMeta !== event.metaKey) return false;
-    if (hasShift !== event.shiftKey) return false;
-    if (hasAlt !== event.altKey) return false;
+    if (hasCtrl !== event.ctrlKey) {return false;}
+    if (hasMeta !== event.metaKey) {return false;}
+    if (hasShift !== event.shiftKey) {return false;}
+    if (hasAlt !== event.altKey) {return false;}
   }
 
   return true;

@@ -59,7 +59,8 @@ export const CharacterPreview: React.FC<Props> = ({
 
         setImageUrls(urls);
       } catch (e) {
-        setError(`Failed to load images: ${e}`);
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        setError(`Failed to load images: ${errorMessage}`);
         setImageUrls([]);
       } finally {
         setIsLoading(false);

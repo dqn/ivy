@@ -50,7 +50,7 @@ export const CharacterDatabase: React.FC<Props> = ({
 
   const handleConfirmAdd = useCallback(() => {
     const name = newCharacterName.trim();
-    if (!name) return;
+    if (!name) {return;}
 
     if (database.characters[name]) {
       alert(`Character '${name}' already exists`);
