@@ -28,6 +28,7 @@ import { ProjectSettings } from "./components/ProjectSettings";
 import { ScenarioList } from "./components/ScenarioList";
 import { PlaytestDebugPanel } from "./components/PlaytestDebugPanel";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
+import { Tooltip } from "./components/Tooltip";
 import type { Resolution, ProjectConfig } from "./types/project";
 import "./i18n";
 import "./App.css";
@@ -113,7 +114,7 @@ const App: React.FC = () => {
     if (mode.type === "project" && project) {
       return project.root_path;
     }
-    if (!filePath) return null;
+    if (!filePath) {return null;}
     const lastSlash = filePath.lastIndexOf("/");
     return lastSlash >= 0 ? filePath.substring(0, lastSlash) : null;
   }, [mode.type, project, filePath]);
@@ -218,9 +219,9 @@ const App: React.FC = () => {
       const isAudio = ["mp3", "ogg", "wav", "flac"].includes(ext || "");
 
       if (isImage) {
-        updateCommand(selectedIndex, { ...cmd, background: path });
+        void updateCommand(selectedIndex, { ...cmd, background: path });
       } else if (isAudio) {
-        updateCommand(selectedIndex, { ...cmd, bgm: path });
+        void updateCommand(selectedIndex, { ...cmd, bgm: path });
       }
 
       setSidebarTab("commands");
@@ -240,14 +241,14 @@ const App: React.FC = () => {
   );
 
   const labels = useMemo(() => {
-    if (!scenario) return [];
+    if (!scenario) {return [];}
     return scenario.script
       .filter((cmd) => cmd.label)
       .map((cmd) => cmd.label as string);
   }, [scenario]);
 
   const selectedCommand = useMemo(() => {
-    if (!scenario || selectedIndex === null) return null;
+    if (!scenario || selectedIndex === null) {return null;}
     return scenario.script[selectedIndex];
   }, [scenario, selectedIndex]);
 
@@ -286,7 +287,8 @@ const App: React.FC = () => {
     } catch (e) {
       console.error("Failed to open project:", e);
       removeRecentProject(path);
-      showToast(`Failed to open project: ${e}`, "error");
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      showToast(`Failed to open project: ${errorMessage}`, "error");
     }
   };
 
@@ -302,15 +304,15 @@ const App: React.FC = () => {
     setMode({ type: "welcome" });
   };
 
-  const handleSaveProjectConfig = (config: ProjectConfig) => {
-    void updateConfig(config);
-    void saveProject();
+  const handleSaveProjectConfig = async (config: ProjectConfig) => {
+    updateConfig(config);
+    await saveProject();
     setShowProjectSettings(false);
   };
 
   // Save characters when dirty
   const handleSaveCharacters = useCallback(async () => {
-    if (!project || !charactersDirty) return;
+    if (!project || !charactersDirty) {return;}
     try {
       await saveCharacters(project.root_path);
     } catch (e) {
@@ -455,36 +457,46 @@ const App: React.FC = () => {
           {mode.type === "project" && project ? (
             <>
               <div className="sidebar-tabs">
-                <button
-                  className={sidebarTab === "scenarios" ? "active" : ""}
-                  onClick={() => setSidebarTab("scenarios")}
-                >
-                  {t("sidebar.scenarios")}
-                </button>
-                <button
-                  className={sidebarTab === "commands" ? "active" : ""}
-                  onClick={() => setSidebarTab("commands")}
-                >
-                  {t("sidebar.commands")}
-                </button>
-                <button
-                  className={sidebarTab === "assets" ? "active" : ""}
-                  onClick={() => setSidebarTab("assets")}
-                >
-                  {t("sidebar.assets")}
-                </button>
-                <button
-                  className={sidebarTab === "characters" ? "active" : ""}
-                  onClick={() => setSidebarTab("characters")}
-                >
-                  {t("sidebar.characters")}
-                </button>
-                <button
-                  className={sidebarTab === "translations" ? "active" : ""}
-                  onClick={() => setSidebarTab("translations")}
-                >
-                  {t("sidebar.translations")}
-                </button>
+                <Tooltip content={t("sidebar.scenariosTooltip")} position="bottom">
+                  <button
+                    className={sidebarTab === "scenarios" ? "active" : ""}
+                    onClick={() => setSidebarTab("scenarios")}
+                  >
+                    📄 {t("sidebar.scenarios")}
+                  </button>
+                </Tooltip>
+                <Tooltip content={t("sidebar.commandsTooltip")} position="bottom">
+                  <button
+                    className={sidebarTab === "commands" ? "active" : ""}
+                    onClick={() => setSidebarTab("commands")}
+                  >
+                    📋 {t("sidebar.commands")}
+                  </button>
+                </Tooltip>
+                <Tooltip content={t("sidebar.assetsTooltip")} position="bottom">
+                  <button
+                    className={sidebarTab === "assets" ? "active" : ""}
+                    onClick={() => setSidebarTab("assets")}
+                  >
+                    📁 {t("sidebar.assets")}
+                  </button>
+                </Tooltip>
+                <Tooltip content={t("sidebar.charactersTooltip")} position="bottom">
+                  <button
+                    className={sidebarTab === "characters" ? "active" : ""}
+                    onClick={() => setSidebarTab("characters")}
+                  >
+                    👥 {t("sidebar.characters")}
+                  </button>
+                </Tooltip>
+                <Tooltip content={t("sidebar.translationsTooltip")} position="bottom">
+                  <button
+                    className={sidebarTab === "translations" ? "active" : ""}
+                    onClick={() => setSidebarTab("translations")}
+                  >
+                    🌐 {t("sidebar.translations")}
+                  </button>
+                </Tooltip>
               </div>
               {sidebarTab === "scenarios" ? (
                 <ScenarioList
@@ -551,24 +563,30 @@ const App: React.FC = () => {
           ) : scenario ? (
             <>
               <div className="sidebar-tabs">
-                <button
-                  className={sidebarTab === "commands" ? "active" : ""}
-                  onClick={() => setSidebarTab("commands")}
-                >
-                  {t("sidebar.commands")}
-                </button>
-                <button
-                  className={sidebarTab === "assets" ? "active" : ""}
-                  onClick={() => setSidebarTab("assets")}
-                >
-                  {t("sidebar.assets")}
-                </button>
-                <button
-                  className={sidebarTab === "translations" ? "active" : ""}
-                  onClick={() => setSidebarTab("translations")}
-                >
-                  {t("sidebar.translations")}
-                </button>
+                <Tooltip content={t("sidebar.commandsTooltip")} position="bottom">
+                  <button
+                    className={sidebarTab === "commands" ? "active" : ""}
+                    onClick={() => setSidebarTab("commands")}
+                  >
+                    📋 {t("sidebar.commands")}
+                  </button>
+                </Tooltip>
+                <Tooltip content={t("sidebar.assetsTooltip")} position="bottom">
+                  <button
+                    className={sidebarTab === "assets" ? "active" : ""}
+                    onClick={() => setSidebarTab("assets")}
+                  >
+                    📁 {t("sidebar.assets")}
+                  </button>
+                </Tooltip>
+                <Tooltip content={t("sidebar.translationsTooltip")} position="bottom">
+                  <button
+                    className={sidebarTab === "translations" ? "active" : ""}
+                    onClick={() => setSidebarTab("translations")}
+                  >
+                    🌐 {t("sidebar.translations")}
+                  </button>
+                </Tooltip>
               </div>
               {sidebarTab === "commands" ? (
                 view === "list" ? (
@@ -641,7 +659,7 @@ const App: React.FC = () => {
                   baseDir={baseDir}
                   characterDatabase={characterDatabase}
                   onChange={(cmd) => {
-                    updateCommand(selectedIndex!, cmd);
+                    void updateCommand(selectedIndex!, cmd);
                   }}
                 />
               ) : (
@@ -662,19 +680,23 @@ const App: React.FC = () => {
           <Panel defaultSize={30} minSize={20} maxSize={45}>
             <div className="panel panel-right">
               <div className="preview-mode-toggle">
-                <button
-                  className={previewMode === "preview" ? "active" : ""}
-                  onClick={() => previewMode !== "preview" && void handleTogglePreviewMode()}
-                >
-                  {t("previewPanel.preview")}
-                </button>
-                <button
-                  className={previewMode === "playtest" ? "active" : ""}
-                  onClick={() => previewMode !== "playtest" && void handleTogglePreviewMode()}
-                  disabled={!scenario}
-                >
-                  {t("previewPanel.playtest")}
-                </button>
+                <Tooltip content={t("previewPanel.previewDescription")} position="bottom">
+                  <button
+                    className={previewMode === "preview" ? "active" : ""}
+                    onClick={() => previewMode !== "preview" && void handleTogglePreviewMode()}
+                  >
+                    📖 {t("previewPanel.preview")}
+                  </button>
+                </Tooltip>
+                <Tooltip content={t("previewPanel.playtestDescription")} position="bottom">
+                  <button
+                    className={previewMode === "playtest" ? "active" : ""}
+                    onClick={() => previewMode !== "playtest" && void handleTogglePreviewMode()}
+                    disabled={!scenario}
+                  >
+                    ▶️ {t("previewPanel.playtest")}
+                  </button>
+                </Tooltip>
               </div>
               <Group orientation="vertical">
                 <Panel defaultSize={50} minSize={30}>

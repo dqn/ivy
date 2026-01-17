@@ -1,14 +1,10 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   Command,
   LocalizedString,
   CharPosition,
   Choice,
-  ModularCharRef,
-  Transition,
-  CameraCommand,
-  SetVar,
-  IfCondition,
 } from "../../types/scenario";
 import type { CharacterDatabase } from "../../types/character";
 import { AssetField } from "./AssetField";
@@ -18,6 +14,7 @@ import { CameraPicker } from "./CameraPicker";
 import { ParticlePicker } from "./ParticlePicker";
 import { VariableEditor } from "./VariableEditor";
 import { LocalizedStringEditor } from "./LocalizedStringEditor";
+import { Tooltip } from "../Tooltip";
 
 interface CommandFormProps {
   command: Command;
@@ -28,8 +25,8 @@ interface CommandFormProps {
 }
 
 function getTextValue(text: LocalizedString | undefined): string {
-  if (!text) return "";
-  if (typeof text === "string") return text;
+  if (!text) {return "";}
+  if (typeof text === "string") {return text;}
   return Object.values(text)[0] || "";
 }
 
@@ -44,19 +41,21 @@ export const CommandForm: React.FC<CommandFormProps> = ({
   characterDatabase,
   onChange,
 }) => {
+  const { t } = useTranslation();
+  const [simpleMode, setSimpleMode] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const updateField = <K extends keyof Command>(
     field: K,
     value: Command[K] | undefined
   ) => {
-    const updated = { ...command };
     if (value === undefined || value === "") {
-      delete updated[field];
+      const updated = { ...command };
+      delete (updated as Record<string, unknown>)[field];
+      onChange(updated);
     } else {
-      updated[field] = value;
+      onChange({ ...command, [field]: value });
     }
-    onChange(updated);
   };
 
   const updateChoice = (index: number, choice: Choice) => {
@@ -77,35 +76,55 @@ export const CommandForm: React.FC<CommandFormProps> = ({
 
   return (
     <div className="command-form">
+      {/* Mode Toggle */}
+      <div className="mode-toggle">
+        <button
+          className={simpleMode ? "active" : ""}
+          onClick={() => setSimpleMode(true)}
+        >
+          {t("commandForm.simpleMode")}
+        </button>
+        <button
+          className={!simpleMode ? "active" : ""}
+          onClick={() => setSimpleMode(false)}
+        >
+          {t("commandForm.advancedMode")}
+        </button>
+      </div>
+
       {/* Basic Section */}
       <section className="form-section">
-        <h3>Basic</h3>
+        <h3>📝 {t("commandForm.sections.basic")}</h3>
 
-        <div className="form-field optional">
-          <label>Label</label>
-          <input
-            type="text"
-            value={command.label || ""}
-            onChange={(e) => {
-              updateField("label", e.target.value || undefined);
-            }}
-            placeholder="Label name for jump targets"
-          />
-        </div>
+        {!simpleMode && (
+          <div className="form-field optional">
+            <Tooltip content={t("commandForm.tooltips.label")} position="right">
+              <label>{t("commandForm.fields.label")}</label>
+            </Tooltip>
+            <input
+              type="text"
+              value={command.label || ""}
+              onChange={(e) => {
+                updateField("label", e.target.value || undefined);
+              }}
+              placeholder={t("commandForm.placeholders.label")}
+            />
+          </div>
+        )}
 
         <LocalizedStringEditor
-          label="Speaker"
+          label={t("commandForm.fields.speaker")}
           value={command.speaker}
-          placeholder="Character name"
+          placeholder={t("commandForm.placeholders.speaker")}
           onChange={(value) => {
             updateField("speaker", value);
           }}
         />
 
         <LocalizedStringEditor
-          label="Text"
+          label={t("commandForm.fields.text")}
           value={command.text}
-          placeholder="Dialogue or narration text"
+          placeholder={t("commandForm.placeholders.text")}
           multiline
           required
           onChange={(value) => {
@@ -116,10 +135,10 @@ export const CommandForm: React.FC<CommandFormProps> = ({
 
       {/* Visual Section */}
       <section className="form-section">
-        <h3>Visual</h3>
+        <h3>🖼️ {t("commandForm.sections.visual")}</h3>
 
         <AssetField
-          label="Background"
+          label={t("commandForm.fields.background")}
           value={command.background}
           baseDir={baseDir}
           accept={[".png", ".jpg", ".jpeg", ".webp"]}
@@ -129,7 +148,7 @@ export const CommandForm: React.FC<CommandFormProps> = ({
         />
 
         <AssetField
-          label="Character"
+          label={t("commandForm.fields.character")}
           value={command.character}
           baseDir={baseDir}
           accept={[".png", ".jpg", ".jpeg", ".webp"]}
@@ -139,7 +158,9 @@ export const CommandForm: React.FC<CommandFormProps> = ({
         />
 
         <div className="form-field optional">
-          <label>Position</label>
+          <Tooltip content={t("commandForm.tooltips.position")} position="right">
+            <label>{t("commandForm.fields.position")}</label>
+          </Tooltip>
           <select
             value={command.char_pos || "center"}
             onChange={(e) => {
@@ -149,240 +170,258 @@ export const CommandForm: React.FC<CommandFormProps> = ({
               );
             }}
           >
-            <option value="left">Left</option>
-            <option value="center">Center</option>
-            <option value="right">Right</option>
+            <option value="left">{t("commandForm.positions.left")}</option>
+            <option value="center">{t("commandForm.positions.center")}</option>
+            <option value="right">{t("commandForm.positions.right")}</option>
           </select>
         </div>
 
-        <ModularCharField
-          value={command.modular_char as ModularCharRef | undefined}
-          charPos={command.char_pos}
-          characterDatabase={characterDatabase}
-          onChange={(value) => {
-            updateField("modular_char", value);
-          }}
-          onCharPosChange={(pos) => {
-            updateField("char_pos", pos);
-          }}
-        />
-
-        <TransitionPicker
-          value={command.transition as Transition | undefined}
-          onChange={(value) => {
-            updateField("transition", value);
-          }}
-        />
-
-        <CameraPicker
-          value={command.camera as CameraCommand | undefined}
-          onChange={(value) => {
-            updateField("camera", value);
-          }}
-        />
-      </section>
-
-      {/* Audio Section */}
-      <section className="form-section">
-        <h3>Audio</h3>
-
-        <AssetField
-          label="BGM"
-          value={command.bgm}
-          baseDir={baseDir}
-          accept={[".mp3", ".ogg", ".wav"]}
-          onChange={(value) => {
-            updateField("bgm", value);
-          }}
-        />
-
-        <AssetField
-          label="Sound Effect"
-          value={command.se}
-          baseDir={baseDir}
-          accept={[".mp3", ".ogg", ".wav"]}
-          onChange={(value) => {
-            updateField("se", value);
-          }}
-        />
-
-        <AssetField
-          label="Voice"
-          value={command.voice}
-          baseDir={baseDir}
-          accept={[".mp3", ".ogg", ".wav"]}
-          onChange={(value) => {
-            updateField("voice", value);
-          }}
-        />
-      </section>
-
-      {/* Flow Section */}
-      <section className="form-section">
-        <h3>Flow</h3>
-
-        <div className="form-field optional">
-          <label>Jump</label>
-          <select
-            value={command.jump || ""}
-            onChange={(e) => {
-              updateField("jump", e.target.value || undefined);
-            }}
-          >
-            <option value="">-- No jump --</option>
-            {labels.map((label) => (
-              <option key={label} value={label}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-field optional">
-          <label>Choices</label>
-          {(command.choices || []).map((choice, index) => (
-            <div key={index} className="choice-row">
-              <input
-                type="text"
-                value={getTextValue(choice.label)}
-                onChange={(e) => {
-                  updateChoice(index, {
-                    ...choice,
-                    label: setTextValue(e.target.value),
-                  });
-                }}
-                placeholder="Choice text *"
-              />
-              <select
-                value={choice.jump}
-                onChange={(e) => {
-                  updateChoice(index, { ...choice, jump: e.target.value });
-                }}
-              >
-                <option value="">-- Jump to * --</option>
-                {labels.map((label) => (
-                  <option key={label} value={label}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              <button onClick={() => removeChoice(index)}>x</button>
-            </div>
-          ))}
-          <button className="add-choice" onClick={addChoice}>
-            + Add Choice
-          </button>
-        </div>
-
-        <VariableEditor
-          setVar={command.set as SetVar | undefined}
-          ifCondition={command.if as IfCondition | undefined}
-          labels={labels}
-          onSetChange={(value) => {
-            updateField("set", value);
-          }}
-          onIfChange={(value) => {
-            updateField("if", value);
-          }}
-        />
-      </section>
-
-      {/* Advanced Section (Collapsible) */}
-      <section className="form-section advanced">
-        <h3
-          onClick={() => {
-            setShowAdvanced(!showAdvanced);
-          }}
-          style={{ cursor: "pointer" }}
-        >
-          {showAdvanced ? "v" : ">"} Advanced
-        </h3>
-        {showAdvanced && (
+        {!simpleMode && (
           <>
-            <div className="form-field optional">
-              <label>Wait (seconds)</label>
-              <input
-                type="number"
-                step="0.1"
-                value={command.wait ?? ""}
-                onChange={(e) => {
-                  updateField(
-                    "wait",
-                    e.target.value ? parseFloat(e.target.value) : undefined
-                  );
-                }}
-                placeholder="0.5"
-              />
-            </div>
-
-            <div className="form-field optional">
-              <label>Timeout (seconds)</label>
-              <input
-                type="number"
-                step="0.1"
-                value={command.timeout ?? ""}
-                onChange={(e) => {
-                  updateField(
-                    "timeout",
-                    e.target.value ? parseFloat(e.target.value) : undefined
-                  );
-                }}
-                placeholder="10"
-              />
-            </div>
-
-            <ParticlePicker
-              value={command.particles}
-              intensity={command.particle_intensity}
+            <ModularCharField
+              value={command.modular_char}
+              charPos={command.char_pos}
+              characterDatabase={characterDatabase}
               onChange={(value) => {
-                updateField("particles", value);
+                updateField("modular_char", value);
               }}
-              onIntensityChange={(value) => {
-                updateField("particle_intensity", value);
+              onCharPosChange={(pos) => {
+                updateField("char_pos", pos);
               }}
             />
 
-            <div className="form-field optional">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={command.nvl ?? false}
-                  onChange={(e) => {
-                    updateField("nvl", e.target.checked || undefined);
-                  }}
-                />
-                NVL Mode
-              </label>
-            </div>
+            <TransitionPicker
+              value={command.transition}
+              onChange={(value) => {
+                updateField("transition", value);
+              }}
+            />
 
-            <div className="form-field optional">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={command.nvl_clear ?? false}
-                  onChange={(e) => {
-                    updateField("nvl_clear", e.target.checked || undefined);
-                  }}
-                />
-                NVL Clear
-              </label>
-            </div>
-
-            <div className="form-field optional">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={command.cinematic ?? false}
-                  onChange={(e) => {
-                    updateField("cinematic", e.target.checked || undefined);
-                  }}
-                />
-                Cinematic Mode
-              </label>
-            </div>
+            <CameraPicker
+              value={command.camera}
+              onChange={(value) => {
+                updateField("camera", value);
+              }}
+            />
           </>
         )}
       </section>
+
+      {/* Audio Section - only in advanced mode */}
+      {!simpleMode && (
+        <section className="form-section">
+          <h3>🎵 {t("commandForm.sections.audio")}</h3>
+
+          <AssetField
+            label={t("commandForm.fields.bgm")}
+            value={command.bgm}
+            baseDir={baseDir}
+            accept={[".mp3", ".ogg", ".wav"]}
+            onChange={(value) => {
+              updateField("bgm", value);
+            }}
+          />
+
+          <AssetField
+            label={t("commandForm.fields.se")}
+            value={command.se}
+            baseDir={baseDir}
+            accept={[".mp3", ".ogg", ".wav"]}
+            onChange={(value) => {
+              updateField("se", value);
+            }}
+          />
+
+          <AssetField
+            label={t("commandForm.fields.voice")}
+            value={command.voice}
+            baseDir={baseDir}
+            accept={[".mp3", ".ogg", ".wav"]}
+            onChange={(value) => {
+              updateField("voice", value);
+            }}
+          />
+        </section>
+      )}
+
+      {/* Flow Section - only in advanced mode */}
+      {!simpleMode && (
+        <section className="form-section">
+          <h3>🔀 {t("commandForm.sections.flow")}</h3>
+
+          <div className="form-field optional">
+            <Tooltip content={t("commandForm.tooltips.jump")} position="right">
+              <label>{t("commandForm.fields.jump")}</label>
+            </Tooltip>
+            <select
+              value={command.jump || ""}
+              onChange={(e) => {
+                updateField("jump", e.target.value || undefined);
+              }}
+            >
+              <option value="">{t("commandForm.placeholders.noJump")}</option>
+              {labels.map((label) => (
+                <option key={label} value={label}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-field optional">
+            <Tooltip content={t("commandForm.tooltips.choices")} position="right">
+              <label>{t("commandForm.fields.choices")}</label>
+            </Tooltip>
+            {(command.choices || []).map((choice, index) => (
+              <div key={index} className="choice-row">
+                <input
+                  type="text"
+                  value={getTextValue(choice.label)}
+                  onChange={(e) => {
+                    updateChoice(index, {
+                      ...choice,
+                      label: setTextValue(e.target.value),
+                    });
+                  }}
+                  placeholder={t("commandForm.placeholders.choiceText")}
+                />
+                <select
+                  value={choice.jump}
+                  onChange={(e) => {
+                    updateChoice(index, { ...choice, jump: e.target.value });
+                  }}
+                >
+                  <option value="">{t("commandForm.placeholders.jumpTo")}</option>
+                  {labels.map((label) => (
+                    <option key={label} value={label}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <button onClick={() => removeChoice(index)}>x</button>
+              </div>
+            ))}
+            <button className="add-choice" onClick={addChoice}>
+              {t("commandForm.addChoice")}
+            </button>
+          </div>
+
+          <VariableEditor
+            setVar={command.set}
+            ifCondition={command.if}
+            labels={labels}
+            onSetChange={(value) => {
+              updateField("set", value);
+            }}
+            onIfChange={(value) => {
+              updateField("if", value);
+            }}
+          />
+        </section>
+      )}
+
+      {/* Advanced Section (Collapsible) - only in advanced mode */}
+      {!simpleMode && (
+        <section className="form-section advanced">
+          <h3
+            onClick={() => {
+              setShowAdvanced(!showAdvanced);
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            {showAdvanced ? "▼" : "▶"} ⚙️ {t("commandForm.sections.advanced")}
+          </h3>
+          {showAdvanced && (
+            <>
+              <div className="form-field optional">
+                <Tooltip content={t("commandForm.tooltips.wait")} position="right">
+                  <label>{t("commandForm.fields.wait")}</label>
+                </Tooltip>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={command.wait ?? ""}
+                  onChange={(e) => {
+                    updateField(
+                      "wait",
+                      e.target.value ? parseFloat(e.target.value) : undefined
+                    );
+                  }}
+                  placeholder="0.5"
+                />
+              </div>
+
+              <div className="form-field optional">
+                <Tooltip content={t("commandForm.tooltips.timeout")} position="right">
+                  <label>{t("commandForm.fields.timeout")}</label>
+                </Tooltip>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={command.timeout ?? ""}
+                  onChange={(e) => {
+                    updateField(
+                      "timeout",
+                      e.target.value ? parseFloat(e.target.value) : undefined
+                    );
+                  }}
+                  placeholder="10"
+                />
+              </div>
+
+              <ParticlePicker
+                value={command.particles}
+                intensity={command.particle_intensity}
+                onChange={(value) => {
+                  updateField("particles", value);
+                }}
+                onIntensityChange={(value) => {
+                  updateField("particle_intensity", value);
+                }}
+              />
+
+              <div className="form-field optional">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={command.nvl ?? false}
+                    onChange={(e) => {
+                      updateField("nvl", e.target.checked || undefined);
+                    }}
+                  />
+                  {t("commandForm.fields.nvlMode")}
+                </label>
+              </div>
+
+              <div className="form-field optional">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={command.nvl_clear ?? false}
+                    onChange={(e) => {
+                      updateField("nvl_clear", e.target.checked || undefined);
+                    }}
+                  />
+                  {t("commandForm.fields.nvlClear")}
+                </label>
+              </div>
+
+              <div className="form-field optional">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={command.cinematic ?? false}
+                    onChange={(e) => {
+                      updateField("cinematic", e.target.checked || undefined);
+                    }}
+                  />
+                  {t("commandForm.fields.cinematic")}
+                </label>
+              </div>
+            </>
+          )}
+        </section>
+      )}
     </div>
   );
 };

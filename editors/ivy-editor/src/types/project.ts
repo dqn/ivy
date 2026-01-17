@@ -34,11 +34,31 @@ export const DEFAULT_RESOLUTION: Resolution = {
   height: 1080,
 };
 
-export const RESOLUTION_PRESETS: { label: string; resolution: Resolution }[] = [
-  { label: "1920x1080 (Full HD)", resolution: { width: 1920, height: 1080 } },
-  { label: "1280x720 (HD)", resolution: { width: 1280, height: 720 } },
-  { label: "2560x1440 (2K)", resolution: { width: 2560, height: 1440 } },
-  { label: "3840x2160 (4K)", resolution: { width: 3840, height: 2160 } },
+export const RESOLUTION_PRESETS: {
+  label: string;
+  resolution: Resolution;
+  hintKey: string;
+}[] = [
+  {
+    label: "1920x1080 (Full HD)",
+    resolution: { width: 1920, height: 1080 },
+    hintKey: "fullhd",
+  },
+  {
+    label: "1280x720 (HD)",
+    resolution: { width: 1280, height: 720 },
+    hintKey: "hd",
+  },
+  {
+    label: "2560x1440 (2K)",
+    resolution: { width: 2560, height: 1440 },
+    hintKey: "2k",
+  },
+  {
+    label: "3840x2160 (4K)",
+    resolution: { width: 3840, height: 2160 },
+    hintKey: "4k",
+  },
 ];
 
 export function createDefaultProjectConfig(name: string): ProjectConfig {

@@ -108,6 +108,7 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
         <div className="wizard-content">
           {step === "basic" && (
             <div className="wizard-step-content">
+              <p className="step-description">{t("projectWizard.step1Description")}</p>
               <div className="form-field">
                 <label>
                   {t("projectWizard.projectName")} <span className="required">{t("common.required")}</span>
@@ -168,6 +169,7 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
 
           {step === "resolution" && (
             <div className="wizard-step-content">
+              <p className="step-description">{t("projectWizard.step2Description")}</p>
               <div className="form-field">
                 <label>{t("projectWizard.displayResolution")}</label>
                 <div className="resolution-options">
@@ -185,15 +187,19 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
                         setResolution(preset.resolution);
                         setUseCustomResolution(false);
                       }}
+                      title={t(`projectWizard.resolutionHint.${preset.hintKey}`)}
                     >
-                      {preset.label}
+                      <span className="resolution-label">{preset.label}</span>
+                      <span className="resolution-hint">
+                        {t(`projectWizard.resolutionHint.${preset.hintKey}`)}
+                      </span>
                     </button>
                   ))}
                   <button
                     className={`resolution-option ${useCustomResolution ? "selected" : ""}`}
                     onClick={() => setUseCustomResolution(true)}
                   >
-                    {t("projectWizard.custom")}
+                    <span className="resolution-label">{t("projectWizard.custom")}</span>
                   </button>
                 </div>
               </div>
@@ -240,6 +246,7 @@ export const ProjectWizard: React.FC<Props> = ({ onClose, onCreate }) => {
 
           {step === "summary" && (
             <div className="wizard-step-content">
+              <p className="step-description">{t("projectWizard.step3Description")}</p>
               <div className="summary-section">
                 <h3>{t("projectWizard.projectSummary")}</h3>
                 <dl className="summary-list">

@@ -98,6 +98,62 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* Getting Started section */
+.getting-started {
+  margin-bottom: 32px;
+}
+
+.getting-started-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: var(--bg-secondary);
+  border: 1px dashed var(--accent-color);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.getting-started-link:hover {
+  background-color: var(--bg-tertiary);
+  border-style: solid;
+}
+
+.getting-started-icon {
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.getting-started-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.getting-started-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.getting-started-description {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.getting-started-arrow {
+  font-size: 16px;
+  color: var(--accent-color);
+}
+
+/* Recent Projects section */
 .recent-projects {
   margin-bottom: 24px;
 }
@@ -109,6 +165,26 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 12px;
+}
+
+.recent-empty {
+  padding: 24px;
+  text-align: center;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.recent-empty-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.recent-empty-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.7;
 }
 
 .recent-list {

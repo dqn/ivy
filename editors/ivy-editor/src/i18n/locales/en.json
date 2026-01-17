@@ -31,7 +31,12 @@
     "commands": "Commands",
     "assets": "Assets",
     "characters": "Characters",
-    "translations": "Translations"
+    "translations": "Translations",
+    "scenariosTooltip": "Manage scenario files in your project",
+    "commandsTooltip": "Edit commands in the current scenario",
+    "assetsTooltip": "Browse and manage project assets",
+    "charactersTooltip": "Define character sprites and layers",
+    "translationsTooltip": "Manage translations for multiple languages"
   },
   "welcome": {
     "title": "ivy Editor",
@@ -45,13 +50,20 @@
     "openSingleFile": "Open single scenario file (legacy mode)",
     "today": "Today",
     "yesterday": "Yesterday",
-    "daysAgo": "{{count}} days ago"
+    "daysAgo": "{{count}} days ago",
+    "gettingStarted": "Getting Started",
+    "gettingStartedDescription": "New to ivy? Check out our documentation",
+    "noRecentProjects": "No recent projects",
+    "trySampleProject": "Try a sample project to get started"
   },
   "projectWizard": {
     "title": "Create New Project",
     "step1": "1. Basic Info",
     "step2": "2. Display",
     "step3": "3. Summary",
+    "step1Description": "Enter basic project information",
+    "step2Description": "Choose your game's display resolution",
+    "step3Description": "Review settings and create your project",
     "projectName": "Project Name",
     "projectNamePlaceholder": "My Visual Novel",
     "location": "Location",
@@ -71,7 +83,14 @@
     "resolution": "Resolution",
     "filesToBeCreated": "Files to be created",
     "creating": "Creating...",
-    "createProject": "Create Project"
+    "createProject": "Create Project",
+    "resolutionHint": {
+      "fullhd": "Full HD - Recommended for PC",
+      "hd": "HD - Lightweight",
+      "2k": "2K - High resolution",
+      "4k": "4K - Ultra high resolution",
+      "mobile": "Mobile - For smartphones"
+    }
   },
   "projectSettings": {
     "title": "Project Settings",
@@ -88,45 +107,91 @@
   },
   "commandList": {
     "commands": "Commands ({{count}})",
-    "addCommand": "Add command at end"
+    "addCommand": "Add command at end",
+    "commandTypes": {
+      "text": "Text",
+      "label": "Label",
+      "choice": "Choice",
+      "jump": "Jump",
+      "if": "Condition",
+      "set": "Variable",
+      "background": "Background",
+      "character": "Character",
+      "bgm": "BGM",
+      "se": "Sound Effect",
+      "video": "Video",
+      "wait": "Wait",
+      "empty": "Empty"
+    },
+    "legend": "Command Types"
   },
   "commandForm": {
-    "basic": "Basic",
-    "label": "Label",
-    "labelPlaceholder": "Label name for jump targets",
-    "speaker": "Speaker",
-    "speakerPlaceholder": "Character name",
-    "text": "Text",
-    "textPlaceholder": "Dialogue or narration text",
-    "visual": "Visual",
-    "background": "Background",
-    "character": "Character",
-    "position": "Position",
-    "positionLeft": "Left",
-    "positionCenter": "Center",
-    "positionRight": "Right",
-    "audio": "Audio",
-    "bgm": "BGM",
-    "soundEffect": "Sound Effect",
-    "voice": "Voice",
-    "flow": "Flow",
-    "jump": "Jump",
-    "noJump": "-- No jump --",
-    "choices": "Choices",
-    "choiceTextPlaceholder": "Choice text *",
-    "jumpToPlaceholder": "-- Jump to * --",
+    "simpleMode": "Simple",
+    "advancedMode": "All Fields",
     "addChoice": "+ Add Choice",
-    "advanced": "Advanced",
-    "waitSeconds": "Wait (seconds)",
-    "timeoutSeconds": "Timeout (seconds)",
-    "nvlMode": "NVL Mode",
-    "nvlClear": "NVL Clear",
-    "cinematicMode": "Cinematic Mode"
+    "sections": {
+      "basic": "Basic",
+      "visual": "Visual",
+      "audio": "Audio",
+      "flow": "Flow",
+      "advanced": "Advanced"
+    },
+    "fields": {
+      "label": "Label",
+      "speaker": "Speaker",
+      "text": "Text",
+      "background": "Background",
+      "character": "Character",
+      "position": "Position",
+      "bgm": "BGM",
+      "se": "Sound Effect",
+      "voice": "Voice",
+      "jump": "Jump",
+      "choices": "Choices",
+      "wait": "Wait (seconds)",
+      "timeout": "Timeout (seconds)",
+      "nvlMode": "NVL Mode",
+      "nvlClear": "NVL Clear",
+      "cinematic": "Cinematic Mode"
+    },
+    "placeholders": {
+      "label": "Label name for jump targets",
+      "speaker": "Character name",
+      "text": "Dialogue or narration text",
+      "noJump": "-- No jump --",
+      "choiceText": "Choice text *",
+      "jumpTo": "-- Jump to * --"
+    },
+    "tooltips": {
+      "label": "A unique name used as a jump destination from other commands",
+      "speaker": "The name of the character speaking this line",
+      "text": "The text to display in the text box",
+      "background": "Background image file. Leave empty to keep current, enter empty string to clear",
+      "character": "Character sprite image. Leave empty to keep current, enter empty string to clear",
+      "position": "Where to display the character on screen",
+      "bgm": "Background music file. Will loop until changed",
+      "se": "One-shot sound effect",
+      "voice": "Voice line for this dialogue",
+      "jump": "Jump to a labeled command after this one",
+      "choices": "Player choices that branch the story",
+      "wait": "Pause execution for the specified duration",
+      "timeout": "Auto-select default choice after this time",
+      "nvlMode": "Display text in full-screen novel mode",
+      "nvlClear": "Clear the NVL text buffer (start new page)",
+      "cinematic": "Show letterbox bars for cinematic effect"
+    },
+    "positions": {
+      "left": "Left",
+      "center": "Center",
+      "right": "Right"
+    }
   },
   "previewPanel": {
     "loadScenario": "Load a scenario to see preview",
     "preview": "Preview",
     "playtest": "Playtest",
+    "previewDescription": "Step through commands (read-only)",
+    "playtestDescription": "Play the game interactively",
     "endOfScenario": "[End of scenario]",
     "scenarioEnded": "Scenario Ended",
     "restart": "Restart"
@@ -254,7 +319,15 @@
   "validation": {
     "errors": "Errors",
     "warnings": "Warnings",
-    "noIssues": "No validation issues"
+    "noIssues": "No validation issues",
+    "clickToNavigate": "Click to go to this command",
+    "hints": {
+      "undefinedLabel": "Create a label with this name or check for typos",
+      "duplicateLabel": "Labels must be unique within a scenario",
+      "unusedLabel": "Consider removing or adding a jump to this label",
+      "selfJump": "A command jumping to itself may cause an infinite loop",
+      "circularPath": "This path loops back on itself"
+    }
   },
   "variableWatcher": {
     "title": "Variables",

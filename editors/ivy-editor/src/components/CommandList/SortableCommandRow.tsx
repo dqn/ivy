@@ -9,26 +9,12 @@ interface SortableCommandRowProps {
   isSelected: boolean;
   isHighlighted?: boolean;
   typeColor: string;
+  typeIcon: string;
+  typeName: string;
   speakerCharacterMap?: Map<string, string>;
   onSelect: () => void;
   onAddAfter: () => void;
   onRemove: () => void;
-}
-
-function getCommandType(cmd: Command): string {
-  if (cmd.label) return "label";
-  if (cmd.choices) return "choice";
-  if (cmd.jump) return "jump";
-  if (cmd.if) return "if";
-  if (cmd.set) return "set";
-  if (cmd.background) return "background";
-  if (cmd.character) return "character";
-  if (cmd.bgm) return "bgm";
-  if (cmd.se) return "se";
-  if (cmd.video) return "video";
-  if (cmd.wait !== undefined) return "wait";
-  if (cmd.text) return "text";
-  return "empty";
 }
 
 function getLocalizedText(text: LocalizedString): string {
@@ -43,23 +29,23 @@ function getLocalizedText(text: LocalizedString): string {
 }
 
 function getCommandPreview(cmd: Command): string {
-  if (cmd.label) return `[${cmd.label}]`;
-  if (cmd.choices) return `Choices (${cmd.choices.length})`;
-  if (cmd.jump) return `-> ${cmd.jump}`;
-  if (cmd.if) return `if ${cmd.if.var} == ${cmd.if.is} -> ${cmd.if.jump}`;
-  if (cmd.set) return `${cmd.set.name} = ${cmd.set.value}`;
-  if (cmd.background) return `BG: ${cmd.background || "(clear)"}`;
-  if (cmd.character) return `Char: ${cmd.character || "(clear)"}`;
-  if (cmd.bgm) return `BGM: ${cmd.bgm || "(stop)"}`;
-  if (cmd.se) return `SE: ${cmd.se}`;
-  if (cmd.video) return `Video: ${cmd.video.path}`;
-  if (cmd.wait !== undefined) return `Wait ${cmd.wait}s`;
-  if (cmd.text) return getLocalizedText(cmd.text);
+  if (cmd.label) {return `[${cmd.label}]`;}
+  if (cmd.choices) {return `Choices (${cmd.choices.length})`;}
+  if (cmd.jump) {return `-> ${cmd.jump}`;}
+  if (cmd.if) {return `if ${cmd.if.var} == ${cmd.if.is} -> ${cmd.if.jump}`;}
+  if (cmd.set) {return `${cmd.set.name} = ${cmd.set.value}`;}
+  if (cmd.background) {return `BG: ${cmd.background || "(clear)"}`;}
+  if (cmd.character) {return `Char: ${cmd.character || "(clear)"}`;}
+  if (cmd.bgm) {return `BGM: ${cmd.bgm || "(stop)"}`;}
+  if (cmd.se) {return `SE: ${cmd.se}`;}
+  if (cmd.video) {return `Video: ${cmd.video.path}`;}
+  if (cmd.wait !== undefined) {return `Wait ${cmd.wait}s`;}
+  if (cmd.text) {return getLocalizedText(cmd.text);}
   return "(empty)";
 }
 
 function getSpeakerText(speaker: LocalizedString): string {
-  if (typeof speaker === "string") return speaker;
+  if (typeof speaker === "string") {return speaker;}
   return Object.values(speaker)[0] ?? "";
 }
 
@@ -70,6 +56,8 @@ export const SortableCommandRow: React.FC<SortableCommandRowProps> = ({
   isSelected,
   isHighlighted = false,
   typeColor,
+  typeIcon,
+  typeName,
   speakerCharacterMap,
   onSelect,
   onAddAfter,
@@ -90,8 +78,6 @@ export const SortableCommandRow: React.FC<SortableCommandRowProps> = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const type = getCommandType(command);
-
   // Check if speaker is mapped to a character
   const speakerText = command.speaker ? getSpeakerText(command.speaker) : null;
   const mappedCharacter =
@@ -110,8 +96,8 @@ export const SortableCommandRow: React.FC<SortableCommandRowProps> = ({
         &#x2807;
       </span>
       <span className="command-index">{index}</span>
-      <span className="command-type" style={{ backgroundColor: typeColor }}>
-        {type}
+      <span className="command-type" style={{ backgroundColor: typeColor }} title={typeName}>
+        <span className="command-type-icon">{typeIcon}</span>
       </span>
       {speakerText && (
         <span

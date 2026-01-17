@@ -49,7 +49,7 @@ export const WelcomeScreen: React.FC<Props> = ({
 
         <div className="welcome-actions">
           <button className="welcome-action primary" onClick={onNewProject}>
-            <span className="action-icon">+</span>
+            <span className="action-icon">📦</span>
             <span className="action-text">
               <span className="action-title">{t("welcome.newProject")}</span>
               <span className="action-description">
@@ -69,9 +69,30 @@ export const WelcomeScreen: React.FC<Props> = ({
           </button>
         </div>
 
-        {recentProjects.length > 0 && (
-          <div className="recent-projects">
-            <h2>{t("welcome.recentProjects")}</h2>
+        {/* Getting Started section */}
+        <div className="getting-started">
+          <a
+            href="https://github.com/dqn/ivy#readme"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="getting-started-link"
+          >
+            <span className="getting-started-icon">📚</span>
+            <span className="getting-started-text">
+              <span className="getting-started-title">
+                {t("welcome.gettingStarted")}
+              </span>
+              <span className="getting-started-description">
+                {t("welcome.gettingStartedDescription")}
+              </span>
+            </span>
+            <span className="getting-started-arrow">→</span>
+          </a>
+        </div>
+
+        <div className="recent-projects">
+          <h2>{t("welcome.recentProjects")}</h2>
+          {recentProjects.length > 0 ? (
             <div className="recent-list">
               {recentProjects.map((project) => (
                 <div
@@ -101,8 +122,13 @@ export const WelcomeScreen: React.FC<Props> = ({
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="recent-empty">
+              <p className="recent-empty-text">{t("welcome.noRecentProjects")}</p>
+              <p className="recent-empty-hint">{t("welcome.trySampleProject")}</p>
+            </div>
+          )}
+        </div>
 
         <div className="welcome-divider">
           <span>{t("common.or")}</span>

@@ -31,7 +31,12 @@
     "commands": "コマンド",
     "assets": "アセット",
     "characters": "キャラクター",
-    "translations": "翻訳"
+    "translations": "翻訳",
+    "scenariosTooltip": "プロジェクト内のシナリオファイルを管理",
+    "commandsTooltip": "現在のシナリオのコマンドを編集",
+    "assetsTooltip": "プロジェクトのアセットを閲覧・管理",
+    "charactersTooltip": "キャラクターのスプライトとレイヤーを定義",
+    "translationsTooltip": "複数言語の翻訳を管理"
   },
   "welcome": {
     "title": "ivy Editor",
@@ -45,13 +50,20 @@
     "openSingleFile": "単一シナリオファイルを開く（レガシーモード）",
     "today": "今日",
     "yesterday": "昨日",
-    "daysAgo": "{{count}}日前"
+    "daysAgo": "{{count}}日前",
+    "gettingStarted": "はじめての方へ",
+    "gettingStartedDescription": "ivy が初めてですか？ドキュメントをご覧ください",
+    "noRecentProjects": "最近のプロジェクトはありません",
+    "trySampleProject": "サンプルプロジェクトを試してみましょう"
   },
   "projectWizard": {
     "title": "新規プロジェクト作成",
     "step1": "1. 基本情報",
     "step2": "2. 表示設定",
     "step3": "3. 確認",
+    "step1Description": "プロジェクトの基本情報を入力します",
+    "step2Description": "ゲーム画面の解像度を選択します",
+    "step3Description": "設定を確認してプロジェクトを作成します",
     "projectName": "プロジェクト名",
     "projectNamePlaceholder": "私のビジュアルノベル",
     "location": "保存場所",
@@ -71,7 +83,14 @@
     "resolution": "解像度",
     "filesToBeCreated": "作成されるファイル",
     "creating": "作成中...",
-    "createProject": "プロジェクト作成"
+    "createProject": "プロジェクト作成",
+    "resolutionHint": {
+      "fullhd": "Full HD - PC向け推奨",
+      "hd": "HD - 軽量",
+      "2k": "2K - 高解像度",
+      "4k": "4K - 超高解像度",
+      "mobile": "モバイル - スマートフォン向け"
+    }
   },
   "projectSettings": {
     "title": "プロジェクト設定",
@@ -88,45 +107,91 @@
   },
   "commandList": {
     "commands": "コマンド ({{count}})",
-    "addCommand": "末尾にコマンドを追加"
+    "addCommand": "末尾にコマンドを追加",
+    "commandTypes": {
+      "text": "テキスト",
+      "label": "ラベル",
+      "choice": "選択肢",
+      "jump": "ジャンプ",
+      "if": "条件",
+      "set": "変数",
+      "background": "背景",
+      "character": "キャラクター",
+      "bgm": "BGM",
+      "se": "効果音",
+      "video": "動画",
+      "wait": "待機",
+      "empty": "空"
+    },
+    "legend": "コマンド種別"
   },
   "commandForm": {
-    "basic": "基本",
-    "label": "ラベル",
-    "labelPlaceholder": "ジャンプ先のラベル名",
-    "speaker": "話者",
-    "speakerPlaceholder": "キャラクター名",
-    "text": "テキスト",
-    "textPlaceholder": "セリフまたはナレーション",
-    "visual": "ビジュアル",
-    "background": "背景",
-    "character": "キャラクター",
-    "position": "位置",
-    "positionLeft": "左",
-    "positionCenter": "中央",
-    "positionRight": "右",
-    "audio": "オーディオ",
-    "bgm": "BGM",
-    "soundEffect": "効果音",
-    "voice": "ボイス",
-    "flow": "フロー",
-    "jump": "ジャンプ",
-    "noJump": "-- ジャンプなし --",
-    "choices": "選択肢",
-    "choiceTextPlaceholder": "選択肢テキスト *",
-    "jumpToPlaceholder": "-- ジャンプ先 * --",
+    "simpleMode": "シンプル",
+    "advancedMode": "全フィールド",
     "addChoice": "+ 選択肢を追加",
-    "advanced": "詳細設定",
-    "waitSeconds": "待機（秒）",
-    "timeoutSeconds": "タイムアウト（秒）",
-    "nvlMode": "NVLモード",
-    "nvlClear": "NVLクリア",
-    "cinematicMode": "シネマティックモード"
+    "sections": {
+      "basic": "基本",
+      "visual": "ビジュアル",
+      "audio": "オーディオ",
+      "flow": "フロー",
+      "advanced": "詳細設定"
+    },
+    "fields": {
+      "label": "ラベル",
+      "speaker": "話者",
+      "text": "テキスト",
+      "background": "背景",
+      "character": "キャラクター",
+      "position": "位置",
+      "bgm": "BGM",
+      "se": "効果音",
+      "voice": "ボイス",
+      "jump": "ジャンプ",
+      "choices": "選択肢",
+      "wait": "待機（秒）",
+      "timeout": "タイムアウト（秒）",
+      "nvlMode": "NVLモード",
+      "nvlClear": "NVLクリア",
+      "cinematic": "シネマティックモード"
+    },
+    "placeholders": {
+      "label": "ジャンプ先のラベル名",
+      "speaker": "キャラクター名",
+      "text": "セリフまたはナレーション",
+      "noJump": "-- ジャンプなし --",
+      "choiceText": "選択肢テキスト *",
+      "jumpTo": "-- ジャンプ先 * --"
+    },
+    "tooltips": {
+      "label": "他のコマンドからジャンプする際の宛先となる一意の名前",
+      "speaker": "このセリフを話すキャラクターの名前",
+      "text": "テキストボックスに表示するテキスト",
+      "background": "背景画像ファイル。空欄で現在を維持、空文字でクリア",
+      "character": "キャラクタースプライト画像。空欄で現在を維持、空文字でクリア",
+      "position": "キャラクターを画面のどこに表示するか",
+      "bgm": "BGMファイル。変更されるまでループ再生",
+      "se": "単発の効果音",
+      "voice": "このセリフのボイス",
+      "jump": "このコマンドの後に指定ラベルへジャンプ",
+      "choices": "ストーリーを分岐させるプレイヤーの選択肢",
+      "wait": "指定時間だけ実行を一時停止",
+      "timeout": "この時間後にデフォルトの選択肢を自動選択",
+      "nvlMode": "全画面ノベルモードでテキストを表示",
+      "nvlClear": "NVLテキストバッファをクリア（新しいページを開始）",
+      "cinematic": "シネマティック効果のレターボックスを表示"
+    },
+    "positions": {
+      "left": "左",
+      "center": "中央",
+      "right": "右"
+    }
   },
   "previewPanel": {
     "loadScenario": "シナリオを読み込むとプレビューが表示されます",
     "preview": "プレビュー",
     "playtest": "プレイテスト",
+    "previewDescription": "コマンドを順番に確認（読み取り専用）",
+    "playtestDescription": "ゲームをインタラクティブにプレイ",
     "endOfScenario": "[シナリオ終了]",
     "scenarioEnded": "シナリオ終了",
     "restart": "最初から"
@@ -254,7 +319,15 @@
   "validation": {
     "errors": "エラー",
     "warnings": "警告",
-    "noIssues": "検証で問題は見つかりませんでした"
+    "noIssues": "検証で問題は見つかりませんでした",
+    "clickToNavigate": "クリックしてこのコマンドに移動",
+    "hints": {
+      "undefinedLabel": "この名前のラベルを作成するか、タイプミスがないか確認してください",
+      "duplicateLabel": "ラベルはシナリオ内で一意である必要があります",
+      "unusedLabel": "このラベルを削除するか、ジャンプを追加することを検討してください",
+      "selfJump": "自分自身へのジャンプは無限ループを引き起こす可能性があります",
+      "circularPath": "このパスは自分自身にループしています"
+    }
   },
   "variableWatcher": {
     "title": "変数",

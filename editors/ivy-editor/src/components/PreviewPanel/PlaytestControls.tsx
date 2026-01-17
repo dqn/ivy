@@ -38,7 +38,7 @@ export const PlaytestControls: React.FC<Props> = ({
           disabled={!canRollback}
           title={t("playtestControls.rollbackTitle")}
         >
-          {t("playtestControls.back")}
+          ⏪ {t("playtestControls.back")}
         </button>
         <button
           className="playtest-button advance"
@@ -46,7 +46,7 @@ export const PlaytestControls: React.FC<Props> = ({
           disabled={isEnded || isBlocked}
           title={t("playtestControls.advanceTitle")}
         >
-          {t("playtestControls.nextArrow")}
+          ⏩ {t("playtestControls.nextArrow")}
         </button>
       </div>
       <div className="playtest-controls-row">
@@ -55,26 +55,26 @@ export const PlaytestControls: React.FC<Props> = ({
           onClick={onToggleAutoMode}
           title={t("playtestControls.autoModeTitle")}
         >
-          {t("playtestControls.auto")}
+          🔄 {t("playtestControls.auto")}
         </button>
         <button
           className={`playtest-button mode-toggle ${isSkipMode ? "active" : ""}`}
           onClick={onToggleSkipMode}
           title={t("playtestControls.skipModeTitle")}
         >
-          {t("playtestControls.skip")}
+          ⏭️ {t("playtestControls.skip")}
         </button>
         <button
           className="playtest-button restart"
           onClick={onRestart}
           title={t("playtestControls.restartTitle")}
         >
-          {t("playtestControls.restart")}
+          🔁 {t("playtestControls.restart")}
         </button>
       </div>
       <div className="playtest-controls-row">
         <span className="playtest-history-count">
-          {t("playtestControls.history", { count: historyCount })}
+          📜 {t("playtestControls.history", { count: historyCount })}
         </span>
       </div>
       <div className="playtest-shortcuts-hint">

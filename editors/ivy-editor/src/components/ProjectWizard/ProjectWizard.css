@@ -49,6 +49,16 @@
   gap: 16px;
 }
 
+.step-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  padding: 12px 16px;
+  background-color: var(--bg-tertiary);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent-color);
+}
+
 .folder-select {
   display: flex;
   gap: 8px;
@@ -85,14 +95,20 @@
 }
 
 .resolution-option {
-  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 16px;
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--text-primary);
   cursor: pointer;
   font-size: 13px;
   transition: all 0.2s;
+  min-width: 180px;
+  text-align: left;
 }
 
 .resolution-option:hover {
@@ -103,6 +119,20 @@
   background-color: var(--accent-color);
   border-color: var(--accent-color);
   color: white;
+}
+
+.resolution-label {
+  font-weight: 500;
+}
+
+.resolution-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.resolution-option.selected .resolution-hint {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .custom-resolution {

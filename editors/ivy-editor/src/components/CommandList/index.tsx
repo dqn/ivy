@@ -1,4 +1,5 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   DndContext,
   closestCenter,
@@ -44,19 +45,35 @@ const typeColors: Record<string, string> = {
   empty: "#bdc3c7",
 };
 
+const typeIcons: Record<string, string> = {
+  text: "📝",
+  label: "🏷️",
+  choice: "🔀",
+  jump: "➡️",
+  if: "❓",
+  set: "📊",
+  background: "🖼️",
+  character: "👤",
+  bgm: "🎵",
+  se: "🔊",
+  video: "🎬",
+  wait: "⏳",
+  empty: "○",
+};
+
 function getCommandType(cmd: Command): string {
-  if (cmd.label) return "label";
-  if (cmd.choices) return "choice";
-  if (cmd.jump) return "jump";
-  if (cmd.if) return "if";
-  if (cmd.set) return "set";
-  if (cmd.background) return "background";
-  if (cmd.character) return "character";
-  if (cmd.bgm) return "bgm";
-  if (cmd.se) return "se";
-  if (cmd.video) return "video";
-  if (cmd.wait !== undefined) return "wait";
-  if (cmd.text) return "text";
+  if (cmd.label) {return "label";}
+  if (cmd.choices) {return "choice";}
+  if (cmd.jump) {return "jump";}
+  if (cmd.if) {return "if";}
+  if (cmd.set) {return "set";}
+  if (cmd.background) {return "background";}
+  if (cmd.character) {return "character";}
+  if (cmd.bgm) {return "bgm";}
+  if (cmd.se) {return "se";}
+  if (cmd.video) {return "video";}
+  if (cmd.wait !== undefined) {return "wait";}
+  if (cmd.text) {return "text";}
   return "empty";
 }
 
@@ -70,6 +87,9 @@ export const CommandList: React.FC<CommandListProps> = ({
   onRemove,
   onReorder,
 }) => {
+  const { t } = useTranslation();
+  const [showLegend, setShowLegend] = useState(false);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -84,7 +104,7 @@ export const CommandList: React.FC<CommandListProps> = ({
   // Map speakers to character names
   const speakerCharacterMap = useMemo(() => {
     const map = new Map<string, string>();
-    if (!characterDatabase) return map;
+    if (!characterDatabase) {return map;}
 
     for (const [charName, charDef] of Object.entries(
       characterDatabase.characters
@@ -119,20 +139,50 @@ export const CommandList: React.FC<CommandListProps> = ({
 
   const items = commands.map((_, i) => `cmd-${i}`);
 
+  const legendTypes = ["text", "label", "choice", "jump", "background", "character", "bgm", "se"];
+
   return (
     <div className="command-list">
       <div className="command-list-header">
         <span>Commands ({commands.length})</span>
-        <button
-          className="add-button"
-          onClick={() => {
-            onAdd();
-          }}
-          title="Add command at end"
-        >
-          +
-        </button>
+        <div className="command-list-actions">
+          <button
+            className="legend-toggle"
+            onClick={() => setShowLegend(!showLegend)}
+            title={t("commandList.legend")}
+          >
+            ?
+          </button>
+          <button
+            className="add-button"
+            onClick={() => {
+              onAdd();
+            }}
+            title="Add command at end"
+          >
+            +
+          </button>
+        </div>
       </div>
+      {showLegend && (
+        <div className="command-legend">
+          <div className="legend-title">{t("commandList.legend")}</div>
+          <div className="legend-items">
+            {legendTypes.map((type) => (
+              <div key={type} className="legend-item">
+                <span className="legend-icon">{typeIcons[type]}</span>
+                <span
+                  className="legend-color"
+                  style={{ backgroundColor: typeColors[type] }}
+                />
+                <span className="legend-label">
+                  {t(`commandList.commandTypes.${type}`)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="command-list-content">
         <DndContext
           sensors={sensors}
@@ -154,6 +204,8 @@ export const CommandList: React.FC<CommandListProps> = ({
                   isSelected={selectedIndex === index}
                   isHighlighted={highlightedIndices.includes(index)}
                   typeColor={typeColors[type]}
+                  typeIcon={typeIcons[type]}
+                  typeName={t(`commandList.commandTypes.${type}`)}
                   speakerCharacterMap={speakerCharacterMap}
                   onSelect={() => {
                     onSelect(index);
